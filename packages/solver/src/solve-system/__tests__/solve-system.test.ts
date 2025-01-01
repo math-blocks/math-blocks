@@ -1,6 +1,6 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import { parse, print } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 import { NumberOfSolutions, Step } from '../../types';
 
 import { solveSystem } from '../solve-system';
@@ -30,13 +30,13 @@ describe('solveSystem', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(printSteps(result)).toMatchInlineSnapshot(`
       [
-        "3x - y = 6, x + 2y = -1",
-        "3x - y = 6 => x = 2 + y / 3",
-        "x + 2y = -1 => (2 + y / 3) + 2y = -1",
-        "(2 + y / 3) + 2y = -1 => y = -(9 / 7)",
-        "x = 2 + y / 3 => x = 2 + -(9 / 7) / 3",
-        "x = 2 + -(9 / 7) / 3 => x = 11 / 7",
-        "y = -(9 / 7), x = 11 / 7",
+        "3x-y=6, x+2y=-1",
+        "3x-y=6 => x=2+\\frac{y}{3}",
+        "x+2y=-1 => (2+\\frac{y}{3})+2y=-1",
+        "(2+\\frac{y}{3})+2y=-1 => y=-\\frac{9}{7}",
+        "x=2+\\frac{y}{3} => x=2+\\frac{-\\frac{9}{7}}{3}",
+        "x=2+\\frac{-\\frac{9}{7}}{3} => x=\\frac{11}{7}",
+        "y=-\\frac{9}{7}, x=\\frac{11}{7}",
       ]
     `);
   });
@@ -49,13 +49,13 @@ describe('solveSystem', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(printSteps(result)).toMatchInlineSnapshot(`
       [
-        "3u - v = 6, u + 2v = -1",
-        "3u - v = 6 => u = 2 + v / 3",
-        "u + 2v = -1 => (2 + v / 3) + 2v = -1",
-        "(2 + v / 3) + 2v = -1 => v = -(9 / 7)",
-        "u = 2 + v / 3 => u = 2 + -(9 / 7) / 3",
-        "u = 2 + -(9 / 7) / 3 => u = 11 / 7",
-        "v = -(9 / 7), u = 11 / 7",
+        "3u-v=6, u+2v=-1",
+        "3u-v=6 => u=2+\\frac{v}{3}",
+        "u+2v=-1 => (2+\\frac{v}{3})+2v=-1",
+        "(2+\\frac{v}{3})+2v=-1 => v=-\\frac{9}{7}",
+        "u=2+\\frac{v}{3} => u=2+\\frac{-\\frac{9}{7}}{3}",
+        "u=2+\\frac{-\\frac{9}{7}}{3} => u=\\frac{11}{7}",
+        "v=-\\frac{9}{7}, u=\\frac{11}{7}",
       ]
     `);
   });
@@ -68,13 +68,13 @@ describe('solveSystem', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(printSteps(result)).toMatchInlineSnapshot(`
       [
-        "6 = 3x - y, -1 = x + 2y",
-        "6 = 3x - y => 2 + y / 3 = x",
-        "-1 = x + 2y => -1 = (2 + y / 3) + 2y",
-        "-1 = (2 + y / 3) + 2y => -(9 / 7) = y",
-        "2 + y / 3 = x => 2 + -(9 / 7) / 3 = x",
-        "2 + -(9 / 7) / 3 = x => 11 / 7 = x",
-        "-(9 / 7) = y, 11 / 7 = x",
+        "6=3x-y, -1=x+2y",
+        "6=3x-y => 2+\\frac{y}{3}=x",
+        "-1=x+2y => -1=(2+\\frac{y}{3})+2y",
+        "-1=(2+\\frac{y}{3})+2y => -\\frac{9}{7}=y",
+        "2+\\frac{y}{3}=x => 2+\\frac{-\\frac{9}{7}}{3}=x",
+        "2+\\frac{-\\frac{9}{7}}{3}=x => \\frac{11}{7}=x",
+        "-\\frac{9}{7}=y, \\frac{11}{7}=x",
       ]
     `);
   });
@@ -87,12 +87,12 @@ describe('solveSystem', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.None);
     expect(printSteps(result)).toMatchInlineSnapshot(`
       [
-        "y = 2x + 4, y = 2x - 2",
-        "y = 2x + 4 => y / 2 - 2 = x",
-        "y = 2x - 2 => y = 2(y / 2 - 2) - 2",
-        "y = 2(y / 2 - 2) - 2 => 0 = -6",
-        "y / 2 - 2 = x => y / 2 - 2 = x",
-        "0 = -6, y / 2 - 2 = x",
+        "y=2x+4, y=2x-2",
+        "y=2x+4 => \\frac{y}{2}-2=x",
+        "y=2x-2 => y=2(\\frac{y}{2}-2)-2",
+        "y=2(\\frac{y}{2}-2)-2 => 0=-6",
+        "\\frac{y}{2}-2=x => \\frac{y}{2}-2=x",
+        "0=-6, \\frac{y}{2}-2=x",
       ]
     `);
   });
@@ -105,12 +105,12 @@ describe('solveSystem', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
     expect(printSteps(result)).toMatchInlineSnapshot(`
       [
-        "y = -2x + 1, 2x + y = 1",
-        "y = -2x + 1 => -(y / 2) + 1 / 2 = x",
-        "2x + y = 1 => 2(-(y / 2) + 1 / 2) + y = 1",
-        "2(-(y / 2) + 1 / 2) + y = 1 => 1 = 1",
-        "-(y / 2) + 1 / 2 = x => -(y / 2) + 1 / 2 = x",
-        "1 = 1, -(y / 2) + 1 / 2 = x",
+        "y=-2x+1, 2x+y=1",
+        "y=-2x+1 => -\\frac{y}{2}+\\frac{1}{2}=x",
+        "2x+y=1 => 2(-\\frac{y}{2}+\\frac{1}{2})+y=1",
+        "2(-\\frac{y}{2}+\\frac{1}{2})+y=1 => 1=1",
+        "-\\frac{y}{2}+\\frac{1}{2}=x => -\\frac{y}{2}+\\frac{1}{2}=x",
+        "1=1, -\\frac{y}{2}+\\frac{1}{2}=x",
       ]
     `);
   });

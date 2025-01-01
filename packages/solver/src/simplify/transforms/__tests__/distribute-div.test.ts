@@ -1,12 +1,12 @@
-import * as Semantic from '@math-blocks/semantic';
+import { types, util } from '@math-blocks/semantic';
 
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { distributeDiv as _distributeDiv } from '../distribute-div';
 
-const distributeDiv = (node: Semantic.types.Node): Step => {
-  if (!Semantic.util.isNumeric(node)) {
+const distributeDiv = (node: types.Node): Step => {
+  if (!util.isNumeric(node)) {
     throw new Error('node is not a NumericNode');
   }
   const result = _distributeDiv(node);
@@ -23,7 +23,9 @@ describe('distribute division', () => {
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(print(step.after)).toMatchInlineSnapshot(`"a / c + b / c"`);
+    expect(print(step.after)).toMatchInlineSnapshot(
+      `"\\frac{a}{c}+\\frac{b}{c}"`,
+    );
     expect(step.substeps).toHaveLength(0);
   });
 
@@ -33,7 +35,9 @@ describe('distribute division', () => {
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(print(step.after)).toMatchInlineSnapshot(`"a / c - b / c"`);
+    expect(print(step.after)).toMatchInlineSnapshot(
+      `"\\frac{a}{c}-\\frac{b}{c}"`,
+    );
     expect(step.substeps).toHaveLength(0);
   });
 
@@ -43,7 +47,9 @@ describe('distribute division', () => {
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(print(step.after)).toMatchInlineSnapshot(`"-(a / c) - b / c"`);
+    expect(print(step.after)).toMatchInlineSnapshot(
+      `"-\\frac{a}{c}-\\frac{b}{c}"`,
+    );
     expect(step.substeps).toHaveLength(0);
   });
 
@@ -53,7 +59,9 @@ describe('distribute division', () => {
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(print(step.after)).toMatchInlineSnapshot(`"-(a / c) + b / c"`);
+    expect(print(step.after)).toMatchInlineSnapshot(
+      `"-\\frac{a}{c}+\\frac{b}{c}"`,
+    );
     expect(step.substeps).toHaveLength(0);
   });
 });

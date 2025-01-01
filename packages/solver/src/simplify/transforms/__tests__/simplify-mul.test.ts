@@ -1,4 +1,4 @@
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 
 import { simplifyMul } from '../simplify-mul';
 
@@ -9,7 +9,7 @@ describe('simplify multiplication', () => {
     ${'(a)(b)(-c)'}   | ${'-abc'}
     ${'(-a)(-b)(c)'}  | ${'abc'}
     ${'(-a)(-b)(-c)'} | ${'-abc'}
-    ${'(-a)(bc)'}     | ${'-a(bc)'}
+    ${'(-a)(bc)'}     | ${'-(a)(bc)'}
   `('isNegative($input) -> $output', ({ input, output }) => {
     const result = simplifyMul(parse(input), []);
 

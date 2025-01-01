@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { applyStep, applySteps } from '../../apply';
 import type { Step } from '../../types';
-import { parse, print } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 
 import { simplify as _simplify } from '../simplify';
 
@@ -55,7 +55,7 @@ describe('simplify', () => {
 
       expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "x + 3x",
+          "x+3x",
           "4x",
         ]
       `);
@@ -96,7 +96,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"a - x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"a-x"`);
     });
 
     // Shows that we convert additive inverse to subtraction where possible
@@ -109,7 +109,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"a - 3x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"a-3x"`);
     });
 
     // TODO: add transform that converts (neg (mul 2 x)) to (mul (neg 2 x))
@@ -129,8 +129,8 @@ describe('simplify', () => {
 
       const first = applyStep(ast, step.substeps[0]);
       const second = applyStep(first, step.substeps[1]);
-      expect(print(first)).toEqual('2x - -3x');
-      expect(print(second)).toEqual('5x');
+      expect(print(first)).toMatchInlineSnapshot(`"2x--3x"`);
+      expect(print(second)).toMatchInlineSnapshot(`"5x"`);
     });
 
     test('2x - -3x -> 5x', () => {
@@ -166,7 +166,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x - 1"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x-1"`);
     });
 
     test('4x - 3x - 1 -> 7x - 1', () => {
@@ -178,7 +178,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x - 1"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x-1"`);
     });
 
     test('x/2 + x/2 -> x', () => {
@@ -204,7 +204,7 @@ describe('simplify', () => {
         'multiply fraction(s)',
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x / 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{x}{6}"`);
     });
 
     test('x/2 + x/-3 -> x', () => {
@@ -219,7 +219,7 @@ describe('simplify', () => {
         'multiply fraction(s)',
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x / 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{x}{6}"`);
     });
 
     test('x/-2 + x/3 -> x', () => {
@@ -234,7 +234,7 @@ describe('simplify', () => {
         'multiply fraction(s)',
         'reduce fraction',
       ]);
-      expect(print(result.after)).toEqual('-(x / 6)');
+      expect(print(result.after)).toMatchInlineSnapshot(`"-\\frac{x}{6}"`);
 
       const steps = [
         print(result.before),
@@ -247,11 +247,11 @@ describe('simplify', () => {
 
       expect(steps).toMatchInlineSnapshot(`
         [
-          "x / -2 + x / 3",
-          "x / -2 => -(x / 2)",
-          "-(x / 2) + x / 3 => -(1 / 6)(x)",
-          "(1 / 6)(x) => 1x / 6",
-          "1x / 6 => x / 6",
+          "\\frac{x}{-2}+\\frac{x}{3}",
+          "\\frac{x}{-2} => -\\frac{x}{2}",
+          "-\\frac{x}{2}+\\frac{x}{3} => -\\frac{1}{6}x",
+          "\\frac{1}{6}x => \\frac{1x}{6}",
+          "\\frac{1x}{6} => \\frac{x}{6}",
         ]
       `);
     });
@@ -302,7 +302,7 @@ describe('simplify', () => {
         'collect like terms',
         'multiply fraction(s)',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"5x / 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5x}{6}"`);
     });
 
     test('x + 1 + 4 -> x + 5', () => {
@@ -314,7 +314,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x + 5"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x+5"`);
     });
 
     // drop parens
@@ -328,7 +328,7 @@ describe('simplify', () => {
         'drop parentheses',
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x + 5"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x+5"`);
     });
 
     test('3 - 1x - 1 -> -x + 2', () => {
@@ -342,7 +342,7 @@ describe('simplify', () => {
         'collect like terms',
       ]);
 
-      expect(print(step.after)).toMatchInlineSnapshot(`"2 - x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"2-x"`);
     });
 
     test('1 - (2x + 3x) -> 1 - 5x', () => {
@@ -354,7 +354,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"1 - 5x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"1-5x"`);
     });
 
     test('1 - (2x + 3x + 4y) -> 1 - 5x + 4y', () => {
@@ -367,7 +367,7 @@ describe('simplify', () => {
         'collect like terms',
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"1 - 5x - 4y"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"1-5x-4y"`);
     });
   });
 
@@ -382,7 +382,7 @@ describe('simplify', () => {
         'distribute',
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"3x + 7"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"3x+7"`);
     });
 
     test('3(x + 1) -> 3x + 3', () => {
@@ -394,7 +394,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
 
       expect(step.substeps[0].substeps.map((step) => step.message)).toEqual([
         'multiply each term',
@@ -411,7 +411,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3y + 3z"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"3x+3y+3z"`);
     });
 
     test('(-2)(x - 3) -> -2x + 6', () => {
@@ -423,7 +423,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"-2x + 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-2x+6"`);
     });
 
     test('(1 + 2)(x + 1) -> 3x + 3', () => {
@@ -436,7 +436,7 @@ describe('simplify', () => {
         'evaluate addition',
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
     });
 
     test('(6 * 1/2)(x + 1) -> 3x + 3', () => {
@@ -449,7 +449,7 @@ describe('simplify', () => {
         'evaluate multiplication',
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
     });
 
     test('3 - (x + 1) -> -x + 2', () => {
@@ -462,8 +462,8 @@ describe('simplify', () => {
         'distribute',
         'collect like terms',
       ]);
-      expect(print(step.substeps[0].after)).toEqual('3 - x - 1');
-      expect(print(step.after)).toMatchInlineSnapshot(`"2 - x"`);
+      expect(print(step.substeps[0].after)).toMatchInlineSnapshot(`"3-x-1"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"2-x"`);
 
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
@@ -475,19 +475,29 @@ describe('simplify', () => {
         'adding the inverse is the same as subtraction',
         'adding the inverse is the same as subtraction',
       ]);
-      expect(print(step.substeps[0].substeps[0].before)).toEqual('-(x + 1)');
-      expect(print(step.substeps[0].substeps[0].after)).toEqual('-1(x + 1)');
-      expect(print(step.substeps[0].substeps[1].before)).toEqual('-1(x + 1)');
-      expect(print(step.substeps[0].substeps[1].after)).toEqual(
-        '-1x + (-1)(1)',
+      expect(print(step.substeps[0].substeps[0].before)).toMatchInlineSnapshot(
+        `"-(x+1)"`,
       );
-      expect(print(step.substeps[0].substeps[2].before)).toEqual('-1x');
-      expect(print(step.substeps[0].substeps[2].after)).toEqual('-x');
+      expect(print(step.substeps[0].substeps[0].after)).toMatchInlineSnapshot(
+        `"-1(x+1)"`,
+      );
+      expect(print(step.substeps[0].substeps[1].before)).toMatchInlineSnapshot(
+        `"-1(x+1)"`,
+      );
+      expect(print(step.substeps[0].substeps[1].after)).toMatchInlineSnapshot(
+        `"-1x+(-1)(1)"`,
+      );
+      expect(print(step.substeps[0].substeps[2].before)).toMatchInlineSnapshot(
+        `"-1x"`,
+      );
+      expect(print(step.substeps[0].substeps[2].after)).toMatchInlineSnapshot(
+        `"-x"`,
+      );
 
       const first = applyStep(ast, step.substeps[0].substeps[0]);
       const second = applyStep(first, step.substeps[0].substeps[1]);
-      expect(print(first)).toEqual('3 + -1(x + 1)');
-      expect(print(second)).toEqual('3 + -1x + (-1)(1)');
+      expect(print(first)).toMatchInlineSnapshot(`"3+-1(x+1)"`);
+      expect(print(second)).toMatchInlineSnapshot(`"3+-1x+(-1)(1)"`);
       // ... and so on.
     });
 
@@ -511,7 +521,7 @@ describe('simplify', () => {
         'multiplying a negative by a positive is negative',
         'adding the inverse is the same as subtraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"9x - 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"9x-6"`);
     });
 
     test('(ab)(xy - yz)', () => {
@@ -523,7 +533,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"abxy - abyz"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"abxy-abyz"`);
     });
 
     test('(-ab)(xy - yz)', () => {
@@ -535,7 +545,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'distribute',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"-abxy + abyz"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-abxy+abyz"`);
 
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
@@ -556,7 +566,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'evaluate multiplication',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"9x - 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"9x-6"`);
     });
 
     test('3(x + 1) + 4(x - 1) -> 7x - 1', () => {
@@ -570,7 +580,7 @@ describe('simplify', () => {
         'distribute',
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"7x - 1"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"7x-1"`);
     });
 
     test('3x + (3)(1) + 4x + (4)(-1)', () => {
@@ -584,7 +594,7 @@ describe('simplify', () => {
         'simplify multiplication',
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"7x - 1"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"7x-1"`);
     });
 
     test('3(x + 1) - (2x + 5) -> x - 2', () => {
@@ -598,7 +608,7 @@ describe('simplify', () => {
         'distribute',
         'collect like terms',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x - 2"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x-2"`);
     });
 
     test('x(x + 1) -> x^2 + x', () => {
@@ -611,7 +621,7 @@ describe('simplify', () => {
         'distribute',
         'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^2 + x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}+x"`);
 
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
@@ -628,7 +638,7 @@ describe('simplify', () => {
         'distribute',
         'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^2 - x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}-x"`);
 
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
@@ -653,18 +663,18 @@ describe('simplify', () => {
         'collect like terms',
         'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^2 + 4x + 3"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}+4x+3"`);
 
       const first = applyStep(ast, step.substeps[0]);
-      expect(print(first)).toEqual('(x + 1)x + 3(x + 1)'); // is the 3 at the front?
+      expect(print(first)).toMatchInlineSnapshot(`"(x+1)x+3(x+1)"`); // is the 3 at the front?
       const second = applyStep(first, step.substeps[1]);
-      expect(print(second)).toEqual('xx + x + 3(x + 1)');
+      expect(print(second)).toMatchInlineSnapshot(`"xx+x+3(x+1)"`);
       const third = applyStep(second, step.substeps[2]);
-      expect(print(third)).toEqual('xx + x + 3x + 3');
+      expect(print(third)).toMatchInlineSnapshot(`"xx+x+3x+3"`);
       const fourth = applyStep(third, step.substeps[3]);
-      expect(print(fourth)).toEqual('xx + 4x + 3');
+      expect(print(fourth)).toMatchInlineSnapshot(`"xx+4x+3"`);
       const fifth = applyStep(fourth, step.substeps[4]);
-      expect(print(fifth)).toEqual('x^2 + 4x + 3');
+      expect(print(fifth)).toMatchInlineSnapshot(`"x^{2}+4x+3"`);
     });
 
     test.skip('(x + 1)^2 -> x^2 + 2x + 1', () => {
@@ -691,7 +701,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^2"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}"`);
     });
 
     test('(3)(3) -> 9', () => {
@@ -715,7 +725,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"ba^3n^2"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"ba^{3}n^{2}"`);
     });
 
     test.skip('(a^2)(a^3) -> a^5', () => {
@@ -754,7 +764,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"1 / c"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{c}"`);
     });
 
     test('abc / bcd -> a / d', () => {
@@ -766,7 +776,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"a / d"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{a}{d}"`);
     });
 
     test('-abc / bcd -> -a / d', () => {
@@ -778,7 +788,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"-(a / d)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{a}{d}"`);
     });
 
     test('abc / -bcd -> a / -d', () => {
@@ -790,7 +800,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"-(a / d)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{a}{d}"`);
     });
 
     test('abc / abc -> 1', () => {
@@ -867,8 +877,8 @@ describe('simplify', () => {
 
       expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "-abc / b",
-          "-abc / b",
+          "\\frac{-abc}{b}",
+          "\\frac{-abc}{b}",
           "-ac",
         ]
       `);
@@ -885,7 +895,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"2 / 3"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{2}{3}"`);
     });
 
     test('-(4/6) -> -(2/3)', () => {
@@ -897,7 +907,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"-(2 / 3)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{2}{3}"`);
     });
 
     test.skip('-4/6 -> -2/3', () => {
@@ -943,7 +953,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'evaluate addition',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"5 / 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}"`);
     });
 
     test('1 / 2 - 1 / 3', () => {
@@ -955,7 +965,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'evaluate addition',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"1 / 6"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{6}"`);
     });
 
     test('-(1 / 6) * 6', () => {
@@ -974,8 +984,8 @@ describe('simplify', () => {
 
       expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "-(1 / 6) * 6",
-          "-(1 / 6 * 6)",
+          "-\\frac{1}{6}*6",
+          "-(\\frac{1}{6}*6)",
           "-1",
         ]
       `);
@@ -992,7 +1002,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'adding the inverse is the same as subtraction',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"a - b"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"a-b"`);
     });
   });
 
@@ -1018,7 +1028,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'drop adding zero',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"a + b"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"a+b"`);
     });
 
     test('a - 0', () => {

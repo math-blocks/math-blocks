@@ -1,4 +1,4 @@
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 
 import { dividePowers } from '../divide-powers';
 
@@ -9,15 +9,15 @@ describe('dividePowers', () => {
   //     ${'x^2 / (x^3 y)'}         | ${'x^(2 - 3)y^(-1)'}
   test.each`
     input                      | output
-    ${'x^2 / x^3'}             | ${'x^(2 - 3)'}
-    ${'x^2 / x^-3'}            | ${'x^(2 - -3)'}
-    ${'(x^2 y^n) / (x^3 y^m)'} | ${'x^(2 - 3)y^(n - m)'}
-    ${'(x x^2) / x^3'}         | ${'x^(1 + 2 - 3)'}
-    ${'x^2 / (x x^3)'}         | ${'x^(2 - 1 - 3)'}
-    ${'(x^2 x^n) / (x^3 x^m)'} | ${'x^(2 + n - 3 - m)'}
-    ${'(x + 1)^2 / (x + 1)^3'} | ${'(x + 1)^(2 - 3)'}
-    ${'(x + 1)^2 / (1 + x)^3'} | ${'(x + 1)^(2 - 3)'}
-    ${'(x^2 y) / x^3'}         | ${'x^(2 - 3)y'}
+    ${'x^2 / x^3'}             | ${'x^{2-3}'}
+    ${'x^2 / x^-3'}            | ${'x^{2--3}'}
+    ${'(x^2 y^n) / (x^3 y^m)'} | ${'x^{2-3}y^{n-m}'}
+    ${'(x x^2) / x^3'}         | ${'x^{1+2-3}'}
+    ${'x^2 / (x x^3)'}         | ${'x^{2-1-3}'}
+    ${'(x^2 x^n) / (x^3 x^m)'} | ${'x^{2+n-3-m}'}
+    ${'(x + 1)^2 / (x + 1)^3'} | ${'(x+1)^{2-3}'}
+    ${'(x + 1)^2 / (1 + x)^3'} | ${'(x+1)^{2-3}'}
+    ${'(x^2 y) / x^3'}         | ${'x^{2-3}y'}
   `('dividePowers($input) -> $output', ({ input, output }) => {
     const result = dividePowers(parse(input));
 

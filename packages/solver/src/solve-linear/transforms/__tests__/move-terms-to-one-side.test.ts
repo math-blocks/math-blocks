@@ -1,6 +1,6 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { moveTermsToOneSide } from '../move-terms-to-one-side';
@@ -24,7 +24,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 5"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x=5"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
@@ -43,7 +43,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 15"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x=15"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
@@ -62,7 +62,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 15"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x=15"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
@@ -82,7 +82,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"5 = 2x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"5=2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
@@ -101,7 +101,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"15 = 2x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"15=2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
@@ -120,7 +120,7 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(print(step.after)).toMatchInlineSnapshot(`"15 = 2x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"15=2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );

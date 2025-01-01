@@ -1,5 +1,5 @@
 import * as Semantic from '@math-blocks/semantic';
-import { parse, print } from '../test-util';
+import { parse, newPrint as print } from '../test-util';
 
 import { applyStep, applySteps } from '../apply';
 import { Step } from '../types';
@@ -32,7 +32,7 @@ describe('applyStep', () => {
 
     const result = applyStep(ast, step);
 
-    expect(print(result)).toMatchInlineSnapshot(`"a + c"`);
+    expect(print(result)).toMatchInlineSnapshot(`"a+c"`);
   });
 
   test('spreads add terms in parent add', () => {
@@ -47,7 +47,7 @@ describe('applyStep', () => {
 
     const result = applyStep(ast, step);
 
-    expect(print(result)).toMatchInlineSnapshot(`"a + c + d"`);
+    expect(print(result)).toMatchInlineSnapshot(`"a+c+d"`);
   });
 });
 
@@ -73,7 +73,7 @@ describe('applySteps', () => {
 
     const result = applySteps(ast, steps);
 
-    expect(print(result)).toMatchInlineSnapshot(`"a + d + e"`);
+    expect(print(result)).toMatchInlineSnapshot(`"a+d+e"`);
   });
 
   test("returns the original expression when there's no steps", () => {
@@ -82,6 +82,6 @@ describe('applySteps', () => {
     const steps: Step[] = [];
     const result = applySteps(ast, steps);
 
-    expect(print(result)).toMatchInlineSnapshot(`"a + b"`);
+    expect(print(result)).toMatchInlineSnapshot(`"a+b"`);
   });
 });

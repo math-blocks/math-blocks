@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import { parse, print } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 
 import { factor } from '../factor';
 
@@ -21,11 +21,11 @@ describe('factor', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x^2 + 5x + 6",
-        "x^2 + 3x + 2x + 6",
-        "x(x + 3) + 2x + 6",
-        "x(x + 3) + 2(x + 3)",
-        "(x + 2)(x + 3)",
+        "x^{2}+5x+6",
+        "x^{2}+3x+2x+6",
+        "x(x+3)+2x+6",
+        "x(x+3)+2(x+3)",
+        "(x+2)(x+3)",
       ]
     `);
   });

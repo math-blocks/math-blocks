@@ -1,6 +1,6 @@
 import { types } from '@math-blocks/semantic';
 
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { simplifyBothSides } from '../simplify-both-sides';
@@ -23,6 +23,6 @@ describe('simplify both sides', () => {
 
     const step = simplify(before);
 
-    expect(print(step.after)).toEqual('2x = 5');
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x=5"`);
   });
 });

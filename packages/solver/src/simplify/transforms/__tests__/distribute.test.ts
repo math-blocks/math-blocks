@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 import { applyStep, applySteps } from '../../../apply';
 import type { Step } from '../../../types';
 
@@ -45,9 +45,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"ab + ac"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"ab+ac"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"ab + ac"`,
+      `"ab+ac"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -61,9 +61,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"x + ab + ac"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"x+ab+ac"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"x + ab + ac"`,
+      `"x+ab+ac"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -77,9 +77,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x + 3"`,
+      `"3x+3"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -88,7 +88,7 @@ describe('distribution', () => {
     ]);
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "3(x + 1) -> 3x + (3)(1)",
+        "3(x+1) -> 3x+(3)(1)",
         "(3)(1) -> 3",
       ]
     `);
@@ -100,9 +100,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x + 3"`,
+      `"3x+3"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -112,7 +112,7 @@ describe('distribution', () => {
     ]);
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "(x + 1)(3) -> (x)(3) + (1)(3)",
+        "(x+1)(3) -> (x)(3)+(1)(3)",
         "(x)(3) -> 3x",
         "(1)(3) -> 3",
       ]
@@ -120,10 +120,10 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "(x + 1)(3)",
-        "(x)(3) + (1)(3)",
-        "3x + (1)(3)",
-        "3x + 3",
+        "(x+1)(3)",
+        "(x)(3)+(1)(3)",
+        "3x+(1)(3)",
+        "3x+3",
       ]
     `);
   });
@@ -134,9 +134,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x - 3"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x-3"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x - 3"`,
+      `"3x-3"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -149,12 +149,12 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "(x - 1)(3)",
-        "(x + -1)(3)",
-        "(x)(3) + (-1)(3)",
-        "3x + (-1)(3)",
-        "3x + -3",
-        "3x - 3",
+        "(x-1)(3)",
+        "(x+-1)(3)",
+        "(x)(3)+(-1)(3)",
+        "3x+(-1)(3)",
+        "3x+-3",
+        "3x-3",
       ]
     `);
   });
@@ -165,9 +165,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3 + 4"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x+3+4"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x + 3 + 4"`,
+      `"3x+3+4"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -177,16 +177,16 @@ describe('distribution', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "3(x + 1) -> 3x + (3)(1)",
+        "3(x+1) -> 3x+(3)(1)",
         "(3)(1) -> 3",
       ]
     `);
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "3(x + 1) + 4",
-        "3x + (3)(1) + 4",
-        "3x + 3 + 4",
+        "3(x+1)+4",
+        "3x+(3)(1)+4",
+        "3x+3+4",
       ]
     `);
   });
@@ -197,9 +197,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3y + 3z"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x+3y+3z"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x + 3y + 3z"`,
+      `"3x+3y+3z"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -213,9 +213,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"-2x + 6"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"-2x+6"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"-2x + 6"`,
+      `"-2x+6"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -234,7 +234,7 @@ describe('distribution', () => {
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
         "-3 -> -3",
-        "-2(x + -3) -> -2x + (-2)(-3)",
+        "-2(x+-3) -> -2x+(-2)(-3)",
         "-2x -> -2x",
         "(-2)(-3) -> 6",
       ]
@@ -248,11 +248,11 @@ describe('distribution', () => {
     // to do this automatically if possible.
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "-2(x - 3)",
-        "-2(x + -3)",
-        "-2x + (-2)(-3)",
-        "-2x + (-2)(-3)",
-        "-2x + 6",
+        "-2(x-3)",
+        "-2(x+-3)",
+        "-2x+(-2)(-3)",
+        "-2x+(-2)(-3)",
+        "-2x+6",
       ]
     `);
   });
@@ -263,9 +263,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3 - x - 1"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3-x-1"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3 - x - 1"`,
+      `"3-x-1"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -279,8 +279,8 @@ describe('distribution', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "-(x + 1) -> -1(x + 1)",
-        "-1(x + 1) -> -1x + (-1)(1)",
+        "-(x+1) -> -1(x+1)",
+        "-1(x+1) -> -1x+(-1)(1)",
         "-1x -> -x",
         "(-1)(1) -> -1",
         "-x -> -x",
@@ -290,13 +290,13 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "3 - (x + 1)",
-        "3 + -1(x + 1)",
-        "3 + -1x + (-1)(1)",
-        "3 + -x + (-1)(1)",
-        "3 + -x + -1",
-        "3 - x + -1",
-        "3 - x - 1",
+        "3-(x+1)",
+        "3+-1(x+1)",
+        "3+-1x+(-1)(1)",
+        "3+-x+(-1)(1)",
+        "3+-x+-1",
+        "3-x+-1",
+        "3-x-1",
       ]
     `);
   });
@@ -307,9 +307,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"abxy - abyz"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"abxy-abyz"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"abxy - abyz"`,
+      `"abxy-abyz"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -323,7 +323,7 @@ describe('distribution', () => {
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
         "-yz -> -yz",
-        "(ab)(xy + -yz) -> (ab)(xy) + (ab)(-yz)",
+        "(ab)(xy+-yz) -> (ab)(xy)+(ab)(-yz)",
         "(ab)(xy) -> abxy",
         "(ab)(-yz) -> -abyz",
         "-abyz -> -abyz",
@@ -332,12 +332,12 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "(ab)(xy - yz)",
-        "(ab)(xy + -yz)",
-        "(ab)(xy) + (ab)(-yz)",
-        "abxy + (ab)(-yz)",
-        "abxy + -abyz",
-        "abxy - abyz",
+        "(ab)(xy-yz)",
+        "(ab)(xy+-yz)",
+        "(ab)(xy)+(ab)(-yz)",
+        "abxy+(ab)(-yz)",
+        "abxy+-abyz",
+        "abxy-abyz",
       ]
     `);
   });
@@ -348,9 +348,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"-abxy + abyz"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"-abxy+abyz"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"-abxy + abyz"`,
+      `"-abxy+abyz"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -368,9 +368,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"3x + 3 + 4(x - 1)"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"3x+3+4(x-1)"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"3x + 3 + 4(x - 1)"`,
+      `"3x+3+4(x-1)"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -380,9 +380,9 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "3(x + 1) + 4(x - 1)",
-        "3x + (3)(1) + 4(x - 1)",
-        "3x + 3 + 4(x - 1)",
+        "3(x+1)+4(x-1)",
+        "3x+(3)(1)+4(x-1)",
+        "3x+3+4(x-1)",
       ]
     `);
   });
@@ -393,9 +393,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"xx + x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"xx+x"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"xx + x"`,
+      `"xx+x"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -405,9 +405,9 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "x(x + 1)",
-        "xx + (x)(1)",
-        "xx + x",
+        "x(x+1)",
+        "xx+(x)(1)",
+        "xx+x",
       ]
     `);
   });
@@ -418,9 +418,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"xx - x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"xx-x"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"xx - x"`,
+      `"xx-x"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -433,7 +433,7 @@ describe('distribution', () => {
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
         "-1 -> -1",
-        "x(x + -1) -> xx + (x)(-1)",
+        "x(x+-1) -> xx+(x)(-1)",
         "(x)(-1) -> -x",
         "-x -> -x",
       ]
@@ -441,11 +441,11 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "x(x - 1)",
-        "x(x + -1)",
-        "xx + (x)(-1)",
-        "xx + -x",
-        "xx - x",
+        "x(x-1)",
+        "x(x+-1)",
+        "xx+(x)(-1)",
+        "xx+-x",
+        "xx-x",
       ]
     `);
   });
@@ -456,9 +456,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"0 - 2x - 5"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"0-2x-5"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"0 - 2x - 5"`,
+      `"0-2x-5"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -472,9 +472,9 @@ describe('distribution', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "-(2x + 5) -> -1(2x + 5)",
-        "-1(2x + 5) -> -1(2x) + (-1)(5)",
-        "-1(2x) -> -2x",
+        "-(2x+5) -> -1(2x+5)",
+        "-1(2x+5) -> (-1)(2x)+(-1)(5)",
+        "(-1)(2x) -> -2x",
         "(-1)(5) -> -5",
         "-2x -> -2x",
         "-5 -> -5",
@@ -483,13 +483,13 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "0 - (2x + 5)",
-        "0 + -1(2x + 5)",
-        "0 + -1(2x) + (-1)(5)",
-        "0 + -2x + (-1)(5)",
-        "0 + -2x + -5",
-        "0 - 2x + -5",
-        "0 - 2x - 5",
+        "0-(2x+5)",
+        "0+-1(2x+5)",
+        "0+(-1)(2x)+(-1)(5)",
+        "0+-2x+(-1)(5)",
+        "0+-2x+-5",
+        "0-2x+-5",
+        "0-2x-5",
       ]
     `);
   });
@@ -500,9 +500,9 @@ describe('distribution', () => {
     const step = distribute(ast);
 
     expect(step.message).toEqual('distribute');
-    expect(print(step.after)).toMatchInlineSnapshot(`"-2x - 5"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"-2x-5"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"-2x - 5"`,
+      `"-2x-5"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -515,9 +515,9 @@ describe('distribution', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "-(2x + 5) -> -1(2x + 5)",
-        "-1(2x + 5) -> -1(2x) + (-1)(5)",
-        "-1(2x) -> -2x",
+        "-(2x+5) -> -1(2x+5)",
+        "-1(2x+5) -> (-1)(2x)+(-1)(5)",
+        "(-1)(2x) -> -2x",
         "(-1)(5) -> -5",
         "-5 -> -5",
       ]
@@ -525,12 +525,12 @@ describe('distribution', () => {
 
     expect(printFullSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "-(2x + 5)",
-        "-1(2x + 5)",
-        "-1(2x) + (-1)(5)",
-        "-2x + (-1)(5)",
-        "-2x + -5",
-        "-2x - 5",
+        "-(2x+5)",
+        "-1(2x+5)",
+        "(-1)(2x)+(-1)(5)",
+        "-2x+(-1)(5)",
+        "-2x+-5",
+        "-2x-5",
       ]
     `);
   });

@@ -1,6 +1,6 @@
 import { builders } from '@math-blocks/semantic';
 
-import { parse, print } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 
 import { getCoeff, isTermOfIdent } from '../util';
 
@@ -9,28 +9,28 @@ describe('getCoeff', () => {
     const ast = parse('x');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('1');
+    expect(print(coeff)).toMatchInlineSnapshot(`"1"`);
   });
 
   test('2x -> 2', () => {
     const ast = parse('2x');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('2');
+    expect(print(coeff)).toMatchInlineSnapshot(`"2"`);
   });
 
   test('-x -> -1', () => {
     const ast = parse('-x');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('-1');
+    expect(print(coeff)).toMatchInlineSnapshot(`"-1"`);
   });
 
   test('-2x -> -2', () => {
     const ast = parse('-2x');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('-2');
+    expect(print(coeff)).toMatchInlineSnapshot(`"-2"`);
   });
 
   // Doesn't handle non-canonicalized terms yet
@@ -38,21 +38,21 @@ describe('getCoeff', () => {
     const ast = parse('(x)(2)');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('2');
+    expect(print(coeff)).toMatchInlineSnapshot('2');
   });
 
   test('x / 2', () => {
     const ast = parse('x / 2');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('1 / 2');
+    expect(print(coeff)).toMatchInlineSnapshot(`"\\frac{1}{2}"`);
   });
 
   test('3x / 2', () => {
     const ast = parse('3x / 2');
     const coeff = getCoeff(ast);
 
-    expect(print(coeff)).toEqual('3 / 2');
+    expect(print(coeff)).toMatchInlineSnapshot(`"\\frac{3}{2}"`);
   });
 });
 
