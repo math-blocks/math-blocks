@@ -1,9 +1,9 @@
 import { types, builders } from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+
+import * as Testing from '../../test-util';
+import type { Step } from '../../types';
 
 import { solveQuadratic } from '../solve-quadratic';
-
-import type { Step } from '../../types';
 
 const parseNumRel = (input: string): types.NumericRelation => {
   return Testing.parse(input) as types.NumericRelation;

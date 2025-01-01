@@ -1,11 +1,11 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
 
 import { applySteps } from '../../../apply';
 import type { Step } from '../../../types';
-import { collectLikeTerms as _collectLikeTerms } from '../collect-like-terms';
-
+import * as Testing from '../../../test-util';
 import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../../test-util';
+
+import { collectLikeTerms as _collectLikeTerms } from '../collect-like-terms';
 
 expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
 

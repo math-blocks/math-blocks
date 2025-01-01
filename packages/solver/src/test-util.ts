@@ -1,8 +1,11 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
 
+import { print } from './test-util/printer';
 import { applyStep } from './apply';
 import type { Step } from './types';
+
+export { print } from './test-util/printer';
+export { parse } from './test-util/text-parser';
 
 export const toHaveSubstepsLike = (
   received: Step,
@@ -24,19 +27,19 @@ export const toHaveSubstepsLike = (
   }[] = [];
 
   for (let i = 0; i < expected.length; i++) {
-    if (Testing.print(received.substeps[i].before) !== expected[i][0]) {
+    if (print(received.substeps[i].before) !== expected[i][0]) {
       failures.push({
         step: i,
         node: 'before',
-        received: Testing.print(received.substeps[i].before),
+        received: print(received.substeps[i].before),
         expected: expected[i][0],
       });
     }
-    if (Testing.print(received.substeps[i].after) !== expected[i][1]) {
+    if (print(received.substeps[i].after) !== expected[i][1]) {
       failures.push({
         step: i,
         node: 'after',
-        received: Testing.print(received.substeps[i].after),
+        received: print(received.substeps[i].after),
         expected: expected[i][1],
       });
     }
@@ -83,10 +86,10 @@ export const toHaveFullStepsLike = (
 
   let node = received;
 
-  if (Testing.print(node) !== expected.expressions[0]) {
+  if (print(node) !== expected.expressions[0]) {
     failures.push({
       step: 0,
-      received: Testing.print(node),
+      received: print(node),
       expected: expected.expressions[0],
     });
   }
@@ -94,10 +97,10 @@ export const toHaveFullStepsLike = (
   for (let i = 0; i < expected.steps.length; i++) {
     const step = expected.steps[i];
     node = applyStep(node, step);
-    if (Testing.print(node) !== expected.expressions[i + 1]) {
+    if (print(node) !== expected.expressions[i + 1]) {
       failures.push({
         step: i + 1,
-        received: Testing.print(node),
+        received: print(node),
         expected: expected.expressions[i + 1],
       });
     }

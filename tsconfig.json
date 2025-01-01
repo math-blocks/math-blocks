@@ -9,7 +9,6 @@
     {"path": "./packages/react"},
     {"path": "./packages/semantic"},
     {"path": "./packages/solver"},
-    {"path": "./packages/testing"},
     {"path": "./packages/tex"},
     {"path": "./packages/typesetter"}
   ]

@@ -1,6 +1,6 @@
 import { types, builders } from '@math-blocks/semantic';
-import { print, parse } from '@math-blocks/testing';
 
+import { print, parse } from '../../test-util';
 import { solveLinear } from '../solve-linear';
 import { NumberOfSolutions } from '../../types';
 

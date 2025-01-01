@@ -1,5 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+
+import * as Testing from '../../../test-util';
 
 import { moveMatchingVariableTermsToOneSide } from '../move-matching-variable-terms-to-one-side';
 

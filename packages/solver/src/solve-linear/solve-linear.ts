@@ -1,12 +1,13 @@
+import Fraction from 'fraction.js';
+
 import { builders, types, util } from '@math-blocks/semantic';
+
+import { Step, NumberOfSolutions } from '../types';
+import { print } from '../test-util';
 
 import { divByCoeff } from './transforms/div-both-sides';
 import { mulByNumber } from './transforms/mul-both-sides';
 import { simplifyBothSides } from './transforms/simplify-both-sides';
-
-import { Step, NumberOfSolutions } from '../types';
-import { print } from '@math-blocks/testing';
-import Fraction from 'fraction.js';
 
 /**
  * Solve a linear equation for a given variable.

@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
 
+import * as Testing from '../test-util';
 import { solveProblem } from '../solve-problem';
 
 import type { Problem } from '../types';
