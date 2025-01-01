@@ -8,7 +8,9 @@
     },
     "references": [
       {"path": "../core"},
+      {"path": "../editor"},
       {"path": "../parser"},
-      {"path": "../semantic"}
+      {"path": "../semantic"},
+      {"path": "../tex"}
     ]
   }

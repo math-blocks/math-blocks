@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import { parse, print } from '../test-util';
+import { parse, newPrint as print } from '../test-util';
 import { solveProblem } from '../solve-problem';
 
 import type { Problem } from '../types';
@@ -17,7 +17,7 @@ describe('solveProblem', () => {
     };
     const result = solveProblem(problem)!;
 
-    expect(print(result.answer)).toMatchInlineSnapshot(`"(x + 2)(x + 3)"`);
+    expect(print(result.answer)).toMatchInlineSnapshot(`"(x+2)(x+3)"`);
   });
 
   it('should simplify numeric expressions', () => {
@@ -40,7 +40,7 @@ describe('solveProblem', () => {
     };
     const result = solveProblem(problem)!;
 
-    expect(print(result.answer)).toMatchInlineSnapshot(`"x = 5 / 2"`);
+    expect(print(result.answer)).toMatchInlineSnapshot(`"x=\\frac{5}{2}"`);
   });
 
   it('should solve quadratic equations', () => {
@@ -53,6 +53,6 @@ describe('solveProblem', () => {
     };
     const result = solveProblem(problem)!;
 
-    expect(print(result.answer)).toMatchInlineSnapshot(`"x = -2, x = -3"`);
+    expect(print(result.answer)).toMatchInlineSnapshot(`"x=-2, x=-3"`);
   });
 });

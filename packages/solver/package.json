@@ -11,7 +11,9 @@
     },
     "dependencies": {
         "@math-blocks/core": "^0.0.12",
+        "@math-blocks/editor": "^0.0.12",
+        "@math-blocks/parser": "^0.0.12",
         "@math-blocks/semantic": "^0.0.12",
-        "@math-blocks/parser": "^0.0.12"
+        "@math-blocks/tex": "^0.0.13"
     }
 }

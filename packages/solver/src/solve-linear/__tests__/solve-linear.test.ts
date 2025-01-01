@@ -1,6 +1,6 @@
 import { types, builders } from '@math-blocks/semantic';
 
-import { print, parse } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 import { solveLinear } from '../solve-linear';
 import { NumberOfSolutions } from '../../types';
 
@@ -15,7 +15,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = y + 15 / 2"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=y+\\frac{15}{2}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -27,13 +27,13 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "2x - 3y - 5 = -y + 10",
-        "2x - 3y - 5 + 5 = -y + 10 + 5",
-        "2x - 3y = -y + 15",
-        "2x - 3y + 3y = -y + 3y + 15",
-        "2x = 2y + 15",
-        "2x / 2 = (2y + 15) / 2",
-        "x = y + 15 / 2",
+        "2x-3y-5=-y+10",
+        "2x-3y-5+5=-y+10+5",
+        "2x-3y=-y+15",
+        "2x-3y+3y=-y+3y+15",
+        "2x=2y+15",
+        "\\frac{2x}{2}=\\frac{2y+15}{2}",
+        "x=y+\\frac{15}{2}",
       ]
     `);
   });
@@ -43,7 +43,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"y + 15 / 2 = x"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"y+\\frac{15}{2}=x"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -55,13 +55,13 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-y + 10 = 2x - 3y - 5",
-        "-y + 10 + 5 = 2x - 3y - 5 + 5",
-        "-y + 15 = 2x - 3y",
-        "-y + 3y + 15 = 2x - 3y + 3y",
-        "2y + 15 = 2x",
-        "(2y + 15) / 2 = 2x / 2",
-        "y + 15 / 2 = x",
+        "-y+10=2x-3y-5",
+        "-y+10+5=2x-3y-5+5",
+        "-y+15=2x-3y",
+        "-y+3y+15=2x-3y+3y",
+        "2y+15=2x",
+        "\\frac{2y+15}{2}=\\frac{2x}{2}",
+        "y+\\frac{15}{2}=x",
       ]
     `);
   });
@@ -71,7 +71,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 5"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=5"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -83,11 +83,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "2x + 5 = x + 10",
-        "2x + 5 - 5 = x + 10 - 5",
-        "2x = x + 5",
-        "2x - x = x - x + 5",
-        "x = 5",
+        "2x+5=x+10",
+        "2x+5-5=x+10-5",
+        "2x=x+5",
+        "2x-x=x-x+5",
+        "x=5",
       ]
     `);
   });
@@ -99,7 +99,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"0 = 1"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"0=1"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.None);
 
     const steps = [
@@ -111,11 +111,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x + 1 = x + 2",
-        "x + 1 - 1 = x + 2 - 1",
-        "x = x + 1",
-        "x - x = x - x + 1",
-        "0 = 1",
+        "x+1=x+2",
+        "x+1-1=x+2-1",
+        "x=x+1",
+        "x-x=x-x+1",
+        "0=1",
       ]
     `);
   });
@@ -127,7 +127,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"0 = 0"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"0=0"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
 
     const steps = [
@@ -139,11 +139,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x + 2 = x + 2",
-        "x + 2 - 2 = x + 2 - 2",
-        "x = x",
-        "x - x = x - x",
-        "0 = 0",
+        "x+2=x+2",
+        "x+2-2=x+2-2",
+        "x=x",
+        "x-x=x-x",
+        "0=0",
       ]
     `);
   });
@@ -153,7 +153,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 5 / 2"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=\\frac{5}{2}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -165,10 +165,10 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "2x + 0 = 5",
-        "2x = 5",
-        "2x / 2 = 5 / 2",
-        "x = 5 / 2",
+        "2x+0=5",
+        "2x=5",
+        "\\frac{2x}{2}=\\frac{5}{2}",
+        "x=\\frac{5}{2}",
       ]
     `);
   });
@@ -178,7 +178,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 3 / 5"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=\\frac{3}{5}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -190,10 +190,10 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "2x + 3x = 7 - 4",
-        "5x = 3",
-        "5x / 5 = 3 / 5",
-        "x = 3 / 5",
+        "2x+3x=7-4",
+        "5x=3",
+        "\\frac{5x}{5}=\\frac{3}{5}",
+        "x=\\frac{3}{5}",
       ]
     `);
   });
@@ -203,7 +203,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = -7"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=-7"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -215,8 +215,8 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-x / -1 = -7",
-        "x = -7",
+        "\\frac{-x}{-1}=-7",
+        "x=-7",
       ]
     `);
   });
@@ -226,7 +226,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = -(5 / 2)"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=-\\frac{5}{2}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -238,11 +238,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-2x + 5 = 10",
-        "-2x + 5 - 5 = 10 - 5",
-        "-2x = 5",
-        "-2x / -2 = 5 / -2",
-        "x = -(5 / 2)",
+        "-2x+5=10",
+        "-2x+5-5=10-5",
+        "-2x=5",
+        "\\frac{-2x}{-2}=\\frac{5}{-2}",
+        "x=-\\frac{5}{2}",
       ]
     `);
   });
@@ -252,7 +252,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x < -(5 / 2)"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x\\lt-\\frac{5}{2}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -264,11 +264,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-2x + 5 > 10",
-        "-2x + 5 - 5 > 10 - 5",
-        "-2x > 5",
-        "-2x / -2 < 5 / -2",
-        "x < -(5 / 2)",
+        "-2x+5\\gt10",
+        "-2x+5-5\\gt10-5",
+        "-2x\\gt5",
+        "\\frac{-2x}{-2}\\lt\\frac{5}{-2}",
+        "x\\lt-\\frac{5}{2}",
       ]
     `);
   });
@@ -278,7 +278,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x ≤ -(5 / 2)"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x\\leq-\\frac{5}{2}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -290,11 +290,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-2x + 5 ≥ 10",
-        "-2x + 5 - 5 ≥ 10 - 5",
-        "-2x ≥ 5",
-        "-2x / -2 ≤ 5 / -2",
-        "x ≤ -(5 / 2)",
+        "-2x+5\\geq10",
+        "-2x+5-5\\geq10-5",
+        "-2x\\geq5",
+        "\\frac{-2x}{-2}\\leq\\frac{5}{-2}",
+        "x\\leq-\\frac{5}{2}",
       ]
     `);
   });
@@ -304,7 +304,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"-x = -1"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"-x=-1"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -316,13 +316,13 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x / 2 + 1 / 2 = 2x / 3 + 1 / 3",
-        "x / 2 + 1 / 2 - 1 / 2 = 2x / 3 + 1 / 3 - 1 / 2",
-        "x / 2 = 2x / 3 - 1 / 6",
-        "x / 2 - 2x / 3 = 2x / 3 - 2x / 3 - 1 / 6",
-        "-(x / 6) = -(1 / 6)",
-        "-(x / 6) * 6 = -(1 / 6) * 6",
-        "-x = -1",
+        "\\frac{x}{2}+\\frac{1}{2}=\\frac{2x}{3}+\\frac{1}{3}",
+        "\\frac{x}{2}+\\frac{1}{2}-\\frac{1}{2}=\\frac{2x}{3}+\\frac{1}{3}-\\frac{1}{2}",
+        "\\frac{x}{2}=\\frac{2x}{3}-\\frac{1}{6}",
+        "\\frac{x}{2}-\\frac{2x}{3}=\\frac{2x}{3}-\\frac{2x}{3}-\\frac{1}{6}",
+        "-\\frac{x}{6}=-\\frac{1}{6}",
+        "-\\frac{x}{6}*6=-\\frac{1}{6}*6",
+        "-x=-1",
       ]
     `);
   });
@@ -332,7 +332,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=10"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -344,9 +344,9 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x / 2 = 5",
-        "x / 2 * 2 = 5 * 2",
-        "x = 10",
+        "\\frac{x}{2}=5",
+        "\\frac{x}{2}*2=5*2",
+        "x=10",
       ]
     `);
   });
@@ -356,7 +356,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=10"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -369,10 +369,10 @@ describe('solveLinear', () => {
     // TODO: go from (1/2)(x) = 5 to (2)(1/2)(x) = 5 * 2
     expect(steps).toMatchInlineSnapshot(`
       [
-        "(1 / 2)(x) = 5",
-        "x / 2 = 5",
-        "x / 2 * 2 = 5 * 2",
-        "x = 10",
+        "\\frac{1}{2}x=5",
+        "\\frac{x}{2}=5",
+        "\\frac{x}{2}*2=5*2",
+        "x=10",
       ]
     `);
   });
@@ -382,7 +382,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('n');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"n = -3"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"n=-3"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -398,16 +398,16 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "1 - n = (3 / 2)(n) + 17 / 2",
-        "1 - n = 3n / 2 + 17 / 2",
-        "1 - 1 - n = 3n / 2 + 17 / 2 - 1",
-        "-n = 3n / 2 + 15 / 2",
-        "-n - 3n / 2 = 3n / 2 - 3n / 2 + 15 / 2",
-        "-(5n / 2) = 15 / 2",
-        "-(5n / 2) * 2 = 15 / 2 * 2",
-        "-5n = 15",
-        "-5n / -5 = 15 / -5",
-        "n = -3",
+        "1-n=\\frac{3}{2}n+\\frac{17}{2}",
+        "1-n=\\frac{3n}{2}+\\frac{17}{2}",
+        "1-1-n=\\frac{3n}{2}+\\frac{17}{2}-1",
+        "-n=\\frac{3n}{2}+\\frac{15}{2}",
+        "-n-\\frac{3n}{2}=\\frac{3n}{2}-\\frac{3n}{2}+\\frac{15}{2}",
+        "-\\frac{5n}{2}=\\frac{15}{2}",
+        "-\\frac{5n}{2}*2=\\frac{15}{2}*2",
+        "-5n=15",
+        "\\frac{-5n}{-5}=\\frac{15}{-5}",
+        "n=-3",
       ]
     `);
   });
@@ -417,7 +417,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"y = -(9 / 7)"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"y=-\\frac{9}{7}"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -429,14 +429,14 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "(2 + y / 3) + 2y = -1",
-        "2 + 7y / 3 = -1",
-        "2 - 2 + 7y / 3 = -1 - 2",
-        "7y / 3 = -3",
-        "7y / 3 * 3 = -3 * 3",
-        "7y = -9",
-        "7y / 7 = -9 / 7",
-        "y = -(9 / 7)",
+        "(2+\\frac{y}{3})+2y=-1",
+        "2+\\frac{7y}{3}=-1",
+        "2-2+\\frac{7y}{3}=-1-2",
+        "\\frac{7y}{3}=-3",
+        "\\frac{7y}{3}*3=-3*3",
+        "7y=-9",
+        "\\frac{7y}{7}=\\frac{-9}{7}",
+        "y=-\\frac{9}{7}",
       ]
     `);
   });
@@ -446,7 +446,9 @@ describe('solveLinear', () => {
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"-(1 / 2) - x / 2 = y"`);
+    expect(print(result.after)).toMatchInlineSnapshot(
+      `"-\\frac{1}{2}-\\frac{x}{2}=y"`,
+    );
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -458,11 +460,11 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-1 = x + 2y",
-        "-1 - x = x - x + 2y",
-        "-1 - x = 2y",
-        "(-1 - x) / 2 = 2y / 2",
-        "-(1 / 2) - x / 2 = y",
+        "-1=x+2y",
+        "-1-x=x-x+2y",
+        "-1-x=2y",
+        "\\frac{-1-x}{2}=\\frac{2y}{2}",
+        "-\\frac{1}{2}-\\frac{x}{2}=y",
       ]
     `);
   });
@@ -472,7 +474,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"1 = 1"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"1=1"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
 
     const steps = [
@@ -484,8 +486,8 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "2(-(y / 2) + 1 / 2) + y = 1",
-        "1 = 1",
+        "2(-\\frac{y}{2}+\\frac{1}{2})+y=1",
+        "1=1",
       ]
     `);
   });

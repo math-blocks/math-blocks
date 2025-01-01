@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { applySteps } from '../../../apply';
 import type { Step } from '../../../types';
-import { parse, print } from '../../../test-util';
+import { parse, newPrint as print } from '../../../test-util';
 
 import { collectLikeTerms as _collectLikeTerms } from '../collect-like-terms';
 
@@ -41,8 +41,8 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "2x + 3x",
-        "(2 + 3)x",
+        "2x+3x",
+        "(2+3)x",
         "5x",
       ]
     `);
@@ -54,9 +54,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"5x + 1"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"5x+1"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"5x + 1"`,
+      `"5x+1"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -67,10 +67,10 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "2x + 1 + 3x",
-        "2x + 3x + 1",
-        "(2 + 3)x + 1",
-        "5x + 1",
+        "2x+1+3x",
+        "2x+3x+1",
+        "(2+3)x+1",
+        "5x+1",
       ]
     `);
   });
@@ -81,9 +81,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"5x - 1"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"5x-1"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"5x - 1"`,
+      `"5x-1"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -96,12 +96,12 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "2x - 1 + 3x",
-        "2x + -1 + 3x",
-        "2x + 3x + -1",
-        "(2 + 3)x + -1",
-        "5x + -1",
-        "5x - 1",
+        "2x-1+3x",
+        "2x+-1+3x",
+        "2x+3x+-1",
+        "(2+3)x+-1",
+        "5x+-1",
+        "5x-1",
       ]
     `);
   });
@@ -151,9 +151,9 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "x - 2x",
-        "x + -2x",
-        "(1 + -2)x",
+        "x-2x",
+        "x+-2x",
+        "(1+-2)x",
         "-1x",
         "-x",
       ]
@@ -167,9 +167,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"a - x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"a-x"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"a - x"`,
+      `"a-x"`,
     );
   });
 
@@ -180,9 +180,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"a - 3x"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"a-3x"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"a - 3x"`,
+      `"a-3x"`,
     );
   });
 
@@ -215,9 +215,9 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "2x - -3x",
-        "2x + --3x",
-        "(2 + --3)x",
+        "2x--3x",
+        "2x+--3x",
+        "(2+--3)x",
         "5x",
       ]
     `);
@@ -229,9 +229,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"2x - 6"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x-6"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"2x - 6"`,
+      `"2x-6"`,
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -244,12 +244,12 @@ describe('collect like terms', () => {
 
     expect(printSubsteps(step)).toMatchInlineSnapshot(`
       [
-        "5x + 1 - 3x - 7",
-        "5x + 1 + -3x + -7",
-        "5x + -3x + 1 + -7",
-        "(5 + -3)x + (1 + -7)",
-        "2x + -6",
-        "2x - 6",
+        "5x+1-3x-7",
+        "5x+1+-3x+-7",
+        "5x+-3x+1+-7",
+        "(5+-3)x+(1+-7)",
+        "2x+-6",
+        "2x-6",
       ]
     `);
   });
@@ -260,9 +260,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"x - 1"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"x-1"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"x - 1"`,
+      `"x-1"`,
     );
   });
 
@@ -272,9 +272,9 @@ describe('collect like terms', () => {
     const step = collectLikeTerms(ast);
 
     expect(step.message).toEqual('collect like terms');
-    expect(print(step.after)).toMatchInlineSnapshot(`"x - 1"`);
+    expect(print(step.after)).toMatchInlineSnapshot(`"x-1"`);
     expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-      `"x - 1"`,
+      `"x-1"`,
     );
   });
 
@@ -285,9 +285,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(5 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"(5 / 6)(x)"`,
+        `"\\frac{5}{6}x"`,
       );
 
       expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -297,9 +297,9 @@ describe('collect like terms', () => {
 
       expect(printSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "(1 / 2)(x) + (1 / 3)(x)",
-          "(1 / 2 + 1 / 3)x",
-          "(5 / 6)(x)",
+          "\\frac{1}{2}x+\\frac{1}{3}x",
+          "(\\frac{1}{2}+\\frac{1}{3})x",
+          "\\frac{5}{6}x",
         ]
       `);
     });
@@ -310,9 +310,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(5 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"(5 / 6)(x)"`,
+        `"\\frac{5}{6}x"`,
       );
 
       expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -322,9 +322,9 @@ describe('collect like terms', () => {
 
       expect(printSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "x / 2 + x / 3",
-          "(1 / 2 + 1 / 3)x",
-          "(5 / 6)(x)",
+          "\\frac{x}{2}+\\frac{x}{3}",
+          "(\\frac{1}{2}+\\frac{1}{3})x",
+          "\\frac{5}{6}x",
         ]
       `);
     });
@@ -335,9 +335,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(5 / 7)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{7}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"(5 / 7)(x)"`,
+        `"\\frac{5}{7}x"`,
       );
 
       expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -347,9 +347,9 @@ describe('collect like terms', () => {
 
       expect(printSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "2x / 7 + 3x / 7",
-          "(2 / 7 + 3 / 7)x",
-          "(5 / 7)(x)",
+          "\\frac{2x}{7}+\\frac{3x}{7}",
+          "(\\frac{2}{7}+\\frac{3}{7})x",
+          "\\frac{5}{7}x",
         ]
       `);
     });
@@ -360,7 +360,7 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(1 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{6}x"`);
     });
 
     test('x/2 + x/-3 -> x', () => {
@@ -369,9 +369,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(1 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"(1 / 6)(x)"`,
+        `"\\frac{1}{6}x"`,
       );
     });
 
@@ -381,9 +381,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"-(1 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{1}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"-(1 / 6)(x)"`,
+        `"-\\frac{1}{6}x"`,
       );
     });
 
@@ -393,9 +393,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"(5 / 6)(x)"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"(5 / 6)(x)"`,
+        `"\\frac{5}{6}x"`,
       );
     });
   });
@@ -419,9 +419,9 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"6ab + 2xy"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"6ab+2xy"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"6ab + 2xy"`,
+        `"6ab+2xy"`,
       );
 
       expect(step.substeps.map((substep) => substep.message)).toEqual([
@@ -434,12 +434,12 @@ describe('collect like terms', () => {
 
       expect(printSubsteps(step)).toMatchInlineSnapshot(`
         [
-          "2ab + 3xy + 4ab - xy",
-          "2ab + 3xy + 4ab + -xy",
-          "2ab + 4ab + 3xy + -xy",
-          "(2 + 4)(ab) + (3 + -1)(xy)",
-          "6(ab) + 2(xy)",
-          "6ab + 2xy",
+          "2ab+3xy+4ab-xy",
+          "2ab+3xy+4ab+-xy",
+          "2ab+4ab+3xy+-xy",
+          "(2+4)(ab)+(3+-1)(xy)",
+          "(6)(ab)+(2)(xy)",
+          "6ab+2xy",
         ]
       `);
     });
@@ -452,7 +452,7 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"x + 5"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x+5"`);
     });
 
     test('3 - 1x - 1 -> -x + 2', () => {
@@ -462,7 +462,7 @@ describe('collect like terms', () => {
 
       expect(step.message).toEqual('collect like terms');
       // TODO: have the output use -x instead of -1x
-      expect(print(step.after)).toMatchInlineSnapshot(`"2 - 1x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"2-1x"`);
     });
 
     test('3 - x - 1 -> -x + 2', () => {
@@ -471,7 +471,7 @@ describe('collect like terms', () => {
       const step = collectLikeTerms(ast);
 
       expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"2 - x"`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"2-x"`);
     });
   });
 
@@ -498,10 +498,10 @@ describe('collect like terms', () => {
 
       expect(substeps).toMatchInlineSnapshot(`
         [
-          "8 + 2x - 2x",
-          "8 + 2x + -2x",
-          "8 + 0",
-          "8 + 0",
+          "8+2x-2x",
+          "8+2x+-2x",
+          "8+0",
+          "8+0",
           "8",
         ]
       `);
@@ -530,11 +530,11 @@ describe('collect like terms', () => {
 
       expect(substeps).toMatchInlineSnapshot(`
         [
-          "2x - 2x - 8",
-          "2x + -2x + -8",
-          "0 + -8",
-          "0 + -8",
-          "0 - 8",
+          "2x-2x-8",
+          "2x+-2x+-8",
+          "0+-8",
+          "0+-8",
+          "0-8",
           "-8",
         ]
       `);

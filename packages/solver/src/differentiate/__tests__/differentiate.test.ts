@@ -1,5 +1,5 @@
 import { Step } from '../../types';
-import { parse, print } from '../../test-util';
+import { parse, newPrint as print } from '../../test-util';
 
 import { differentiate } from '../differentiate';
 
@@ -17,9 +17,9 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x^3",
-          "3x^(3 - 1) - power rule",
-          "3x^2 - simplify expression",
+          "x^{3}",
+          "3x^{3-1} - power rule",
+          "3x^{2} - simplify expression",
         ]
       `);
     });
@@ -29,8 +29,8 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x^n",
-          "nx^(n - 1) - power rule",
+          "x^{n}",
+          "nx^{n-1} - power rule",
         ]
       `);
     });
@@ -40,13 +40,13 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x^2 + x",
-          "2x + 1 - differentiate",
+          "x^{2}+x",
+          "2x+1 - differentiate",
         ]
       `);
       expect(printSteps(result.substeps[0])).toMatchInlineSnapshot(`
         [
-          "x^2 + x",
+          "x^{2}+x",
           "2x - differentiate",
           "1 - differentiate",
         ]
@@ -58,9 +58,9 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x^(-1)",
-          "-1x^(-1 - 1) - power rule",
-          "-x^(-2) - simplify expression",
+          "x^{-1}",
+          "-1x^{-1-1} - power rule",
+          "-x^{-2} - simplify expression",
         ]
       `);
     });
@@ -81,8 +81,8 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "3x^2",
-          "3(2x) - differentiate",
+          "3x^{2}",
+          "(3)(2x) - differentiate",
         ]
       `);
     });
@@ -92,8 +92,8 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "(x^2)(3)",
-          "3(2x) - differentiate",
+          "(x^{2})(3)",
+          "(3)(2x) - differentiate",
         ]
       `);
     });
@@ -103,7 +103,7 @@ describe('differentiate', () => {
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x + 1",
+          "x+1",
           "1 - differentiate",
         ]
       `);
@@ -117,9 +117,9 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "e^x",
-          "1e^x - chain rule",
-          "e^x - simplify expression",
+          "e^{x}",
+          "1e^{x} - chain rule",
+          "e^{x} - simplify expression",
         ]
       `);
     });
@@ -130,9 +130,9 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "e^(-x)",
-          "-1e^(-x) - chain rule",
-          "-e^(-x) - simplify expression",
+          "e^{-x}",
+          "-1e^{-x} - chain rule",
+          "-e^{-x} - simplify expression",
         ]
       `);
     });
@@ -143,8 +143,8 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "e^(x^2)",
-          "(2x)e^(x^2) - chain rule",
+          "e^{x^{2}}",
+          "(2x)(e^{x^{2}}) - chain rule",
         ]
       `);
     });
@@ -157,8 +157,8 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "xe^x",
-          "e^x + xe^x - product rule",
+          "xe^{x}",
+          "e^{x}+xe^{x} - product rule",
         ]
       `);
     });
@@ -171,9 +171,9 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "x / (1 + x)",
-          "(1(1 + x) - (x)(1)) / (1 + x)^2 - quotient rule",
-          "1 / (1 + x)^2 - simplify expression",
+          "\\frac{x}{1+x}",
+          "\\frac{1(1+x)-(x)(1)}{(1+x)^{2}} - quotient rule",
+          "\\frac{1}{(1+x)^{2}} - simplify expression",
         ]
       `);
     });
@@ -184,9 +184,9 @@ describe('differentiate', () => {
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
-          "(1 + x) / 1",
-          "1 / 1 - differentiate",
-          "1^0 - simplify expression",
+          "\\frac{1+x}{1}",
+          "\\frac{1}{1} - differentiate",
+          "1^{0} - simplify expression",
         ]
       `);
     });
