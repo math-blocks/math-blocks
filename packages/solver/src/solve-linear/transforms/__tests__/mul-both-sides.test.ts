@@ -1,16 +1,16 @@
-import * as Semantic from '@math-blocks/semantic';
+import { builders, types } from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { mulBothSides } from '../mul-both-sides';
 
-const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+const parseNumRel = (input: string): types.NumericRelation => {
+  return parse(input) as types.NumericRelation;
 };
 
-const transform = (node: Semantic.types.NumericRelation): Step => {
-  const ident = Semantic.builders.identifier('x');
+const transform = (node: types.NumericRelation): Step => {
+  const ident = builders.identifier('x');
   const result = mulBothSides(node, ident);
   if (!result) {
     throw new Error('no step returned');
@@ -29,7 +29,7 @@ describe('mulBothSides', () => {
       );
     }
     expect(step.operation).toEqual('mul');
-    expect(Testing.print(step.value)).toEqual('2');
+    expect(print(step.value)).toMatchInlineSnapshot(`"2"`);
   });
 
   it('should multiple both sides (variable on right)', () => {
@@ -42,21 +42,21 @@ describe('mulBothSides', () => {
       );
     }
     expect(step.operation).toEqual('mul');
-    expect(Testing.print(step.value)).toEqual('2');
+    expect(print(step.value)).toMatchInlineSnapshot(`"2"`);
   });
 
   it('should multiple all terms (right)', () => {
     const before = parseNumRel('x / 2 = a + b');
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('x / 2 * 2 = (a + b) * 2');
+    expect(print(step.after)).toEqual('x / 2 * 2 = (a + b) * 2');
   });
 
   it('should multiple all terms (left)', () => {
     const before = parseNumRel('a + b = x / 2');
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('(a + b) * 2 = x / 2 * 2');
+    expect(print(step.after)).toEqual('(a + b) * 2 = x / 2 * 2');
   });
 
   test.each`
@@ -78,13 +78,13 @@ describe('mulBothSides', () => {
     ${'5 ≤ x / -2'} | ${'5 * -2 ≥ x / -2 * -2'}
     ${'5 ≥ x / -2'} | ${'5 * -2 ≤ x / -2 * -2'}
   `('divBothSides($input) -> $output', ({ input, output }) => {
-    const ident = Semantic.builders.identifier('x');
+    const ident = builders.identifier('x');
     const result = mulBothSides(parseNumRel(input), ident);
 
     if (!result) {
       throw new Error('no result');
     }
 
-    expect(Testing.print(result.after)).toEqual(output);
+    expect(print(result.after)).toEqual(output);
   });
 });

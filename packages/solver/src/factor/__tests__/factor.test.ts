@@ -1,11 +1,11 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import * as Testing from '../../test-util';
+import { parse, print } from '../../test-util';
 
 import { factor } from '../factor';
 
 const parsePolynomial = (input: string): Semantic.types.Add => {
-  return Testing.parse(input) as Semantic.types.Add;
+  return parse(input) as Semantic.types.Add;
 };
 
 describe('factor', () => {
@@ -15,8 +15,8 @@ describe('factor', () => {
     const result = factor(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -31,7 +31,7 @@ describe('factor', () => {
   });
 
   test('5', () => {
-    const node = Testing.parse('5');
+    const node = parse('5');
 
     const result = factor(node);
 

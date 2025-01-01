@@ -1,12 +1,24 @@
 import { types, builders } from '@math-blocks/semantic';
 
-import * as Testing from '../../test-util';
+import { parse, print } from '../../test-util';
 import type { Step } from '../../types';
 
 import { solveQuadratic } from '../solve-quadratic';
 
 const parseNumRel = (input: string): types.NumericRelation => {
-  return Testing.parse(input) as types.NumericRelation;
+  return parse(input) as types.NumericRelation;
+};
+
+const printSteps = (result: Step): string[] => {
+  return [
+    print(result.before),
+    ...result.substeps.map((step) => {
+      const before = print(step.before);
+      const after = print(step.after);
+      return `${before} => ${after}`;
+    }),
+    print(result.after),
+  ];
 };
 
 const transform = (
@@ -27,18 +39,7 @@ describe('solveQuadtratic', () => {
     const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
-
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "x^2 + 5x + 6 = 0",
         "x^2 + 5x + 6 => (x + 2)(x + 3)",
@@ -56,18 +57,7 @@ describe('solveQuadtratic', () => {
     const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
-
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "t^2 + 5t + 6 > 0",
         "t^2 + 5t + 6 => (t + 2)(t + 3)",
@@ -85,18 +75,7 @@ describe('solveQuadtratic', () => {
     const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
-
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "-3x^2 + 11x + 4 < 0",
         "-3x^2 + 11x + 4 => (-3x - 1)(x - 4)",

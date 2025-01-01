@@ -1,16 +1,16 @@
-import * as Semantic from '@math-blocks/semantic';
+import { builders, types } from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { divBothSides } from '../div-both-sides';
 
-const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+const parseNumRel = (input: string): types.NumericRelation => {
+  return parse(input) as types.NumericRelation;
 };
 
-const transform = (node: Semantic.types.NumericRelation): Step => {
-  const ident = Semantic.builders.identifier('x');
+const transform = (node: types.NumericRelation): Step => {
+  const ident = builders.identifier('x');
   const result = divBothSides(node, ident);
   if (!result) {
     throw new Error('no step returned');
@@ -29,7 +29,7 @@ describe('divBothSides', () => {
       );
     }
     expect(step.operation).toEqual('div');
-    expect(Testing.print(step.value)).toEqual('2');
+    expect(print(step.value)).toEqual('2');
   });
 
   it('should divide both sides (variable on right)', () => {
@@ -42,21 +42,21 @@ describe('divBothSides', () => {
       );
     }
     expect(step.operation).toEqual('div');
-    expect(Testing.print(step.value)).toEqual('2');
+    expect(print(step.value)).toEqual('2');
   });
 
   it('should divide all terms (right)', () => {
     const before = parseNumRel('2x = a + b');
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('2x / 2 = (a + b) / 2');
+    expect(print(step.after)).toEqual('2x / 2 = (a + b) / 2');
   });
 
   it('should divide all terms (left)', () => {
     const before = parseNumRel('a + b = 2x');
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('(a + b) / 2 = 2x / 2');
+    expect(print(step.after)).toEqual('(a + b) / 2 = 2x / 2');
   });
 
   test.each`
@@ -78,13 +78,13 @@ describe('divBothSides', () => {
     ${'5 ≤ -2x'} | ${'5 / -2 ≥ -2x / -2'}
     ${'5 ≥ -2x'} | ${'5 / -2 ≤ -2x / -2'}
   `('divBothSides($input) -> $output', ({ input, output }) => {
-    const ident = Semantic.builders.identifier('x');
+    const ident = builders.identifier('x');
     const result = divBothSides(parseNumRel(input), ident);
 
     if (!result) {
       throw new Error('no result');
     }
 
-    expect(Testing.print(result.after)).toEqual(output);
+    expect(print(result.after)).toEqual(output);
   });
 });

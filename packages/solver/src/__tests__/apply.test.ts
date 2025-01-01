@@ -1,61 +1,61 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '../test-util';
+import { parse, print } from '../test-util';
 
 import { applyStep, applySteps } from '../apply';
 import { Step } from '../types';
 
 describe('applyStep', () => {
   test('can update root node', () => {
-    const ast = Testing.parse('a');
+    const ast = parse('a');
 
     const step: Step = {
       message: 'test',
       before: ast,
-      after: Testing.parse('b'),
+      after: parse('b'),
       substeps: [],
     };
 
     const result = applyStep(ast, step);
 
-    expect(Testing.print(result)).toEqual('b');
+    expect(print(result)).toMatchInlineSnapshot(`"b"`);
   });
 
   test('can update child nodes', () => {
-    const ast = Testing.parse('a + b') as Semantic.types.Add;
+    const ast = parse('a + b') as Semantic.types.Add;
 
     const step: Step = {
       message: 'test',
       before: ast.args[1],
-      after: Testing.parse('c'),
+      after: parse('c'),
       substeps: [],
     };
 
     const result = applyStep(ast, step);
 
-    expect(Testing.print(result)).toEqual('a + c');
+    expect(print(result)).toMatchInlineSnapshot(`"a + c"`);
   });
 
   test('spreads add terms in parent add', () => {
-    const ast = Testing.parse('a + b') as Semantic.types.Add;
+    const ast = parse('a + b') as Semantic.types.Add;
 
     const step: Step = {
       message: 'test',
       before: ast.args[1],
-      after: Testing.parse('c + d'),
+      after: parse('c + d'),
       substeps: [],
     };
 
     const result = applyStep(ast, step);
 
-    expect(Testing.print(result)).toEqual('a + c + d');
+    expect(print(result)).toMatchInlineSnapshot(`"a + c + d"`);
   });
 });
 
 describe('applySteps', () => {
   test('applies multiple steps', () => {
-    const ast = Testing.parse('a + b') as Semantic.types.Add;
-    const c = Testing.parse('c');
-    const dPlusE = Testing.parse('d + e');
+    const ast = parse('a + b') as Semantic.types.Add;
+    const c = parse('c');
+    const dPlusE = parse('d + e');
 
     const steps: Step[] = [];
     steps.push({
@@ -73,15 +73,15 @@ describe('applySteps', () => {
 
     const result = applySteps(ast, steps);
 
-    expect(Testing.print(result)).toEqual('a + d + e');
+    expect(print(result)).toMatchInlineSnapshot(`"a + d + e"`);
   });
 
   test("returns the original expression when there's no steps", () => {
-    const ast = Testing.parse('a + b') as Semantic.types.Add;
+    const ast = parse('a + b') as Semantic.types.Add;
 
     const steps: Step[] = [];
     const result = applySteps(ast, steps);
 
-    expect(Testing.print(result)).toEqual('a + b');
+    expect(print(result)).toMatchInlineSnapshot(`"a + b"`);
   });
 });
