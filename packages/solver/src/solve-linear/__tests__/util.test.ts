@@ -1,6 +1,6 @@
 import { builders } from '@math-blocks/semantic';
 
-import { parse, newPrint as print } from '../../test-util';
+import { parse, print } from '../../test-util';
 
 import { getCoeff, isTermOfIdent } from '../util';
 

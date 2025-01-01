@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import { parse, newPrint as print } from '../../test-util';
+import { parse, print } from '../../test-util';
 
 import { simplifyMul, isNegative } from '../util';
 

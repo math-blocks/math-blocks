@@ -2,7 +2,6 @@ import Fraction from 'fraction.js';
 
 import { types, builders, util } from '@math-blocks/semantic';
 
-import { print } from '../../test-util';
 import type { Step } from '../../types';
 
 function getBaseAndExp(node: types.Node): [types.Node, types.Node] {
@@ -170,7 +169,6 @@ export function factorQuadratic(node: types.Add): Step | void {
     after: step1,
     substeps: [],
   });
-  print(step1);
 
   const step2 = add([
     monomial(

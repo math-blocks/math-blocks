@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { applySteps } from '../../../apply';
 import type { Step } from '../../../types';
-import { parse, newPrint as print } from '../../../test-util';
+import { parse, print } from '../../../test-util';
 
 import { collectLikeTerms as _collectLikeTerms } from '../collect-like-terms';
 
