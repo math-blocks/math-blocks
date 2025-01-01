@@ -1,8 +1,9 @@
 import { builders, types } from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+
+import * as Testing from '../../test-util';
+import { NumberOfSolutions } from '../../types';
 
 import { solveSystem } from '../solve-system';
-import { NumberOfSolutions } from '../../types';
 
 const parseEqn = (input: string): types.Eq => {
   return Testing.parse(input) as types.Eq;

@@ -1,11 +1,12 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+
+import { getCoeff } from '../../solve-linear/util';
+import * as Testing from '../../test-util';
+import type { Step } from '../../types';
 
 import { simplifyMul } from '../util';
-import { getCoeff } from '../../solve-linear/util';
-import { dropAddIdentity } from './drop-add-identity';
 
-import type { Step } from '../../types';
+import { dropAddIdentity } from './drop-add-identity';
 
 const { NodeType } = Semantic;
 

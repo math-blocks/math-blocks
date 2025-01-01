@@ -9,7 +9,6 @@
     {"path": "./packages/semantic"},
     {"path": "./packages/solver"},
     {"path": "./packages/step-utils"},
-    {"path": "./packages/testing"},
     {"path": "./packages/typesetter"},
   ]
 }

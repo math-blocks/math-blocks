@@ -1,14 +1,14 @@
-import * as Testing from '@math-blocks/testing';
 import { NodeType } from '@math-blocks/semantic';
 
 import * as builders from '../../char/builders';
 import * as util from '../../char/util';
+import { serializer } from '../../test-util';
 
 import * as parser from '../parser';
 
 const { row, char, subsup } = builders;
 
-expect.addSnapshotSerializer(Testing.serializer);
+expect.addSnapshotSerializer(serializer);
 
 describe('EditorParser', () => {
   it('should handle equations', () => {

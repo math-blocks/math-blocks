@@ -1,9 +1,9 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+
+import * as Testing from '../../../test-util';
+import type { Step } from '../../../types';
 
 import { moveTermsToOneSide } from '../move-terms-to-one-side';
-
-import type { Step } from '../../../types';
 
 const parseNumRel = (input: string): Semantic.types.NumericRelation => {
   return Testing.parse(input) as Semantic.types.NumericRelation;

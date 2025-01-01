@@ -1,7 +1,7 @@
-import * as Testing from '@math-blocks/testing';
+import { Step } from '../../types';
+import * as Testing from '../../test-util';
 
 import { differentiate } from '../differentiate';
-import { Step } from '../../types';
 
 const printSteps = (result: Step): string[] => {
   return [

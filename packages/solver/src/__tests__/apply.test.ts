@@ -1,5 +1,5 @@
 import * as Semantic from '@math-blocks/semantic';
-import * as Testing from '@math-blocks/testing';
+import * as Testing from '../test-util';
 
 import { applyStep, applySteps } from '../apply';
 import { Step } from '../types';

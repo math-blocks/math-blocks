@@ -9,7 +9,6 @@
   "references": [
     {"path": "../core"},
     {"path": "../parser"},
-    {"path": "../semantic"},
-    {"path": "../testing"}
+    {"path": "../semantic"}
   ]
 }
