@@ -1,6 +1,6 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import { parse, newPrint as print } from '../../../test-util';
+import { parse, print } from '../../../test-util';
 
 import { moveMatchingVariableTermsToOneSide } from '../move-matching-variable-terms-to-one-side';
 

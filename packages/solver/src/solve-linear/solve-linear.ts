@@ -3,7 +3,6 @@ import Fraction from 'fraction.js';
 import { builders, types, util } from '@math-blocks/semantic';
 
 import { Step, NumberOfSolutions } from '../types';
-import { print } from '../test-util';
 
 import { divByCoeff } from './transforms/div-both-sides';
 import { mulByNumber } from './transforms/mul-both-sides';
@@ -53,25 +52,6 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
-
-  // Check if anyone of the variables are inside fractions
-  const denominators: number[] = [];
-  for (const term of util.getTerms(rel.args[0])) {
-    if (term.type === 'Div') {
-      const variables = getVariables(term.args[0]);
-      if (variables.length === 1) {
-        denominators.push(parseInt(print(term.args[1])));
-      }
-    }
-  }
-  for (const term of util.getTerms(rel.args[1])) {
-    if (term.type === 'Div') {
-      const variables = getVariables(term.args[0]);
-      if (variables.length === 1) {
-        denominators.push(parseInt(print(term.args[1])));
-      }
-    }
-  }
 
   const leftHasIdent = util.getTerms(rel.args[0]).some((term) => {
     const variables = getVariables(term);

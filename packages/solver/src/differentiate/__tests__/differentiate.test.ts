@@ -1,5 +1,5 @@
 import { Step } from '../../types';
-import { parse, newPrint as print } from '../../test-util';
+import { parse, print } from '../../test-util';
 
 import { differentiate } from '../differentiate';
 

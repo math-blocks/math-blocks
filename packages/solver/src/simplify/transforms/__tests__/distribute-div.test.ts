@@ -1,6 +1,6 @@
 import { types, util } from '@math-blocks/semantic';
 
-import { parse, newPrint as print } from '../../../test-util';
+import { parse, print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { distributeDiv as _distributeDiv } from '../distribute-div';
