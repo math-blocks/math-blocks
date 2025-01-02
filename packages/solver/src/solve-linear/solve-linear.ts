@@ -346,6 +346,7 @@ function getCoeff(node: types.Node): Fraction {
   return util.evalNode(builders.mul(constFactors, true));
 }
 
+// TODO: make a deep copy of the item being inserted so that we don't mutate it
 const insert = <T>(arr: readonly T[], index: number, item: T): T[] => {
   return [...arr.slice(0, index), item, ...arr.slice(index)];
 };
