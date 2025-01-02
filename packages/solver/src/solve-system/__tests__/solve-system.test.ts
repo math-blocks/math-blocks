@@ -125,7 +125,7 @@ describe('solveSystem', () => {
     });
 
     it('should not try to solve rational equations', () => {
-      const eqn1 = parseEqn('3/x - y = 6');
+      const eqn1 = parseEqn('\\frac{3}{x} - y = 6');
       const eqn2 = parseEqn('x + 2y = -1');
       const result = solveSystem(builders.sequence([eqn1, eqn2]));
 

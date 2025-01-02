@@ -17,8 +17,8 @@ const distributeDiv = (node: types.Node): Step => {
 };
 
 describe('distribute division', () => {
-  test('(a + b) / c', () => {
-    const ast = parse('(a + b) / c');
+  test('\\frac{a+b}{c}', () => {
+    const ast = parse('\\frac{a+b}{c}');
 
     const step = distributeDiv(ast);
 
@@ -29,8 +29,8 @@ describe('distribute division', () => {
     expect(step.substeps).toHaveLength(0);
   });
 
-  test('(a - b) / c', () => {
-    const ast = parse('(a - b) / c');
+  test('\\frac{a-b}{c}', () => {
+    const ast = parse('\\frac{a-b}{c}');
 
     const step = distributeDiv(ast);
 
@@ -41,8 +41,8 @@ describe('distribute division', () => {
     expect(step.substeps).toHaveLength(0);
   });
 
-  test('(a + b) / -c', () => {
-    const ast = parse('(a + b) / -c');
+  test('\\frac{a+b}{-c}', () => {
+    const ast = parse('\\frac{a+b}{-c}');
 
     const step = distributeDiv(ast);
 
@@ -53,8 +53,8 @@ describe('distribute division', () => {
     expect(step.substeps).toHaveLength(0);
   });
 
-  test('(a - b) / -c', () => {
-    const ast = parse('(a - b) / -c');
+  test('\\frac{a-b}{-c}', () => {
+    const ast = parse('\\frac{a-b}{-c}');
 
     const step = distributeDiv(ast);
 

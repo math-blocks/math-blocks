@@ -13,7 +13,7 @@ describe('solveProblem', () => {
   it('should factor expressions', () => {
     const problem: Problem = {
       type: 'Factor',
-      expression: parse('x^2 + 5x + 6') as Semantic.types.Add,
+      expression: parse('x^2+5x+6') as Semantic.types.Add,
     };
     const result = solveProblem(problem)!;
 
@@ -23,7 +23,7 @@ describe('solveProblem', () => {
   it('should simplify numeric expressions', () => {
     const problem: Problem = {
       type: 'SimplifyExpression',
-      expression: parse('3x - 2x') as Semantic.types.Node,
+      expression: parse('3x-2x') as Semantic.types.Node,
     };
     const result = solveProblem(problem)!;
 
@@ -31,7 +31,7 @@ describe('solveProblem', () => {
   });
 
   it('should solve linear equations', () => {
-    const ast = parseNumRel('2x + 5 = 10');
+    const ast = parseNumRel('2x+5=10');
 
     const problem: Problem = {
       type: 'SolveLinearRelation',
@@ -44,7 +44,7 @@ describe('solveProblem', () => {
   });
 
   it('should solve quadratic equations', () => {
-    const ast = parseNumRel('x^2 + 5x + 6 = 0');
+    const ast = parseNumRel('x^2+5x+6=0');
 
     const problem: Problem = {
       type: 'SolveQuadraticEquation',

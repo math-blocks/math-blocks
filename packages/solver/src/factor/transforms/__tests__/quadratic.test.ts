@@ -9,8 +9,8 @@ const parsePolynomial = (input: string): Semantic.types.Add => {
 };
 
 describe('quadratic', () => {
-  test('x^2 + 5x + 6', () => {
-    const poly = parsePolynomial('x^2 + 5x + 6');
+  test('x^2+5x+6', () => {
+    const poly = parsePolynomial('x^2+5x+6');
 
     const result = factorQuadratic(poly)!;
 
@@ -30,8 +30,8 @@ describe('quadratic', () => {
     `);
   });
 
-  test('5x + x^2 + 6', () => {
-    const poly = parsePolynomial('5x + x^2 + 6');
+  test('5x+x^2+6', () => {
+    const poly = parsePolynomial('5x+x^2+6');
 
     const result = factorQuadratic(poly)!;
 
@@ -52,8 +52,8 @@ describe('quadratic', () => {
     `);
   });
 
-  test('x^2 + x - 6', () => {
-    const poly = parsePolynomial('x^2 + x - 6');
+  test('x^2+x-6', () => {
+    const poly = parsePolynomial('x^2+x-6');
 
     const result = factorQuadratic(poly)!;
 
@@ -73,8 +73,8 @@ describe('quadratic', () => {
     `);
   });
 
-  test('w^4 + 5w^2 + 6', () => {
-    const poly = parsePolynomial('w^4 + 5w^2 + 6');
+  test('w^4+5w^2+6', () => {
+    const poly = parsePolynomial('w^4+5w^2+6');
 
     const result = factorQuadratic(poly)!;
 
@@ -94,8 +94,8 @@ describe('quadratic', () => {
     `);
   });
 
-  test('3x^2 + 11x - 4', () => {
-    const poly = parsePolynomial('3x^2 + 11x - 4');
+  test('3x^2+11x-4', () => {
+    const poly = parsePolynomial('3x^2+11x-4');
 
     const result = factorQuadratic(poly)!;
 
@@ -115,8 +115,8 @@ describe('quadratic', () => {
     `);
   });
 
-  test('-3x^2 + 11x + 4', () => {
-    const poly = parsePolynomial('-3x^2 + 11x + 4');
+  test('-3x^2+11x+4', () => {
+    const poly = parsePolynomial('-3x^2+11x+4');
 
     const result = factorQuadratic(poly)!;
 
@@ -138,24 +138,24 @@ describe('quadratic', () => {
   });
 
   describe('bail-out modes', () => {
-    test('x^2 + 2x (not a trinomial)', () => {
-      const poly = parsePolynomial('x^2 + 2x');
+    test('x^2+2x (not a trinomial)', () => {
+      const poly = parsePolynomial('x^2+2x');
 
       const result = factorQuadratic(poly);
 
       expect(result).toBe(undefined);
     });
 
-    test('x^3 + 2x + 1 (not quadratic)', () => {
-      const poly = parsePolynomial('x^3 + 2x + 1');
+    test('x^3+2x+1 (not quadratic)', () => {
+      const poly = parsePolynomial('x^3+2x+1');
 
       const result = factorQuadratic(poly);
 
       expect(result).toBe(undefined);
     });
 
-    test('x^2 + x + 1 (no real answers)', () => {
-      const poly = parsePolynomial('x^2 + x + 1');
+    test('x^2+x+1 (no real answers)', () => {
+      const poly = parsePolynomial('x^2+x+1');
 
       const result = factorQuadratic(poly);
 

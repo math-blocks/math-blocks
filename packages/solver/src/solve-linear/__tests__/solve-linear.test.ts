@@ -198,8 +198,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('-x / -1 = -7', () => {
-    const before = parseNumRel('-x / -1 = -7');
+  it('\\frac{-x}{-1} = -7', () => {
+    const before = parseNumRel('\\frac{-x}{-1} = -7');
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
@@ -299,8 +299,10 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('x/2 + 1/2 = 2x/3 + 1/3', () => {
-    const before = parseNumRel('x/2 + 1/2 = 2x/3 + 1/3');
+  it('\\frac{x}{2}+\\frac{1}{2}=\\frac{2x}{3}+\\frac{1}{3}', () => {
+    const before = parseNumRel(
+      '\\frac{x}{2}+\\frac{1}{2}=\\frac{2x}{3}+\\frac{1}{3}',
+    );
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
@@ -327,8 +329,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('x / 2 = 5', () => {
-    const before = parseNumRel('x / 2 = 5');
+  it('\\frac{x}{2}=5', () => {
+    const before = parseNumRel('\\frac{x}{2}=5');
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
@@ -351,8 +353,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('(1/2)(x) = 5', () => {
-    const before = parseNumRel('(1/2)(x) = 5');
+  it('\\frac{1}{2}(x) = 5', () => {
+    const before = parseNumRel('\\frac{1}{2}(x) = 5');
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
@@ -377,8 +379,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('1 - n = 3/2 n + 17/2', () => {
-    const before = parseNumRel('1 - n = (3/2)(n) + 17/2');
+  it('1-n=\\frac{3}{2}n+\\frac{17}{2}', () => {
+    const before = parseNumRel('1-n=\\frac{3}{2}n+\\frac{17}{2}');
     const ident = builders.identifier('n');
     const result = solveLinear(before, ident)!;
 
@@ -412,8 +414,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('(2 + y / 3) + 2y = -1', () => {
-    const before = parseNumRel('(2 + y / 3) + 2y = -1');
+  it('(2+\\frac{y}{3})+2y=-1', () => {
+    const before = parseNumRel('(2+\\frac{y}{3})+2y=-1');
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
@@ -469,8 +471,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  it('2(-(y / 2) + 1 / 2) + y = 1', () => {
-    const before = parseNumRel('2(-(y / 2) + 1 / 2) + y = 1');
+  it('2(-\\frac{y}{2} + \\frac{1}{2}) + y = 1', () => {
+    const before = parseNumRel('2(-\\frac{y}{2} + \\frac{1}{2}) + y = 1');
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 

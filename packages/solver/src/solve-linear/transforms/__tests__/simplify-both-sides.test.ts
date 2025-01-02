@@ -18,8 +18,8 @@ const simplify = (node: types.NumericRelation): Step => {
 };
 
 describe('simplify both sides', () => {
-  test('2x + 5 - 5 = 10 - 5', () => {
-    const before = parseNumRel('2x + 5 - 5 = 10 - 5');
+  test('2x+5-5=10-5', () => {
+    const before = parseNumRel('2x+5-5=10-5');
 
     const step = simplify(before);
 

@@ -181,8 +181,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"x-1"`);
     });
 
-    test('x/2 + x/2 -> x', () => {
-      const ast = parse('x/2 + x/2');
+    test('\\frac{x}{2}+\\frac{x}{2} -> x', () => {
+      const ast = parse('\\frac{x}{2}+\\frac{x}{2}');
 
       const step = simplify(ast);
 
@@ -193,8 +193,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"x"`);
     });
 
-    test('x/2 - x/3 -> x / 6', () => {
-      const ast = parse('x/2 - x/3');
+    test('\\frac{x}{2}-\\frac{x}{3} -> \\frac{x}{6}', () => {
+      const ast = parse('\\frac{x}{2}-\\frac{x}{3}');
 
       const step = simplify(ast);
 
@@ -207,8 +207,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{x}{6}"`);
     });
 
-    test('x/2 + x/-3 -> x', () => {
-      const ast = parse('x/2 + x/-3');
+    test('\\frac{x}{2}+\\frac{x}{-3} -> \\frac{x}{6}', () => {
+      const ast = parse('\\frac{x}{2}+\\frac{x}{-3}');
 
       const step = simplify(ast);
 
@@ -222,8 +222,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{x}{6}"`);
     });
 
-    test('x/-2 + x/3 -> x', () => {
-      const ast = parse('x/-2 + x/3');
+    test('\\frac{x}{-2}+\\frac{x}{3} -> -\\frac{x}{6}', () => {
+      const ast = parse('\\frac{x}{-2}+\\frac{x}{3}');
 
       const result = simplify(ast);
 
@@ -292,8 +292,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-x"`);
     });
 
-    test('x/2 + x/3 -> x', () => {
-      const ast = parse('x/2 + x/3');
+    test('\\frac{x}{2}+\\frac{x}{3} -> \\frac{5x}{6}', () => {
+      const ast = parse('\\frac{x}{2}+\\frac{x}{3}');
 
       const step = simplify(ast);
 
@@ -439,8 +439,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"3x+3"`);
     });
 
-    test('(6 * 1/2)(x + 1) -> 3x + 3', () => {
-      const ast = parse('(6 * 1/2)(x + 1)');
+    test('(6 * \\frac{1}{2})(x + 1) -> 3x + 3', () => {
+      const ast = parse('(6 * \\frac{1}{2})(x + 1)');
 
       const step = simplify(ast);
 
@@ -743,8 +743,8 @@ describe('simplify', () => {
   });
 
   describe('reduce fraction', () => {
-    test('abc / bc -> a', () => {
-      const ast = parse('abc / bc');
+    test('\\frac{abc}{bc} -> a', () => {
+      const ast = parse('\\frac{abc}{bc}');
 
       const step = simplify(ast);
 
@@ -755,8 +755,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"a"`);
     });
 
-    test('ab / abc -> 1 / c', () => {
-      const ast = parse('ab / abc');
+    test('\\frac{ab}{abc} -> \\frac{1}{c}', () => {
+      const ast = parse('\\frac{ab}{abc}');
 
       const step = simplify(ast);
 
@@ -767,8 +767,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{c}"`);
     });
 
-    test('abc / bcd -> a / d', () => {
-      const ast = parse('abc / bcd');
+    test('\\frac{abc}{bcd} -> \\frac{a}{d}', () => {
+      const ast = parse('\\frac{abc}{bcd}');
 
       const step = simplify(ast);
 
@@ -779,8 +779,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{a}{d}"`);
     });
 
-    test('-abc / bcd -> -a / d', () => {
-      const ast = parse('-abc / bcd');
+    test('-\\frac{abc}{bcd} -> -\\frac{a}{d}', () => {
+      const ast = parse('-\\frac{abc}{bcd}');
 
       const step = simplify(ast);
 
@@ -791,8 +791,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{a}{d}"`);
     });
 
-    test('abc / -bcd -> a / -d', () => {
-      const ast = parse('abc / -bcd');
+    test('\\frac{abc}{-bcd} -> \\frac{a}{-d}', () => {
+      const ast = parse('\\frac{abc}{-bcd}');
 
       const step = simplify(ast);
 
@@ -803,8 +803,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{a}{d}"`);
     });
 
-    test('abc / abc -> 1', () => {
-      const ast = parse('abc / abc');
+    test('\\frac{abc}{abc} -> 1', () => {
+      const ast = parse('\\frac{abc}{abc}');
 
       const step = simplify(ast);
 
@@ -815,8 +815,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"1"`);
     });
 
-    test('-a / -1', () => {
-      const ast = parse('-a / -1');
+    test('\\frac{-a}{-1}', () => {
+      const ast = parse('\\frac{-a}{-1}');
 
       const step = simplify(ast);
 
@@ -827,8 +827,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"a"`);
     });
 
-    test('a / -1', () => {
-      const ast = parse('a / -1');
+    test('\\frac{a}{-1}', () => {
+      const ast = parse('\\frac{a}{-1}');
 
       const step = simplify(ast);
 
@@ -839,8 +839,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-a"`);
     });
 
-    test('-ab / ab', () => {
-      const ast = parse('-ab / ab');
+    test('\\frac{-ab}{ab}', () => {
+      const ast = parse('\\frac{-ab}{ab}');
 
       const step = simplify(ast);
 
@@ -851,8 +851,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-1"`);
     });
 
-    test('ab / -ab', () => {
-      const ast = parse('ab / -ab');
+    test('\\frac{ab}{-ab}', () => {
+      const ast = parse('\\frac{ab}{-ab}');
 
       const step = simplify(ast);
 
@@ -863,8 +863,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-1"`);
     });
 
-    test('(-a)(b)(c) / b', () => {
-      const ast = parse('(-a)(b)(c) / b');
+    test('\\frac{(-a)(b)(c)}{b}', () => {
+      const ast = parse('\\frac{(-a)(b)(c)}{b}');
 
       const step = simplify(ast);
 
@@ -886,8 +886,8 @@ describe('simplify', () => {
   });
 
   describe('evaluate division', () => {
-    test('4/6 -> 2/3', () => {
-      const ast = parse('4 / 6');
+    test('\\frac{4}{6} -> \\frac{2}{3}', () => {
+      const ast = parse('\\frac{4}{6}');
 
       const step = simplify(ast);
 
@@ -898,8 +898,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{2}{3}"`);
     });
 
-    test('-(4/6) -> -(2/3)', () => {
-      const ast = parse('-(4/6)');
+    test('-\\frac{4}{6} -> -\\frac{2}{3}', () => {
+      const ast = parse('-\\frac{4}{6}');
 
       const step = simplify(ast);
 
@@ -910,28 +910,28 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{2}{3}"`);
     });
 
-    test.skip('-4/6 -> -2/3', () => {
-      const ast = parse('-4/6');
+    test('\\frac{-4}{6} -> \\frac{-2}{3}', () => {
+      const ast = parse('\\frac{-4}{6}');
 
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'evaluate division',
+        'reduce fraction',
       ]);
       // TODO: if the numerator or denominator was signed to begin with
       // keep it that way instead of making the entire fraction signed.
-      expect(print(step.after)).toMatchInlineSnapshot(`'-2 / 3'`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{2}{3}"`);
     });
 
-    test('2/3 cannot be simplified', () => {
-      const ast = parse('2 / 3');
+    test('\\frac{2}{3} cannot be simplified', () => {
+      const ast = parse('\\frac{2}{3}');
 
       expect(() => simplify(ast)).toThrowError();
     });
 
-    test('2x / 2 -> x', () => {
-      const ast = parse('2x / 2');
+    test('\\frac{2x}{2} -> x', () => {
+      const ast = parse('\\frac{2x}{2}');
 
       const step = simplify(ast);
 
@@ -944,8 +944,8 @@ describe('simplify', () => {
   });
 
   describe('numeric fractions', () => {
-    test('1 / 2 + 1 / 3', () => {
-      const ast = parse('1 / 2 + 1 / 3');
+    test('\\frac{1}{2}+\\frac{1}{3}', () => {
+      const ast = parse('\\frac{1}{2}+\\frac{1}{3}');
 
       const step = simplify(ast);
 
@@ -956,8 +956,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}"`);
     });
 
-    test('1 / 2 - 1 / 3', () => {
-      const ast = parse('1 / 2 - 1 / 3');
+    test('\\frac{1}{2}-\\frac{1}{3}', () => {
+      const ast = parse('\\frac{1}{2}-\\frac{1}{3}');
 
       const step = simplify(ast);
 
@@ -968,8 +968,8 @@ describe('simplify', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{6}"`);
     });
 
-    test('-(1 / 6) * 6', () => {
-      const ast = parse('-(1 / 6) * 6');
+    test('-\\frac{1}{6} * 6', () => {
+      const ast = parse('-\\frac{1}{6} * 6');
 
       const step = simplify(ast);
 
