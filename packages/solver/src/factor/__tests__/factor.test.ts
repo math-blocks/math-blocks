@@ -9,8 +9,8 @@ const parsePolynomial = (input: string): Semantic.types.Add => {
 };
 
 describe('factor', () => {
-  test('x^2 + 5x + 6', () => {
-    const poly = parsePolynomial('x^2 + 5x + 6');
+  test('x^2+5x+6', () => {
+    const poly = parsePolynomial('x^2+5x+6');
 
     const result = factor(poly)!;
 

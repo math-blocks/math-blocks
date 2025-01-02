@@ -53,8 +53,8 @@ describe('differentiate', () => {
       `);
     });
 
-    test('x^-1', () => {
-      const node = parse('x^-1');
+    test('x^{-1}', () => {
+      const node = parse('x^{-1}');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -165,8 +165,8 @@ describe('differentiate', () => {
   });
 
   describe('quotient rule', () => {
-    test('x/(1+x)', () => {
-      const node = parse('x/(1+x)');
+    test('\\frac{x}{1+x}', () => {
+      const node = parse('\\frac{x}{1+x}');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -178,8 +178,8 @@ describe('differentiate', () => {
       `);
     });
 
-    test('(1+x)/1', () => {
-      const node = parse('(1+x)/1');
+    test('\\frac{1+x}{1}', () => {
+      const node = parse('\\frac{1+x}{1}');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`

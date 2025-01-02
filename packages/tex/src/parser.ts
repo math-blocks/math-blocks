@@ -239,6 +239,7 @@ class Parser {
     }
   }
 
+  // TODO: ensure there are no unclosed braces
   // TODO: return the terminator that was used to end the row if there was one
   parseRow(
     terminators: readonly ('&' | '\\' | '}' | ']' | 'right' | 'end')[] = [],

@@ -279,8 +279,8 @@ describe('collect like terms', () => {
   });
 
   describe('fractions', () => {
-    test('(1/2)x + (1/3)x -> (5/6)x', () => {
-      const ast = parse('(1/2)x + (1/3)x');
+    test('\\frac{1}{2}x + \\frac{1}{3}x -> \\frac{5}{6}x', () => {
+      const ast = parse('\\frac{1}{2}x + \\frac{1}{3}x');
 
       const step = collectLikeTerms(ast);
 
@@ -304,8 +304,8 @@ describe('collect like terms', () => {
       `);
     });
 
-    test('x/2 + x/3 -> (5/6)x', () => {
-      const ast = parse('x/2 + x/3');
+    test('\\frac{x}{2}+\\frac{x}{3} -> \\frac{5}{6}x', () => {
+      const ast = parse('\\frac{x}{2}+\\frac{x}{3}');
 
       const step = collectLikeTerms(ast);
 
@@ -329,8 +329,8 @@ describe('collect like terms', () => {
       `);
     });
 
-    test('2x/7 + 3x/7 -> (5/7)x', () => {
-      const ast = parse('2x/7 + 3x/7');
+    test('\\frac{2x}{7}+\\frac{3x}{7} -> \\frac{5}{7}x', () => {
+      const ast = parse('\\frac{2x}{7}+\\frac{3x}{7}');
 
       const step = collectLikeTerms(ast);
 
@@ -354,8 +354,8 @@ describe('collect like terms', () => {
       `);
     });
 
-    test('x/2 - x/3 -> x / 6', () => {
-      const ast = parse('x/2 - x/3');
+    test('\\frac{x}{2}-\\frac{x}{3} -> \\frac{1}{6}x', () => {
+      const ast = parse('\\frac{x}{2}-\\frac{x}{3}');
 
       const step = collectLikeTerms(ast);
 
@@ -363,8 +363,8 @@ describe('collect like terms', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{1}{6}x"`);
     });
 
-    test('x/2 + x/-3 -> x', () => {
-      const ast = parse('x/2 + x/-3');
+    test('\\frac{x}{2}+\\frac{x}{-3} -> \\frac{1}{6}x', () => {
+      const ast = parse('\\frac{x}{2}+\\frac{x}{-3}');
 
       const step = collectLikeTerms(ast);
 
@@ -375,8 +375,8 @@ describe('collect like terms', () => {
       );
     });
 
-    test('x/-2 + x/3 -> x', () => {
-      const ast = parse('x/-2 + x/3');
+    test('\\frac{x}{-2}+\\frac{x}{3} -> -\\frac{1}{6}x', () => {
+      const ast = parse('\\frac{x}{-2}+\\frac{x}{3}');
 
       const step = collectLikeTerms(ast);
 
@@ -384,18 +384,6 @@ describe('collect like terms', () => {
       expect(print(step.after)).toMatchInlineSnapshot(`"-\\frac{1}{6}x"`);
       expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
         `"-\\frac{1}{6}x"`,
-      );
-    });
-
-    test('x/2 + x/3 -> x', () => {
-      const ast = parse('x/2 + x/3');
-
-      const step = collectLikeTerms(ast);
-
-      expect(step.message).toEqual('collect like terms');
-      expect(print(step.after)).toMatchInlineSnapshot(`"\\frac{5}{6}x"`);
-      expect(print(applySteps(ast, step.substeps))).toMatchInlineSnapshot(
-        `"\\frac{5}{6}x"`,
       );
     });
   });

@@ -41,15 +41,15 @@ describe('getCoeff', () => {
     expect(print(coeff)).toMatchInlineSnapshot('2');
   });
 
-  test('x / 2', () => {
-    const ast = parse('x / 2');
+  test('\\frac{x}{2}', () => {
+    const ast = parse('\\frac{x}{2}');
     const coeff = getCoeff(ast);
 
     expect(print(coeff)).toMatchInlineSnapshot(`"\\frac{1}{2}"`);
   });
 
-  test('3x / 2', () => {
-    const ast = parse('3x / 2');
+  test('\\frac{3x}{2}', () => {
+    const ast = parse('\\frac{3x}{2}');
     const coeff = getCoeff(ast);
 
     expect(print(coeff)).toMatchInlineSnapshot(`"\\frac{3}{2}"`);
@@ -107,8 +107,8 @@ describe('isTermOfIdent', () => {
     expect(isTermOfIdent(ast, ident)).toBeTruthy();
   });
 
-  test('x / 2', () => {
-    const ast = parse('x / 2');
+  test('\\frac{x}{2}', () => {
+    const ast = parse('\\frac{x}{2}');
     const ident = builders.identifier('x');
 
     expect(isTermOfIdent(ast, ident)).toBeTruthy();
