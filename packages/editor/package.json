@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/editor",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@math-blocks/core": "^0.0.12",
-        "@math-blocks/parser": "^0.0.12",
-        "@math-blocks/semantic": "^0.0.12"
+        "@math-blocks/parser": "^0.0.13",
+        "@math-blocks/semantic": "^0.1.0"
     }
 }
