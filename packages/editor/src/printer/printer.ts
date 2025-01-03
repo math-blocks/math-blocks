@@ -1,14 +1,11 @@
 /**
  * Converts a Semantic AST to an Editor AST.
  */
+import { getId } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 import * as types from '../char/types';
 import * as builders from '../char/builders';
-
-// TODO: when parsing editor nodes provide some way to link to the IDs of
-// the original nodes, even if they don't appear in the semantic tree as
-// is the case with most operators
 
 const separators = {
   [Semantic.NodeType.Equals]: '=',
@@ -29,22 +26,42 @@ export const print = (
   expr: Semantic.types.Node,
   oneToOne = false,
 ): types.CharRow => {
-  // TODO: write more tests for this
-  const _print = (expr: Semantic.types.Node): types.CharNode => {
+  // TODO: handle canceling of terms
+  const _print = (
+    style: types.Style,
+    expr: Semantic.types.Node,
+  ): types.CharNode => {
+    if (expr.style) {
+      style = { ...style, color: expr.style.color };
+    }
+
+    const makeChar = (value: string): types.CharAtom => {
+      return {
+        id: getId(),
+        type: 'char',
+        value,
+        style,
+      };
+    };
+
+    let result: types.CharNode;
+
     switch (expr.type) {
       case Semantic.NodeType.Identifier: {
         // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
         // TODO: handle subscripts
 
-        return builders.char(expr.name);
+        result = makeChar(expr.name);
+        break;
       }
       case Semantic.NodeType.Number: {
         // How do we avoid creating a bunch of ids that we immediately
         // throw away because this number is part of a larger expression
         // and thus contained within a larger row?
-        return builders.row(
-          expr.value.split('').map((char) => builders.char(char)),
+        result = builders.row(
+          expr.value.split('').map((char) => makeChar(char)),
         );
+        break;
       }
       case Semantic.NodeType.Add: {
         const children: types.CharNode[] = [];
@@ -52,23 +69,28 @@ export const print = (
         for (let i = 0; i < expr.args.length; i++) {
           const arg = expr.args[i];
           if (i > 0) {
-            if (arg.type === Semantic.NodeType.Neg && arg.subtraction) {
-              children.push(builders.char('\u2212'));
-            } else {
-              children.push(builders.char('+'));
+            const operator =
+              arg.type === Semantic.NodeType.Neg && arg.subtraction
+                ? makeChar('\u2212')
+                : makeChar('+');
+            if (arg.style?.color) {
+              operator.style = {
+                color: arg.style.color,
+              };
             }
+            children.push(operator);
           } else {
             if (arg.type === Semantic.NodeType.Neg && arg.subtraction) {
               console.warn(
                 'leading subtraction term should be simple negation',
               );
-              children.push(builders.char('\u2212'));
+              children.push(makeChar('\u2212'));
             }
           }
 
           // number is returned as a row so if we do this check, every
           // number will be encapsulated in parens.
-          const node = _print(arg);
+          const node = _print(style, arg);
           if (node.type === 'row') {
             const inner =
               arg.type === Semantic.NodeType.Neg && arg.subtraction
@@ -78,11 +100,7 @@ export const print = (
 
             if (arg.type === Semantic.NodeType.Add) {
               children.push(
-                builders.delimited(
-                  inner,
-                  builders.char('('),
-                  builders.char(')'),
-                ),
+                builders.delimited(inner, makeChar('('), makeChar(')')),
               );
             } else {
               children.push(...inner);
@@ -92,7 +110,8 @@ export const print = (
           }
         }
 
-        return builders.row(children);
+        result = builders.row(children);
+        break;
       }
       case Semantic.NodeType.Mul: {
         const children: types.CharNode[] = [];
@@ -125,17 +144,17 @@ export const print = (
           if (wrap) {
             children.push(
               builders.delimited(
-                _getChildren(arg),
-                builders.char('('),
-                builders.char(')'),
+                _getChildren(style, arg),
+                makeChar('('),
+                makeChar(')'),
               ),
             );
           } else {
-            children.push(..._getChildren(arg));
+            children.push(..._getChildren(style, arg));
           }
 
           if (!expr.implicit) {
-            children.push(builders.char('\u00B7'));
+            children.push(makeChar('\u00B7'));
           }
         }
 
@@ -143,7 +162,8 @@ export const print = (
           children.pop(); // remove extra "*"
         }
 
-        return builders.row(children);
+        result = builders.row(children);
+        break;
       }
       case Semantic.NodeType.Neg: {
         if (
@@ -154,28 +174,30 @@ export const print = (
           (expr.arg.type === Semantic.NodeType.Mul && expr.arg.implicit) ||
           expr.arg.type === Semantic.NodeType.Power // pow has a higher precedence
         ) {
-          return builders.row([
-            builders.char('\u2212'),
-            ..._getChildren(expr.arg),
+          result = builders.row([
+            makeChar('\u2212'),
+            ..._getChildren(style, expr.arg),
           ]);
         } else {
-          return builders.row([
-            builders.char('\u2212'),
+          result = builders.row([
+            makeChar('\u2212'),
             builders.delimited(
-              _getChildren(expr.arg),
-              builders.char('('),
-              builders.char(')'),
+              _getChildren(style, expr.arg),
+              makeChar('('),
+              makeChar(')'),
             ),
           ]);
         }
+        break;
       }
       case Semantic.NodeType.Div: {
-        const numerator = _print(expr.args[0]);
-        const denominator = _print(expr.args[1]);
-        return builders.frac(
+        const numerator = _print(style, expr.args[0]);
+        const denominator = _print(style, expr.args[1]);
+        result = builders.frac(
           numerator.type === 'row' ? numerator.children : [numerator],
           denominator.type === 'row' ? denominator.children : [denominator],
         );
+        break;
       }
       case Semantic.NodeType.LessThan:
       case Semantic.NodeType.LessThanOrEquals:
@@ -187,13 +209,14 @@ export const print = (
         const separator = separators[expr.type];
 
         for (const arg of expr.args) {
-          children.push(..._getChildren(arg));
-          children.push(builders.char(separator));
+          children.push(..._getChildren(style, arg));
+          children.push(makeChar(separator));
         }
 
         children.pop(); // remove extra "="
 
-        return builders.row(children);
+        result = builders.row(children);
+        break;
       }
       case Semantic.NodeType.Power: {
         const { base, exp } = expr;
@@ -202,42 +225,55 @@ export const print = (
           base.type === Semantic.NodeType.Identifier ||
           base.type === Semantic.NodeType.Number
         ) {
-          return builders.row([
-            ..._getChildren(base),
-            builders.subsup(undefined, _getChildren(exp)),
+          result = builders.row([
+            ..._getChildren(style, base),
+            builders.subsup(undefined, _getChildren(style, exp)),
           ]);
         } else {
-          return builders.row([
+          result = builders.row([
             builders.delimited(
-              _getChildren(base),
-              builders.char('('),
-              builders.char(')'),
+              _getChildren(style, base),
+              makeChar('('),
+              makeChar(')'),
             ),
-            builders.subsup(undefined, _getChildren(exp)),
+            builders.subsup(undefined, _getChildren(style, exp)),
           ]);
         }
+        break;
       }
       case Semantic.NodeType.Parens: {
         const children: types.CharNode[] = [
           builders.delimited(
-            _getChildren(expr.arg),
-            builders.char('('),
-            builders.char(')'),
+            _getChildren(style, expr.arg),
+            makeChar('('),
+            makeChar(')'),
           ),
         ];
 
-        return builders.row(children);
+        result = builders.row(children);
+        break;
       }
       default: {
         throw new Error(`print doesn't handle ${expr.type} nodes yet`);
       }
     }
+
+    if (style.color) {
+      return {
+        ...result,
+        style: { ...result.style, color: style.color },
+      };
+    }
+    return result;
   };
 
-  const _getChildren = (expr: Semantic.types.Node): types.CharNode[] => {
+  const _getChildren = (
+    context: types.Style,
+    expr: Semantic.types.Node,
+  ): types.CharNode[] => {
     const children: types.CharNode[] = [];
 
-    const node = _print(expr);
+    const node = _print(context, expr);
     if (node.type === 'row') {
       children.push(...node.children);
     } else {
@@ -247,7 +283,7 @@ export const print = (
     return children;
   };
 
-  const node = _print(expr);
+  const node = _print({}, expr);
   if (node.type === 'row') {
     return node;
   }
