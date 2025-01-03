@@ -7,11 +7,17 @@ export type SourceLocation = {
   readonly end: number;
 };
 
+export type Style = {
+  readonly color?: string;
+  readonly cancel?: boolean;
+};
+
 export type Common<T extends string> = {
   readonly type: T;
   readonly id: number;
   readonly loc?: SourceLocation;
   source?: string; // eslint-disable-line functional/prefer-readonly-type
+  style?: Style; // eslint-disable-line functional/prefer-readonly-type
 };
 
 export interface NodeTypes {

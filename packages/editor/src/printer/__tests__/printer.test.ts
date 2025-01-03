@@ -611,4 +611,67 @@ describe('print', () => {
       ]),
     );
   });
+
+  describe('style', () => {
+    test('1+2+3', () => {
+      const two = Semantic.builders.number('2');
+      two.style = {
+        color: 'orange',
+      };
+      const ast = Semantic.builders.add([
+        Semantic.builders.number('1'),
+        two,
+        Semantic.builders.number('3'),
+      ]);
+
+      const node = print(ast);
+
+      expect(node.children[2].style).toMatchInlineSnapshot(`
+        {
+          "color": "orange",
+        }
+      `);
+    });
+
+    test('123', () => {
+      const num = Semantic.builders.number('123');
+      num.style = { color: 'orange' };
+      const ast = Semantic.builders.add([num]);
+
+      const node = print(ast);
+
+      expect(node.children[0].style).toMatchInlineSnapshot(`
+        {
+          "color": "orange",
+        }
+      `);
+      expect(node.children[1].style).toMatchInlineSnapshot(`
+        {
+          "color": "orange",
+        }
+      `);
+      expect(node.children[2].style).toMatchInlineSnapshot(`
+        {
+          "color": "orange",
+        }
+      `);
+    });
+
+    test('a / b', () => {
+      const frac = Semantic.builders.div(
+        Semantic.builders.identifier('a'),
+        Semantic.builders.identifier('b'),
+      );
+      frac.style = { color: 'orange' };
+      const ast = Semantic.builders.add([frac]);
+
+      const node = print(ast);
+
+      expect(node.children[0].style).toMatchInlineSnapshot(`
+        {
+          "color": "orange",
+        }
+      `);
+    });
+  });
 });

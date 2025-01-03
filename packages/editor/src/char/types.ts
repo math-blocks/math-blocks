@@ -12,7 +12,11 @@ export type Style = {
   readonly cancel?: number; // The ID of the cancel notation
 };
 
-type Common = { readonly id: number; readonly style: Readonly<Style> };
+type Common = {
+  readonly id: number;
+  // eslint-disable-next-line functional/prefer-readonly-type
+  style: Readonly<Style>;
+};
 
 export type CharRow = sharedTypes.Row<Char, Common>;
 export type CharDelimited = sharedTypes.Delimited<Char, Common>;

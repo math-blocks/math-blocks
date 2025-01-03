@@ -17,6 +17,7 @@ import { macros } from '@math-blocks/tex';
 import MathRenderer from '../math-renderer';
 import * as stories from '../stories/2-math-renderer.stories';
 import { FontDataContext } from '../font-data-context';
+import * as TestUtil from '../test-util';
 
 const { char: glyph, row, subsup } = Editor.builders;
 
@@ -808,6 +809,79 @@ describe('renderer', () => {
         Editor.builders.subsup([Editor.builders.char('2')]),
         Editor.builders.char('x'),
       ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+  });
+
+  describe('color from semantic tree', () => {
+    test('color term in sum', async () => {
+      const node = TestUtil.parse('1+2x+3');
+      if (node.type === 'Add') {
+        node.args[1].style = { color: 'orange' };
+      }
+
+      const row = Editor.print(node);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    test('color subtracted term in sum', async () => {
+      const node = TestUtil.parse('1-2x+3');
+      if (node.type === 'Add') {
+        node.args[1].style = { color: 'orange' };
+      }
+
+      const row = Editor.print(node);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    test('color numerator and denominator in fraction', async () => {
+      const node = TestUtil.parse('\\frac{a}{b}');
+      if (node.type === 'Div') {
+        node.args[0].style = { color: 'pink' };
+        node.args[1].style = { color: 'orange' };
+      }
+      node.style = { color: 'cyan' };
+
+      const row = Editor.print(node);
 
       const fontData = await stixFontLoader();
       const fontSize = 60;

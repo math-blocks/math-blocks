@@ -17,12 +17,19 @@ const generateNodeTypes = () => {
   lines.push('  readonly end: number;');
   lines.push('};');
   lines.push('');
+  lines.push('export type Style = {');
+  lines.push('  readonly color?: string;');
+  lines.push('};');
+  lines.push('');
   lines.push('export type Common<T extends string> = {');
   lines.push('  readonly type: T;');
   lines.push('  readonly id: number;');
   lines.push('  readonly loc?: SourceLocation;');
   lines.push(
     '  source?: string; // eslint-disable-line functional/prefer-readonly-type',
+  );
+  lines.push(
+    '  style?: Style; // eslint-disable-line functional/prefer-readonly-type',
   );
   lines.push('};');
   lines.push('');
