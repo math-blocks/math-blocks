@@ -5,7 +5,14 @@ import { parse, print } from '../../test-util';
 import { dropAddIdentity } from '../../simplify/transforms/drop-add-identity';
 
 import { done, fail, fromRule, rootContext, run } from '../trace';
-import type { Branch, Context, Rule, Strategy, Trace } from '../types';
+import type {
+  Branch,
+  Context,
+  Rule,
+  StepBranch,
+  Strategy,
+  Trace,
+} from '../types';
 
 type Node = Semantic.types.Node;
 
@@ -44,6 +51,12 @@ const failing: Rule = {
 };
 
 const toArray = (trace: Trace): Branch[] => [...trace];
+
+// Fails the test unless `branch` is a step. Unlike a bare `expect`, it also
+// narrows the type so the test can use the step's fields.
+function expectStep(branch: Branch): asserts branch is StepBranch {
+  expect(branch.type).toEqual('step');
+}
 
 describe('done and fail', () => {
   test('done has one alternative that finishes at the node', () => {
@@ -92,9 +105,7 @@ describe('fromRule', () => {
       fromRule(dropAddIdentityRule)(node, rootContext()),
     );
 
-    if (branch.type !== 'step') {
-      throw new Error('expected a step');
-    }
+    expectStep(branch);
     expect(branch.step.message).toEqual('drop adding zero');
     expect(toArray(branch.next())).toEqual([
       { type: 'done', node: branch.node },
@@ -125,7 +136,8 @@ describe('fromRule', () => {
     const [branch] = toArray(fromRule(rule)(node, context));
 
     expect(seen).toEqual([context]);
-    expect(branch.type === 'step' && branch.path).toEqual([parent]);
+    expectStep(branch);
+    expect(branch.path).toEqual([parent]);
   });
 
   test('applied at a subterm, the result is the rewritten subterm', () => {
@@ -140,10 +152,11 @@ describe('fromRule', () => {
 
     // Rebuilding the enclosing expression is the job of the traversal
     // combinator that applied the strategy at this subterm.
-    expect(branch.type === 'step' && print(branch.node)).toEqual('x');
-    expect(branch.type === 'step' && branch.path).toEqual([parent]);
+    expectStep(branch);
+    expect(print(branch.node)).toEqual('x');
+    expect(branch.path).toEqual([parent]);
     expect(run(fromRule(dropAddIdentityRule), node, context)?.node).toEqual(
-      branch.type === 'step' && branch.node,
+      branch.node,
     );
   });
 
