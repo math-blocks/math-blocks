@@ -92,7 +92,7 @@ which would defeat the laziness. So the trace returned by `next()` may be
 empty. That means the step was allowed, but the strategy can't finish after
 it. `run` backtracks past dead ends to the next alternative. An enumeration
 service that must only offer steps that lead somewhere can check a
-candidate's continuation with `run`.
+candidate's continuation with `firstDerivationOf(branch.next())`.
 
 ### Traces are single-use
 

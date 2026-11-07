@@ -66,14 +66,23 @@ const firstDerivation = (
 };
 
 /**
- * Applies `strategy` to `node` and returns its preferred derivation: the
- * first alternative at every point, backtracking past dead ends. Returns
- * `undefined` if the strategy fails.
+ * Returns the preferred derivation in `trace`: the first alternative at every
+ * point, backtracking past dead ends. Returns `undefined` if no alternative
+ * finishes.
  *
- * Only the branches needed to find that derivation are computed.
+ * Use this when you already have a trace, for example to check whether a
+ * step's continuation (`branch.next()`) can finish. Only the branches needed
+ * to find the derivation are computed.
+ */
+export const firstDerivationOf = (trace: Trace): Derivation | undefined =>
+  firstDerivation(trace, []);
+
+/**
+ * Applies `strategy` to `node` and returns its preferred derivation (see
+ * `firstDerivationOf`). Returns `undefined` if the strategy fails.
  */
 export const run = (
   strategy: Strategy,
   node: Node,
   context: Context = rootContext(),
-): Derivation | undefined => firstDerivation(strategy(node, context), []);
+): Derivation | undefined => firstDerivationOf(strategy(node, context));

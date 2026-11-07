@@ -4,7 +4,14 @@ import type { Step } from '../../types';
 import { parse, print } from '../../test-util';
 import { dropAddIdentity } from '../../simplify/transforms/drop-add-identity';
 
-import { done, fail, fromRule, rootContext, run } from '../trace';
+import {
+  done,
+  fail,
+  firstDerivationOf,
+  fromRule,
+  rootContext,
+  run,
+} from '../trace';
 import type {
   Branch,
   Context,
@@ -363,6 +370,45 @@ describe('run: choosing a derivation', () => {
 
     expect(first?.steps).not.toBe(second?.steps);
     expect(second?.steps.map((s) => print(s.after))).toEqual(['1']);
+  });
+});
+
+describe('firstDerivationOf', () => {
+  test('returns the preferred derivation of a trace', () => {
+    const trace = traceOf([
+      { step: '1', next: [] },
+      { step: '2', next: [{ step: '3', next: [{ done: '3' }] }] },
+    ]);
+
+    const result = firstDerivationOf(trace);
+
+    expect(result?.steps.map((s) => print(s.after))).toEqual(['2', '3']);
+    expect(result && print(result.node)).toEqual('3');
+  });
+
+  test("tells whether a step's continuation can finish", () => {
+    const branches = toArray(
+      traceOf([
+        { step: '1', next: [{ step: '2', next: [] }] },
+        { step: '3', next: [{ done: '3' }] },
+      ]),
+    );
+
+    const finishes = branches.map((branch) => {
+      expectStep(branch);
+      return firstDerivationOf(branch.next()) !== undefined;
+    });
+
+    expect(finishes).toEqual([false, true]);
+  });
+
+  test('returns no steps for a trace that finishes immediately', () => {
+    const node = parse('x');
+    expect(firstDerivationOf(done(node))).toEqual({ steps: [], node });
+  });
+
+  test('returns undefined for a trace with no alternatives', () => {
+    expect(firstDerivationOf(fail())).toBeUndefined();
   });
 });
 
