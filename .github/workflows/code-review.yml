@@ -110,11 +110,24 @@ jobs:
             } > "$RUNNER_TEMP/verdict.md"
             gh pr review "$PR_NUMBER" --request-changes --body-file "$RUNNER_TEMP/verdict.md"
           else
+            # No findings could also mean the review's tool calls were refused
+            # and it posted nothing. Approve only when this run posted or
+            # updated the summary for the commit it checked out.
+            head=$(git rev-parse HEAD)
+            summaries=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+              --jq ".[] | select(.body | contains(\"<!-- pr-review-summary -->\"))
+                | select(.body | contains(\"$head\"))
+                | select(.updated_at >= \"$TRIGGERED_AT\") | .id")
+            if [ -z "$summaries" ]; then
+              echo "::error::The review posted no summary for $head, so the PR was not approved."
+              exit 1
+            fi
             gh pr review "$PR_NUMBER" --approve --body "No unresolved medium or high findings."
           fi
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
+          TRIGGERED_AT: ${{ github.event.comment.created_at }}
 
       # The cost is the API-price equivalent the action reports. A subscription
       # run counts against usage limits instead of being billed this amount.
