@@ -8,7 +8,10 @@ on:
 
 jobs:
   # Runs the pr-review skill when k4b7 comments `/code-review [low|medium|high]`
-  # on a PR, and posts each finding as an inline comment.
+  # on a PR, posts each finding as an inline comment, then approves the PR or
+  # requests changes depending on whether medium or high findings are unresolved.
+  # `/code-review verdict` skips the review and only updates the verdict, such
+  # as after resolving the threads a fix addressed.
   code-review:
     if: |
       github.event_name == 'issue_comment' &&
@@ -31,6 +34,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      # `verdict` skips the review. Any other word is a level for the skill.
+      - name: Read the command
+        id: mode
+        run: |
+          # A comment written in the web editor ends each line with \r\n.
+          word=$(printf '%s\n' "$COMMAND" | tr -d '\r' | head -n 1 | awk '{print $2}')
+          if [ "$word" = verdict ]; then
+            echo "mode=verdict" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=review" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          COMMAND: ${{ github.event.comment.body }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -49,6 +66,7 @@ jobs:
 
       - name: Run Claude
         id: claude
+        if: steps.mode.outputs.mode == 'review'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -63,10 +81,93 @@ jobs:
           claude_args: |
             --allowedTools "Read,Grep,Glob,Write,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh api repos/math-blocks/math-blocks/pulls/*/comments *),Bash(gh api repos/math-blocks/math-blocks/issues/*/comments *),Bash(gh api -X PATCH repos/math-blocks/math-blocks/issues/comments/* *),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(sha256sum)"
 
+      # Approves the PR when no medium or high finding is left unresolved, and
+      # requests changes otherwise. It counts every unresolved thread that
+      # claude[bot] started with 🔴 or 🟠, from this run and earlier runs. A
+      # script makes the call rather than Claude, so PR content can't talk the
+      # model into an approval. Resolving threads doesn't trigger a run, so
+      # comment `/code-review verdict` to update the verdict.
+      - name: Approve or request changes
+        run: |
+          query='query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
+            repository(owner: $owner, name: $repo) {
+              pullRequest(number: $number) {
+                reviewThreads(first: 100, after: $endCursor) {
+                  pageInfo { hasNextPage endCursor }
+                  nodes {
+                    isResolved
+                    path
+                    line
+                    comments(first: 1) { nodes { author { login } body url } }
+                  }
+                }
+              }
+            }
+          }'
+          # GraphQL gives a bot's login without the [bot] suffix.
+          gh api graphql --paginate \
+            -F owner="${GITHUB_REPOSITORY%/*}" -F repo="${GITHUB_REPOSITORY#*/}" \
+            -F number="$PR_NUMBER" -f query="$query" \
+            --jq '.data.repository.pullRequest.reviewThreads.nodes[]
+              | select(.isResolved | not)
+              | .comments.nodes[0] as $c
+              | select($c.author.login == "claude" or $c.author.login == "claude[bot]")
+              | select(($c.body | startswith("🔴")) or ($c.body | startswith("🟠")))
+              | "- [\(($c.body | split("\n"))[0])](\($c.url)) in `\(.path):\(.line // "?")`"' \
+            > "$RUNNER_TEMP/blocking.md"
+
+          if [ -s "$RUNNER_TEMP/blocking.md" ]; then
+            count=$(wc -l < "$RUNNER_TEMP/blocking.md")
+            {
+              echo "Requesting changes: $count medium or high finding(s) are unresolved."
+              echo
+              cat "$RUNNER_TEMP/blocking.md"
+              echo
+              echo 'Fix each finding and resolve its thread, then comment `/code-review verdict`.'
+            } > "$RUNNER_TEMP/verdict.md"
+            gh pr review "$PR_NUMBER" --request-changes --body-file "$RUNNER_TEMP/verdict.md"
+          else
+            # No findings could also mean the review's tool calls were refused
+            # and it posted nothing, so approve only when a summary shows a
+            # review ran. After a review, it must be this run's summary for the
+            # commit it checked out. For `verdict`, any earlier summary will
+            # do, since fixes pushed after the review are newer than it.
+            head=$(git rev-parse HEAD)
+            if [ "$MODE" = review ]; then
+              since="$TRIGGERED_AT"
+            else
+              since=""
+            fi
+            # The summary names the reviewed commit before anything else.
+            reviewed=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+              | jq -rs --arg since "$since" 'add
+                | map(select((.body | contains("<!-- pr-review-summary -->")) and .updated_at >= $since))
+                | last | .body // ""' \
+              | grep -m 1 -oE '\b[0-9a-f]{40}\b' || true)
+            if [ "$MODE" = review ] && [ "$reviewed" != "$head" ]; then
+              echo "::error::The review posted no summary for $head, so the PR was not approved."
+              exit 1
+            fi
+            if [ -z "$reviewed" ]; then
+              echo "::error::No review summary on this PR, so it was not approved. Comment /code-review first."
+              exit 1
+            fi
+            body="No unresolved medium or high findings. The last review covered $reviewed."
+            if [ "$reviewed" != "$head" ]; then
+              body="$body Commits after it, up to $head, have not been reviewed."
+            fi
+            gh pr review "$PR_NUMBER" --approve --body "$body"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          TRIGGERED_AT: ${{ github.event.comment.created_at }}
+          MODE: ${{ steps.mode.outputs.mode }}
+
       # The cost is the API-price equivalent the action reports. A subscription
       # run counts against usage limits instead of being billed this amount.
       - name: Post the run's cost and log refused tool calls
-        if: always()
+        if: always() && steps.mode.outputs.mode == 'review'
         run: |
           file="${EXECUTION_FILE:-$RUNNER_TEMP/claude-execution-output.json}"
           if [ ! -f "$file" ]; then
@@ -79,7 +180,6 @@ jobs:
           echo "Refused tool calls:"
           jq -rs 'flatten | map(select(.type == "result")) | last | .permission_denials // [] | .[]
             | "- \(.tool_name): \((.tool_input.command // (.tool_input | tostring)) | .[0:300])"' "$file"
-          # A comment written in the web editor ends each line with \r\n.
           level=$(printf '%s\n' "$COMMAND" | tr -d '\r' | head -n 1 | awk '{print $2}')
           case "$level" in low|medium|high) ;; *) level=medium ;; esac
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
