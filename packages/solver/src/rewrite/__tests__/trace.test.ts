@@ -5,6 +5,7 @@ import { parse, print } from '../../test-util';
 import { dropAddIdentity } from '../../simplify/transforms/drop-add-identity';
 
 import {
+  derivationsOf,
   done,
   fail,
   firstDerivationOf,
@@ -409,6 +410,80 @@ describe('firstDerivationOf', () => {
 
   test('returns undefined for a trace with no alternatives', () => {
     expect(firstDerivationOf(fail())).toBeUndefined();
+  });
+});
+
+describe('derivationsOf', () => {
+  const afters = (
+    derivations: Iterable<{ readonly steps: readonly Step[] }>,
+  ): string[][] =>
+    [...derivations].map((d) => d.steps.map((s) => print(s.after)));
+
+  test('yields every complete derivation in order, skipping dead ends', () => {
+    const trace = traceOf([
+      {
+        step: '1',
+        next: [
+          { step: '2', next: [] },
+          { step: '3', next: [{ done: '3' }] },
+          { done: '1' },
+        ],
+      },
+      { done: '0' },
+    ]);
+
+    expect(afters(derivationsOf(trace))).toEqual([['1', '3'], ['1'], []]);
+  });
+
+  test('starts with the derivation firstDerivationOf returns', () => {
+    const tree = [
+      { step: '1', next: [] },
+      { step: '2', next: [{ done: '2' }] },
+    ];
+
+    const [first] = derivationsOf(traceOf(tree));
+
+    expect(first.steps.map((s) => print(s.after))).toEqual(
+      firstDerivationOf(traceOf(tree))?.steps.map((s) => print(s.after)),
+    );
+  });
+
+  test('yields nothing for a trace with no complete derivations', () => {
+    expect([...derivationsOf(fail())]).toEqual([]);
+    expect([...derivationsOf(traceOf([{ step: '1', next: [] }]))]).toEqual([]);
+  });
+
+  test('gives each derivation its own steps array', () => {
+    const [a, b] = derivationsOf(
+      traceOf([
+        { step: '1', next: [{ done: '1' }] },
+        { step: '2', next: [{ done: '2' }] },
+      ]),
+    );
+
+    expect(a.steps).not.toBe(b.steps);
+    expect(a.steps.map((s) => print(s.after))).toEqual(['1']);
+  });
+
+  test('only computes the derivations that are read', () => {
+    const called: string[] = [];
+    const branch = (label: string): Branch => ({
+      type: 'step',
+      step: step(parse('x'), Semantic.builders.number(label)),
+      path: [],
+      node: Semantic.builders.number(label),
+      next: () => {
+        called.push(label);
+        return done(Semantic.builders.number(label));
+      },
+    });
+
+    const iterator = derivationsOf([branch('1'), branch('2')])[
+      Symbol.iterator
+    ]();
+    iterator.next();
+
+    expect(called).toEqual(['1']);
   });
 });
 

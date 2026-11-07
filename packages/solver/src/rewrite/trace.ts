@@ -65,6 +65,33 @@ const firstDerivation = (
   return undefined;
 };
 
+function* allDerivations(
+  trace: Trace,
+  steps: Step[], // eslint-disable-line functional/prefer-readonly-type
+): Generator<Derivation> {
+  for (const branch of trace) {
+    if (branch.type === 'done') {
+      // Copy, because `steps` keeps changing as the search continues.
+      yield { steps: [...steps], node: branch.node };
+    } else {
+      steps.push(branch.step);
+      yield* allDerivations(branch.next(), steps);
+      steps.pop();
+    }
+  }
+}
+
+/**
+ * Lazily yields every complete derivation in `trace`, preferred first,
+ * skipping dead ends. The first one yielded is `firstDerivationOf(trace)`.
+ *
+ * Only the branches needed for the derivations that are read are computed.
+ * A trace can have very many derivations (or infinitely many), so read only
+ * as many as you need.
+ */
+export const derivationsOf = (trace: Trace): Iterable<Derivation> =>
+  allDerivations(trace, []);
+
 /**
  * Returns the preferred derivation in `trace`: the first alternative at every
  * point, backtracking past dead ends. Returns `undefined` if no alternative

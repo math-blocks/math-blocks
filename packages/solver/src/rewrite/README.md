@@ -97,8 +97,10 @@ candidate's continuation with `firstDerivationOf(branch.next())`.
 ### Traces are single-use
 
 Generators can only be iterated once. Code that needs to look at a trace's
-alternatives more than once (for example, a left-biased `choice` that checks
-whether its first strategy has any alternatives) must buffer what it reads.
+alternatives more than once must buffer what it reads. The combinators avoid
+this by passing each branch on as they read it: for example, `choice` yields
+its first strategy's branches as it reads them, and only moves on to the next
+strategy if there were none.
 
 ### Paths
 
@@ -107,3 +109,29 @@ not including the node. This is the same `path` that `simplify()` passes to
 transforms today. Each `step` branch records the full path to the rewritten
 subterm, which later services can use to point at the part of the expression
 a step applies to.
+
+## Combinators
+
+`combinators.ts` builds strategies from other strategies, using Stratego's
+names where possible:
+
+- `identity`: finishes unchanged without a step.
+- `seq(a, b, ...)`: applies each strategy to the result of the one before.
+- `choice(a, b, ...)`: uses the first strategy that applies.
+- `tryS(s)`: `s` if it applies, otherwise `identity`.
+- `repeat(s, { max })`: applies `s` until it no longer applies, at most `max`
+  times.
+- `named(message, s)`: groups the steps of each derivation of `s` into one
+  step with `message`, with those steps as its `substeps`.
+- `guard(predicate, s)`: `s` if `predicate` holds for the node, otherwise
+  fails.
+
+`choice` is left-biased in the same way as the Ideas framework's: a strategy
+applies if it can take a first step or finish without one. It doesn't look
+further ahead, so `choice(seq(a, b), c)` commits to `seq(a, b)` once `a`
+applies, even if `b` then fails. This differs from Stratego's `<+`, which
+would fall back to `c`. Looking ahead would mean computing a derivation before
+offering its first step, which would defeat the laziness.
+
+`derivationsOf(trace)` in `trace.ts` lazily lists every complete derivation of
+a trace. `named` uses it to find the derivations it groups.
