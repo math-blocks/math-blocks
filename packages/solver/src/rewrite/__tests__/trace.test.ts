@@ -56,11 +56,28 @@ describe('done and fail', () => {
   });
 });
 
+describe('rootContext', () => {
+  test('has an empty path', () => {
+    expect(rootContext()).toEqual({ path: [] });
+  });
+
+  test('returns a new context on every call', () => {
+    const a = rootContext();
+    const b = rootContext();
+
+    (a.path as Node[]).push(parse('x'));
+
+    expect(a).not.toBe(b);
+    expect(b.path).toEqual([]);
+    expect(rootContext().path).toEqual([]);
+  });
+});
+
 describe('fromRule', () => {
   test('has one step alternative per step the rule yields, in order', () => {
     const node = parse('x');
 
-    const branches = toArray(fromRule(oneOrTwo)(node, rootContext));
+    const branches = toArray(fromRule(oneOrTwo)(node, rootContext()));
 
     expect(branches.map((b) => b.type)).toEqual(['step', 'step']);
     expect(
@@ -71,7 +88,9 @@ describe('fromRule', () => {
   test('each step finishes at the rewritten node', () => {
     const node = parse('x + 0');
 
-    const [branch] = toArray(fromRule(dropAddIdentityRule)(node, rootContext));
+    const [branch] = toArray(
+      fromRule(dropAddIdentityRule)(node, rootContext()),
+    );
 
     if (branch.type !== 'step') {
       throw new Error('expected a step');
@@ -85,7 +104,7 @@ describe('fromRule', () => {
 
   test('has no alternatives when the rule fails', () => {
     const node = parse('x + 1');
-    expect(toArray(fromRule(dropAddIdentityRule)(node, rootContext))).toEqual(
+    expect(toArray(fromRule(dropAddIdentityRule)(node, rootContext()))).toEqual(
       [],
     );
   });
@@ -140,7 +159,7 @@ describe('fromRule', () => {
       },
     };
 
-    const trace = fromRule(rule)(parse('x'), rootContext);
+    const trace = fromRule(rule)(parse('x'), rootContext());
     const iterator = trace[Symbol.iterator]();
     iterator.next();
 
@@ -223,7 +242,7 @@ describe('run', () => {
 
 describe('enumeration', () => {
   test('the step branches of a trace are the candidate next steps', () => {
-    const trace = fromRule(oneOrTwo)(parse('x'), rootContext);
+    const trace = fromRule(oneOrTwo)(parse('x'), rootContext());
 
     const nextSteps = toArray(trace).flatMap((b) =>
       b.type === 'step' ? [print(b.step.after)] : [],

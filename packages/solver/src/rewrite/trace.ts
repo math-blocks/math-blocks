@@ -13,8 +13,13 @@ import type {
 
 type Node = Semantic.types.Node;
 
-/** The context for a strategy applied to the root of an expression. */
-export const rootContext: Context = { path: [] };
+/**
+ * A context for applying a strategy to the root of an expression.
+ *
+ * Returns a new object on every call, so no caller can change a context that
+ * another caller is using.
+ */
+export const rootContext = (): Context => ({ path: [] });
 
 /** A trace that finishes at `node` without taking any steps. */
 export const done = (node: Node): Trace => [{ type: 'done', node }];
@@ -70,5 +75,5 @@ const firstDerivation = (
 export const run = (
   strategy: Strategy,
   node: Node,
-  context: Context = rootContext,
+  context: Context = rootContext(),
 ): Derivation | undefined => firstDerivation(strategy(node, context), []);
