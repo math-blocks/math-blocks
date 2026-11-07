@@ -73,8 +73,8 @@ export const addNegToSubRule = fromTransform('add-neg-to-sub', addNegToSub);
 
 /**
  * The rules for every transform `simplify()` uses, in the order it tries
- * them. Keep this in the same order as the `tranforms` array in
- * `simplify.ts`; see the comments there for why the order matters.
+ * them. Keep this in the same order as `simplifyTransforms` in `simplify.ts`
+ * (a test checks this); see the comments there for why the order matters.
  */
 export const simplifyRules: readonly Rule[] = [
   dropAddIdentityRule,

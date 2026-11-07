@@ -5,7 +5,7 @@ import { parse, print } from '../../test-util';
 import { fromRule, rootContext, run } from '../../rewrite/trace';
 import type { Context, Rule } from '../../rewrite/types';
 
-import { simplify } from '../simplify';
+import { simplify, simplifyTransforms } from '../simplify';
 import { addNegToSub } from '../transforms/add-neg-to-sub';
 import { dropParens } from '../transforms/drop-parens';
 import { dropAddIdentity } from '../transforms/drop-add-identity';
@@ -27,8 +27,10 @@ import { distributeRule, dropAddIdentityRule, simplifyRules } from '../rules';
 
 type Node = Semantic.types.Node;
 
-// Every transform `simplify()` uses, in the same order as the `tranforms`
-// array in `simplify.ts`, with the id of its rule and an input it rewrites.
+// Every transform `simplify()` uses, with the id of its rule and an input it
+// rewrites. The tests below check that each rule wraps the transform next to
+// it, and that this table, `simplifyRules` and `simplifyTransforms` in
+// `simplify.ts` are all in the same order.
 const transforms: readonly (readonly [string, Transform, string])[] = [
   ['drop-add-identity', dropAddIdentity, 'x + 0'],
   ['simplify-div-by-frac', simplifyDivByFrac, '\\frac{a}{\\frac{b}{c}}'],
@@ -67,6 +69,19 @@ describe('simplifyRules', () => {
     expect(simplifyRules.map((rule) => rule.id)).toEqual(
       transforms.map(([id]) => id),
     );
+  });
+
+  test('is in the same order as simplifyTransforms in simplify.ts', () => {
+    // The id of each transform simplify() uses, in the order it tries them.
+    const ids = simplifyTransforms.map((transform) => {
+      const entry = transforms.find(([, t]) => t === transform);
+      if (!entry) {
+        throw new Error('simplifyTransforms has a transform with no rule');
+      }
+      return entry[0];
+    });
+
+    expect(simplifyRules.map((rule) => rule.id)).toEqual(ids);
   });
 
   test('has unique ids', () => {
