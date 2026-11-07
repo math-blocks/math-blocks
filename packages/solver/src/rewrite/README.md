@@ -25,12 +25,37 @@ Step messages are type-checked against the existing `Step['message']` union in
 
 The obvious design is for a strategy to return one result, `Step | undefined`,
 the way transforms do today. That can only answer "what does the solver do
-next?" The tutoring services planned for Rewrite Engine 5 also need to list
-the steps a student could reasonably take next (next-step hints), and to
-recognize which rule a student's step applied so that feedback can name it.
-Both need every alternative, not only the one the solver picks. Retrofitting
-that onto single-result combinators would mean rewriting them, so the result
-type supports both from the start.
+next?" Several planned features need every alternative, not only the one the
+solver picks:
+
+- **Classifying a student's step**
+  ([#660](https://github.com/math-blocks/math-blocks/issues/660)). A strategy
+  often allows several equally good steps. In `2x + 3y + 4x + 5y` it could
+  combine the `x` terms or the `y` terms first. A student who does either has
+  taken an expected step, not a detour, and telling those apart needs the
+  whole set. Recognizing a micro-step (one substep of a step) also starts from
+  the candidate steps.
+- **Choosing the preferred step**
+  ([#657](https://github.com/math-blocks/math-blocks/issues/657)). A hint only
+  shows one step, but picking it means comparing the candidates with a
+  tie-break (avoid fractions, keep coefficients positive, prefer the leftmost
+  position).
+- **Explaining combined steps**
+  ([#661](https://github.com/math-blocks/math-blocks/issues/661)). When a
+  student combines several steps into one, the tutor searches short sequences
+  of rule applications for ones that reach the student's expression. The
+  search has to try every way each rule can apply.
+- **Backtracking.** If the preferred step leads to a dead end (see below),
+  `run` falls back to the next alternative.
+
+This is also why a single rule can yield more than one step. A pattern can
+match the same node in more than one way, such as the `x` terms or the `y`
+terms in the sum above. And some nodes can be rewritten correctly in more than
+one way: `12/18` can be reduced to `2/3` in one step or to `6/9` first, and a
+student who writes `6/9` has taken a valid step.
+
+Retrofitting alternatives onto single-result combinators would mean rewriting
+them, so the result type supports both from the start.
 
 Strategies don't decide whether a student's step is valid. A student may take
 any valid step, including ones no strategy would suggest, such as adding the
