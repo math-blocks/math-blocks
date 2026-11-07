@@ -43,7 +43,8 @@ export type Rule = {
 };
 
 /**
- * The strategy has finished. `node` is the final expression.
+ * The strategy has finished. `node` is what the node the strategy was applied
+ * to became (see `StepBranch.node`).
  */
 export type DoneBranch = {
   readonly type: 'done';
@@ -65,7 +66,14 @@ export type StepBranch = {
    */
   readonly path: readonly Node[];
 
-  /** The whole expression after this step. */
+  /**
+   * The node the strategy was applied to, as it is after this step.
+   *
+   * This is not the top-level expression when the strategy was applied to a
+   * subterm (`context.path` is non-empty). A strategy only sees the node it
+   * is given, so the traversal combinator that applied it at a subterm is
+   * responsible for rebuilding the enclosing expression around this node.
+   */
   readonly node: Node;
 
   /**
@@ -102,8 +110,8 @@ export type Trace = Iterable<Branch>;
 export type Strategy = (node: Node, context: Context) => Trace;
 
 /**
- * One complete derivation: the steps taken, in order, and the final
- * expression.
+ * One complete derivation: the steps taken, in order, and what the node the
+ * strategy was applied to became.
  */
 export type Derivation = {
   readonly steps: readonly Step[];

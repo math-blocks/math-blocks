@@ -39,17 +39,23 @@ export const fromRule = (rule: Rule): Strategy =>
     }
   };
 
-const firstDerivation = (trace: Trace): Derivation | undefined => {
+// `steps` holds the steps taken so far on the current path. It's shared
+// across the recursion so that building the result is linear in its length.
+const firstDerivation = (
+  trace: Trace,
+  steps: Step[], // eslint-disable-line functional/prefer-readonly-type
+): Derivation | undefined => {
   for (const branch of trace) {
     if (branch.type === 'done') {
-      return { steps: [], node: branch.node };
+      return { steps, node: branch.node };
     }
-    const rest = firstDerivation(branch.next());
-    if (rest) {
-      const steps: Step[] = [branch.step, ...rest.steps];
-      return { steps, node: rest.node };
+    steps.push(branch.step);
+    const result = firstDerivation(branch.next(), steps);
+    if (result) {
+      return result;
     }
     // This step leads to a dead end, so try the next alternative.
+    steps.pop();
   }
   return undefined;
 };
@@ -65,4 +71,4 @@ export const run = (
   strategy: Strategy,
   node: Node,
   context: Context = rootContext,
-): Derivation | undefined => firstDerivation(strategy(node, context));
+): Derivation | undefined => firstDerivation(strategy(node, context), []);

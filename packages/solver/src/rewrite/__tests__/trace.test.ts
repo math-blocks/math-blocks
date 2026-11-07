@@ -109,6 +109,25 @@ describe('fromRule', () => {
     expect(branch.type === 'step' && branch.path).toEqual([parent]);
   });
 
+  test('applied at a subterm, the result is the rewritten subterm', () => {
+    const parent = parse('2(x + 0)');
+    if (parent.type !== Semantic.NodeType.Mul) {
+      throw new Error('expected a product');
+    }
+    const node = parent.args[1];
+    const context: Context = { path: [parent] };
+
+    const [branch] = toArray(fromRule(dropAddIdentityRule)(node, context));
+
+    // Rebuilding the enclosing expression is the job of the traversal
+    // combinator that applied the strategy at this subterm.
+    expect(branch.type === 'step' && print(branch.node)).toEqual('x');
+    expect(branch.type === 'step' && branch.path).toEqual([parent]);
+    expect(run(fromRule(dropAddIdentityRule), node, context)?.node).toEqual(
+      branch.type === 'step' && branch.node,
+    );
+  });
+
   test('only asks the rule for the alternatives that are read', () => {
     let produced = 0;
     const rule: Rule = {

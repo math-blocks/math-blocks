@@ -10,9 +10,13 @@ overall plan.
 - A **`Strategy`** decides where and when rules are applied. Given a node, it
   returns a `Trace`.
 - A **`Trace`** lists the strategy's alternatives at one point, most preferred
-  first. Each alternative is either `done` (here is the final expression) or a
-  `step` (here is the step taken, the whole expression after it, and a `next()`
-  function that returns the trace from there).
+  first. Each alternative is either `done` (here is the final result) or a
+  `step` (here is the step taken, the result after it, and a `next()` function
+  that returns the trace from there).
+
+A strategy only sees the node it's applied to, so its results are that node
+rewritten, not the top-level expression. When a traversal combinator applies a
+strategy at a subterm, it rebuilds the enclosing expression around the result.
 
 Step messages are type-checked against the existing `Step['message']` union in
 `../types.ts`, because rules produce `Step` values.
