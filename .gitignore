@@ -9,3 +9,4 @@ out
 packages/*/out
 demo/out
 !dist/_redirects
+.pr-review-summary.md
