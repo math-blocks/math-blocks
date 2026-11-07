@@ -253,6 +253,119 @@ describe('run', () => {
   });
 });
 
+// A tree of alternatives to build a strategy from. Each step rewrites to the
+// number in its label, so the steps a derivation took can be read back with
+// `print`. A step with no `next` alternatives is a dead end.
+type TreeNode =
+  | { readonly done: string }
+  | { readonly step: string; readonly next: readonly TreeNode[] };
+
+const traceOf = (alternatives: readonly TreeNode[]): Trace =>
+  alternatives.map((alt): Branch => {
+    if ('done' in alt) {
+      return { type: 'done', node: Semantic.builders.number(alt.done) };
+    }
+    const after = Semantic.builders.number(alt.step);
+    return {
+      type: 'step',
+      step: step(Semantic.builders.number('0'), after),
+      path: [],
+      node: after,
+      next: () => traceOf(alt.next),
+    };
+  });
+
+const strategyOf =
+  (alternatives: readonly TreeNode[]): Strategy =>
+  () =>
+    traceOf(alternatives);
+
+const stepsOf = (alternatives: readonly TreeNode[]): string[] | undefined =>
+  run(strategyOf(alternatives), parse('x'))?.steps.map((s) => print(s.after));
+
+describe('run: choosing a derivation', () => {
+  test('returns every step of a multi-step derivation, in order', () => {
+    const tree = [
+      {
+        step: '1',
+        next: [{ step: '2', next: [{ step: '3', next: [{ done: '3' }] }] }],
+      },
+    ];
+
+    expect(stepsOf(tree)).toEqual(['1', '2', '3']);
+  });
+
+  test('returns the node from the done branch', () => {
+    const result = run(
+      strategyOf([{ step: '1', next: [{ done: '7' }] }]),
+      parse('x'),
+    );
+
+    expect(result && print(result.node)).toEqual('7');
+  });
+
+  test('prefers an earlier done branch over a later step', () => {
+    expect(
+      stepsOf([{ done: '0' }, { step: '1', next: [{ done: '1' }] }]),
+    ).toEqual([]);
+  });
+
+  test('leaves out the steps of a dead end found deeper in the tree', () => {
+    // 1 → 2 is a dead end, so the derivation is 1 → 3. The step to 2 must not
+    // be left in the result.
+    const tree = [
+      {
+        step: '1',
+        next: [
+          { step: '2', next: [] },
+          { step: '3', next: [{ done: '3' }] },
+        ],
+      },
+    ];
+
+    expect(stepsOf(tree)).toEqual(['1', '3']);
+  });
+
+  test('backtracks more than one level', () => {
+    // Everything after 1 is a dead end, so the derivation starts with 4.
+    const tree = [
+      {
+        step: '1',
+        next: [
+          { step: '2', next: [{ step: '3', next: [] }] },
+          { step: '5', next: [] },
+        ],
+      },
+      { step: '4', next: [{ done: '4' }] },
+    ];
+
+    expect(stepsOf(tree)).toEqual(['4']);
+  });
+
+  test('finishes without a step when the only steps are dead ends', () => {
+    expect(stepsOf([{ step: '1', next: [] }, { done: '0' }])).toEqual([]);
+  });
+
+  test('returns undefined when every alternative is a dead end', () => {
+    const tree = [
+      { step: '1', next: [{ step: '2', next: [] }] },
+      { step: '3', next: [] },
+    ];
+
+    expect(stepsOf(tree)).toBeUndefined();
+  });
+
+  test('returns a separate steps array from each call', () => {
+    const strategy = strategyOf([{ step: '1', next: [{ done: '1' }] }]);
+
+    const first = run(strategy, parse('x'));
+    const second = run(strategy, parse('x'));
+
+    expect(first?.steps).not.toBe(second?.steps);
+    expect(second?.steps.map((s) => print(s.after))).toEqual(['1']);
+  });
+});
+
 describe('enumeration', () => {
   test('the step branches of a trace are the candidate next steps', () => {
     const trace = fromRule(oneOrTwo)(parse('x'), rootContext());
