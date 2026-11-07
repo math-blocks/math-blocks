@@ -20,6 +20,37 @@ import { mulToPow } from './transforms/mul-to-pow';
 import { multiplyPowers } from './transforms/multiply-powers';
 import { dividePowers } from './transforms/divide-powers';
 
+// The transforms `simplify()` tries at each node, in order. The first one
+// that applies wins, so the order matters; see the comments below.
+// `simplifyRules` in `rules.ts` must list the same transforms in the same
+// order, and its tests check that it does.
+export const simplifyTransforms: readonly Transform[] = [
+  dropAddIdentity,
+
+  simplifyDivByFrac,
+  simplifyMul, // We do this first so that we don't repeat what it does in other transforms
+  mulByZeroIsZero,
+
+  distribute,
+  distributeDiv,
+  collectLikeTerms,
+  dropParens,
+
+  evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
+  evalAdd,
+  reduceFraction,
+  mulFraction,
+  evalDiv,
+  mulToPow,
+  multiplyPowers,
+  dividePowers,
+  removePowOne,
+
+  // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
+  // before distributing.
+  addNegToSub,
+];
+
 // TODO:
 // - negOfNegIsPos
 
@@ -28,33 +59,6 @@ import { dividePowers } from './transforms/divide-powers';
 export function simplify(
   node: Semantic.types.Node,
 ): Step<Semantic.types.Node> | void {
-  const tranforms: Transform[] = [
-    dropAddIdentity,
-
-    simplifyDivByFrac,
-    simplifyMul, // We do this first so that we don't repeat what it does in other transforms
-    mulByZeroIsZero,
-
-    distribute,
-    distributeDiv,
-    collectLikeTerms,
-    dropParens,
-
-    evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
-    evalAdd,
-    reduceFraction,
-    mulFraction,
-    evalDiv,
-    mulToPow,
-    multiplyPowers,
-    dividePowers,
-    removePowOne,
-
-    // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
-    // before distributing.
-    addNegToSub,
-  ];
-
   const substeps: Step<Semantic.types.Node>[] = [];
 
   const path: Semantic.types.Node[] = [];
@@ -72,7 +76,7 @@ export function simplify(
       let current: Semantic.types.Node = node;
       for (let i = 0; i < 10; i++) {
         let step: Step<Semantic.types.Node> | void = undefined;
-        for (const transform of tranforms) {
+        for (const transform of simplifyTransforms) {
           step = transform(current, path, simplify);
           // Multiple transforms can be applied to the current node.
           if (step) {
