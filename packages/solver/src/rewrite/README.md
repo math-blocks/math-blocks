@@ -24,12 +24,21 @@ Step messages are type-checked against the existing `Step['message']` union in
 ## Enumeration vs. single-step execution
 
 The obvious design is for a strategy to return one result, `Step | undefined`,
-the way transforms do today. That can only answer "what does the solver do?"
-The tutoring services planned for Rewrite Engine 5 need to ask "what may the
-student do next?" (next-step hints) and "is the student's step one of the
-allowed ones?" (diagnosis). Answering those needs every alternative, not only
-the one the solver picks. Retrofitting that onto single-result combinators
-would mean rewriting them, so the result type supports both from the start.
+the way transforms do today. That can only answer "what does the solver do
+next?" The tutoring services planned for Rewrite Engine 5 also need to list
+the steps a student could reasonably take next (next-step hints), and to
+recognize which rule a student's step applied so that feedback can name it.
+Both need every alternative, not only the one the solver picks. Retrofitting
+that onto single-result combinators would mean rewriting them, so the result
+type supports both from the start.
+
+Strategies don't decide whether a student's step is valid. A student may take
+any valid step, including ones no strategy would suggest, such as adding the
+same arbitrary expression to both sides of an equation. The tutor checks a
+step by comparing the problem before and after it: an equation step is valid
+if the new equation has the same solutions as the previous one. Matching the
+step against a strategy's alternatives only adds detail, such as which rule
+the student used or whether the step moved toward a solution.
 
 A `Trace` is a lazy tree of every derivation the strategy allows:
 
