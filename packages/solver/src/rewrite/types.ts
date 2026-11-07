@@ -112,6 +112,19 @@ export type Strategy = (node: Node, context: Context) => Trace;
 /**
  * One complete derivation: the steps taken, in order, and what the node the
  * strategy was applied to became.
+ *
+ * This isn't called `Solution` because:
+ * - `Solution` (in `../types.ts`) is already the public result of
+ *   `solveProblem`. This type is the internal result of running one strategy.
+ * - "Derivation" is the term-rewriting name for a sequence of rewrite steps
+ *   from a starting term to a result. The Ideas tutoring framework uses it the
+ *   same way.
+ * - Not every derivation solves something. A strategy may only simplify an
+ *   expression, or be one small part of a larger strategy, such as a single
+ *   phase or rule. And enumerating a strategy's alternatives gives many
+ *   derivations from the same starting point.
+ *
+ * Services such as `solveProblem` can turn a `Derivation` into a `Solution`.
  */
 export type Derivation = {
   readonly steps: readonly Step[];
