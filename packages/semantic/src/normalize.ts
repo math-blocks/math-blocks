@@ -145,9 +145,10 @@ export const print = (ast: Node): string => {
     }
     case 'Derivative': {
       const arg = print(ast.arg);
+      const bvar = print(ast.bvar);
       return ast.degree != undefined
-        ? `(${ast.type} ${arg} :degree ${ast.degree})`
-        : `(${ast.type} ${arg})`;
+        ? `(${ast.type} ${arg} :bvar ${bvar} :degree ${print(ast.degree)})`
+        : `(${ast.type} ${arg} :bvar ${bvar})`;
     }
     case 'PartialDerivative': {
       const arg = print(ast.arg);
