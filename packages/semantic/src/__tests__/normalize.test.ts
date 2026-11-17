@@ -218,3 +218,212 @@ describe('normalize', () => {
     expect(print(ast)).toMatchInlineSnapshot(`"(ElementOf x S)"`);
   });
 });
+
+describe('normalize node types', () => {
+  const a = builders.identifier('a');
+  const b = builders.identifier('b');
+  const c = builders.identifier('c');
+  const x = builders.identifier('x');
+  const one = builders.number('1');
+  const n = builders.identifier('n');
+
+  test('negation and subtraction', () => {
+    expect(print(builders.neg(a))).toEqual('(neg a)');
+    expect(print(builders.neg(a, true))).toEqual('(neg.sub a)');
+  });
+
+  test('explicit and implicit multiplication', () => {
+    expect(print(builders.mul([a, b]))).toEqual('(mul.exp a,b)');
+    expect(print(builders.mul([a, b], true))).toEqual('(mul.imp a,b)');
+  });
+
+  test('multiplication keeps the order of its factors', () => {
+    expect(print(builders.mul([b, a]))).toEqual('(mul.exp b,a)');
+  });
+
+  test.each([
+    ['unaryplusminus', 'UnaryPlusMinus'],
+    ['unaryminusplus', 'UnaryMinusPlus'],
+    ['not', 'LogicalNot'],
+    ['abs', 'AbsoluteValue'],
+    ['ln', 'Ln'],
+    ['exp', 'Exp'],
+    ['sin', 'Sin'],
+    ['cos', 'Cos'],
+    ['tan', 'Tan'],
+    ['cot', 'Cot'],
+    ['sec', 'Sec'],
+    ['csc', 'Csc'],
+    ['arcsin', 'ArcSin'],
+    ['arccos', 'ArcCos'],
+    ['arctan', 'ArcTan'],
+    ['arccot', 'ArcCot'],
+    ['arcsec', 'ArcSec'],
+    ['arccsc', 'ArcCsc'],
+    ['parens', 'Parens'],
+    ['determinant', 'Determinant'],
+    ['transpose', 'Transpose'],
+  ] as const)('unary %s', (name, type) => {
+    const build = builders[name] as (arg: Node) => Node;
+    expect(print(build(builders.add([b, a])))).toEqual(`(${type} (Add a b))`);
+  });
+
+  describe('commutative operations sort their arguments', () => {
+    test.each([
+      ['plusminus', 'PlusMinus'],
+      ['minusplus', 'MinusPlus'],
+      ['union', 'Union'],
+      ['intersection', 'SetIntersection'],
+      ['eq', 'Equals'],
+      ['neq', 'NotEquals'],
+      ['and', 'LogicalAnd'],
+      ['or', 'LogicalOr'],
+      ['xor', 'ExclusiveOr'],
+    ] as const)('%s', (name, type) => {
+      const build = builders[name] as (args: readonly Node[]) => Node;
+      expect(print(build([c, a, b]))).toEqual(`(${type} a b c)`);
+      expect(print(build([c, a, b]))).toEqual(print(build([b, c, a])));
+    });
+
+    test('biconditional', () => {
+      expect(print(builders.equivalent(b, a))).toEqual('(Biconditional a b)');
+    });
+  });
+
+  describe('non-commutative operations keep their argument order', () => {
+    test.each([
+      ['lt', 'LessThan'],
+      ['lte', 'LessThanOrEquals'],
+      ['gt', 'GreaterThan'],
+      ['gte', 'GreaterThanOrEquals'],
+      ['set', 'Set'],
+      ['cartesianproduct', 'CartesianProduct'],
+      ['subset', 'Subset'],
+      ['propersubset', 'ProperSubset'],
+      ['superset', 'Superset'],
+      ['propersuperset', 'ProperSuperset'],
+      ['sequence', 'Sequence'],
+    ] as const)('%s', (name, type) => {
+      const build = builders[name] as (args: readonly Node[]) => Node;
+      expect(print(build([c, a, b]))).toEqual(`(${type} c a b)`);
+    });
+
+    test.each([
+      ['mod', 'Modulo'],
+      ['implies', 'Conditional'],
+      ['setdiff', 'SetDifference'],
+      ['notsubset', 'NotSubset'],
+      ['notpropersubset', 'NotProperSubset'],
+      ['notsuperset', 'NotSuperset'],
+      ['notpropersuperset', 'NotProperSuperset'],
+      ['vectorproduct', 'VectorProduct'],
+      ['scalarproduct', 'ScalarProduct'],
+    ] as const)('%s', (name, type) => {
+      const build = builders[name] as (arg0: Node, arg1: Node) => Node;
+      expect(print(build(b, a))).toEqual(`(${type} b a)`);
+    });
+  });
+
+  test('power', () => {
+    expect(print(builders.pow(x, builders.number('2')))).toEqual(
+      '(Power :base x :exp 2)',
+    );
+  });
+
+  test.each([
+    ['infinity', 'Infinity'],
+    ['pi', 'Pi'],
+    ['e', 'E'],
+    ['ellipsis', 'Ellipsis'],
+    ['true', 'True'],
+    ['false', 'False'],
+    ['naturals', 'Naturals'],
+    ['integers', 'Integers'],
+    ['rationals', 'Rationals'],
+    ['reals', 'Reals'],
+    ['complexes', 'Complexes'],
+    ['emptyset', 'EmptySet'],
+  ] as const)('constant %s', (name, type) => {
+    const build = builders[name] as () => Node;
+    expect(print(build())).toEqual(type);
+  });
+
+  test('a function with several arguments', () => {
+    const f = builders.identifier('f');
+    expect(print(builders.function(f, [x, a]))).toEqual('(Func f x a)');
+  });
+
+  test.each([
+    ['sum', 'Sum'],
+    ['product', 'Product'],
+  ] as const)('%s', (name, type) => {
+    const ast = builders[name](
+      builders.identifier('i'),
+      builders.identifier('i'),
+      one,
+      n,
+    );
+    expect(print(ast)).toEqual(`(${type} i :bvar i :lower 1 :upper n)`);
+  });
+
+  test('indefinite integral', () => {
+    expect(print(builders.integral(builders.pow(x, one), x))).toEqual(
+      '(Integral (Power :base x :exp 1) :bvar x)',
+    );
+  });
+
+  test('a limit without an approach direction', () => {
+    const ast = {
+      ...builders.limit(x, x, one, 'both'),
+      approach: undefined,
+    } as unknown as Node;
+    expect(print(ast)).toEqual('(Limit x :bvar x :to 1)');
+  });
+
+  test('a derivative without a degree', () => {
+    const ast = {
+      ...builders.diff(builders.pow(x, one), x, one),
+      degree: undefined,
+    } as unknown as Node;
+    expect(print(ast)).toEqual('(Derivative (Power :base x :exp 1))');
+  });
+
+  // TODO: print() interpolates the degree node directly, so it prints
+  // "[object Object]" instead of the degree.  The bvar is also dropped.
+  // https://github.com/math-blocks/math-blocks/issues/687
+  test.skip('a derivative prints its degree', () => {
+    const ast = builders.diff(builders.pow(x, one), x, builders.number('2'));
+    expect(print(ast)).toEqual('(Derivative (Power :base x :exp 1) :degree 2)');
+  });
+
+  test('NotElementOf', () => {
+    expect(print(builders.notin(x, builders.reals()))).toEqual(
+      '(NotElementOf x Reals)',
+    );
+  });
+
+  test('vector', () => {
+    expect(print(builders.vector([a, b, c], 3))).toEqual(
+      '(Vector a b c :dim 3)',
+    );
+  });
+
+  test('matrix', () => {
+    expect(print(builders.matrix([a, b, c, x], 2, 2))).toEqual(
+      '(Matrix a b c x :rows 2 :cols 2)',
+    );
+  });
+
+  test('nested expressions are normalized recursively', () => {
+    const ast = builders.eq([
+      builders.add([b, builders.mul([a, x], true)]),
+      builders.div(builders.add([one, c]), builders.add([c, one])),
+    ]);
+    expect(print(ast)).toEqual('(Equals (Add (mul.imp a,x) b) 1)');
+  });
+
+  test('throws on an unknown node type', () => {
+    const ast = { type: 'Unknown', id: getId() } as unknown as Node;
+    expect(() => print(ast)).toThrow('Unreachable case');
+  });
+});
