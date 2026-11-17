@@ -57,7 +57,13 @@ const TO_GREATER_THAN: Readonly<Record<string, string>> = {
   [NodeType.LessThanOrEquals]: NodeType.GreaterThanOrEquals,
 };
 
-/** Nodes whose children can appear in any order. */
+/**
+ * Nodes whose children can appear in any order once they've been turned into
+ * keys. For `Add`, this relies on `canonicalKey` ignoring the `subtraction`
+ * flag: `x - 2` is `x + (-2)`, so its terms can be reordered to `-2 + x`
+ * without changing its value. Sorting the raw nodes instead would move a
+ * subtraction to the front, where it would read as a different expression.
+ */
 const UNORDERED: readonly string[] = [
   NodeType.Add,
   NodeType.Mul,

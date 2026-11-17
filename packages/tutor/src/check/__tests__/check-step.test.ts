@@ -31,6 +31,22 @@ describe('checkStep', () => {
     });
 
     test.each([
+      ['x - 2', '-2 + x'],
+      ['3 - x', '-x + 3'],
+      ['x - y - 2', '-2 - y + x'],
+      ['x - (2 - y)', 'x - 2 + y'],
+    ])('%s -> %s is equivalent with subtraction reordered', (prev, next) => {
+      expect(statusOf(prev, next)).toBe('equivalent');
+    });
+
+    test.each([
+      ['x - 2', '2 - x'],
+      ['x - y', 'y - x'],
+    ])('%s -> %s is not equivalent', (prev, next) => {
+      expect(statusOf(prev, next)).toBe('not-equivalent');
+    });
+
+    test.each([
       ['2x + 3x', '6x'],
       ['2 + 3', '6'],
       ['2(x + 3)', '2x + 3'],
