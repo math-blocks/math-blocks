@@ -284,6 +284,25 @@ covers most of the value first. Licensing Desmos's Abraham (LaTeX ↔ Nemeth/UEB
 tolerant of incomplete input) through `@math-blocks/tex` would cut this
 from months to weeks, if a partnership is possible.
 
+How Desmos does it, read from its public (minified) calculator bundle:
+- **A native input replaces the editor.** In braille mode the MathQuill field is
+  swapped for a plain `<input class="dcg-braille-input">`.
+- **The input holds Braille ASCII.** Its value is the expression translated
+  LaTeX → Nemeth/UEB and stored as lowercase North American Braille ASCII,
+  one character per braille cell. Its `aria-label` is translated the same way.
+- **The screen reader drives the display.** It shows the field's text like any other
+  text field. Desmos doesn't use `aria-braillelabel` anywhere.
+- **Input comes back through the same field.** Typing on the display's keys, or
+  six-key entry with S D F J K L, edits the field. The text is normalized to
+  Unicode six-dot cells (both Braille ASCII and Unicode braille are accepted,
+  and 8-dot cells are reduced to 6-dot). It's then translated back to LaTeX and
+  into the editor model. If translation fails, the user's text is left as it is.
+
+This makes braille editing ordinary text editing, which every screen reader and
+display already handles, cursor-routing keys included. For us the round trip
+would be editor tree ↔ LaTeX (`@math-blocks/tex` has both a printer and a
+parser) ↔ braille.
+
 ## References
 
 - MathQuill a11y: https://github.com/mathquill/mathquill (`src/services/aria.ts`,
