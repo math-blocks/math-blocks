@@ -98,7 +98,18 @@ describe('core', () => {
     test('drops values that JSON cannot represent', () => {
       const original = { a: 1, b: undefined, c: () => 5 };
 
-      expect(clone(original)).toEqual({ a: 1 });
+      expect(clone(original)).toStrictEqual({ a: 1 });
+    });
+
+    test('drops properties whose value is undefined', () => {
+      const original = { a: 1, b: undefined, nested: { c: undefined, d: 2 } };
+
+      const copy = clone(original);
+
+      expect(Object.keys(copy)).toEqual(['a', 'nested']);
+      expect('b' in copy).toBe(false);
+      expect('c' in copy.nested).toBe(false);
+      expect(copy).toStrictEqual({ a: 1, nested: { d: 2 } });
     });
   });
 });
