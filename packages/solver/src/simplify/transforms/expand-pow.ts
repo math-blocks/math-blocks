@@ -52,16 +52,15 @@ export function expandPow(
   };
 
   // Passing an empty path lets `distribute` act on `mul` even when `node` is
-  // a term in a sum.
+  // a term in a sum.  `distribute` always handles a product of two sums, but
+  // we fall back to the product in case that changes.
   const distributeStep = distribute(mul, []);
-  if (!distributeStep) {
-    return expandStep;
-  }
+  const substeps = distributeStep ? [expandStep, distributeStep] : [expandStep];
 
   return {
     message: 'expand power',
     before: node,
-    after: distributeStep.after,
-    substeps: [expandStep, distributeStep],
+    after: substeps[substeps.length - 1].after,
+    substeps,
   };
 }
