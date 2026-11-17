@@ -6,9 +6,10 @@ const { NodeType } = Semantic;
  * Prints a Semantic AST as plain-text math, such as `2x + 3`, in the format
  * that `parse` in `text-parser.ts` reads. Only tests use it.
  *
- * With `oneToOne`, a negative factor is wrapped in parentheses even at the
- * start of a product, as in `(-2)(x)`, so the printed text parses back into
- * the same tree.
+ * With `oneToOne`, an implicit product that starts with a negative factor
+ * wraps every factor in parentheses, printing `(-2)(x)` instead of `-2x`.
+ * `-2x` parses back as the negation of `2x`, a different tree, while
+ * `(-2)(x)` parses back into the same tree.
  */
 export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
   switch (expr.type) {
