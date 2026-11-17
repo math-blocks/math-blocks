@@ -2,6 +2,8 @@ import builders from '../builders';
 import { definitions } from '../node-defs';
 import type { Node, SourceLocation } from '../types';
 
+type Descriptor = (typeof definitions)[string];
+
 // builders.ts is generated from these definitions by codegen.ts.  These tests
 // check that the two haven't drifted apart.
 
@@ -83,80 +85,83 @@ describe('node definitions', () => {
   });
 
   describe('every definition has a matching builder', () => {
-    test.each(Object.entries(definitions))('%s', (key, def) => {
-      const build = getBuilder(key);
-      expect(build).toBeInstanceOf(Function);
+    const entriesOfKind = (
+      ...kinds: readonly Descriptor['kind'][]
+    ): [string, Descriptor][] =>
+      Object.entries(definitions).filter(([, def]) => kinds.includes(def.kind));
 
-      switch (def.kind) {
-        case 'number': {
-          expect(build('5', loc)).toMatchObject({
-            type: def.name,
-            value: '5',
-            loc,
-          });
-          return;
-        }
-        case 'identifier': {
-          expect(build('a', undefined, loc)).toMatchObject({
-            type: def.name,
-            name: 'a',
-            loc,
-          });
-          return;
-        }
-        case 'function': {
-          expect(build(x, [y], loc)).toMatchObject({
-            type: def.name,
-            func: x,
-            args: [y],
-            loc,
-          });
-          return;
-        }
-        case 'constant': {
-          expect(build(loc)).toEqual({
-            type: def.name,
-            id: expect.any(Number),
-            loc,
-          });
-          return;
-        }
-      }
+    test.each(Object.keys(definitions))('%s has a builder', (key) => {
+      expect(getBuilder(key)).toBeInstanceOf(Function);
+    });
 
-      // Operations, relations and constructors take their arguments first,
-      // followed by a value for each option, followed by the location.
-      const optionNames =
-        'options' in def && def.options ? Object.keys(def.options) : [];
-      const optionValues = optionNames.map((name) => `${name}-value`);
-
-      const positional: unknown[] =
-        def.arity === 'unary'
-          ? [x]
-          : def.arity === 'binary'
-          ? [x, y]
-          : [[x, y]];
-      const node = build(
-        ...positional,
-        ...optionValues,
+    test('Number', () => {
+      expect(getBuilder('Number')('5', loc)).toMatchObject({
+        type: definitions.Number.name,
+        value: '5',
         loc,
-      ) as unknown as Record<string, unknown>;
-
-      expect(node.type).toBe(def.name);
-      expect(typeof node.id).toBe('number');
-      expect(node.loc).toBe(loc);
-
-      if (def.arity === 'unary') {
-        expect(node.arg).toBe(x);
-      } else if ('argNames' in def && def.argNames) {
-        expect(node[def.argNames[0]]).toBe(x);
-        expect(node[def.argNames[1]]).toBe(y);
-      } else {
-        expect(node.args).toEqual([x, y]);
-      }
-
-      optionNames.forEach((name, i) => {
-        expect(node[name]).toBe(optionValues[i]);
       });
     });
+
+    test('Identifier', () => {
+      expect(getBuilder('Identifier')('a', undefined, loc)).toMatchObject({
+        type: definitions.Identifier.name,
+        name: 'a',
+        loc,
+      });
+    });
+
+    test('Function', () => {
+      expect(getBuilder('Function')(x, [y], loc)).toMatchObject({
+        type: definitions.Function.name,
+        func: x,
+        args: [y],
+        loc,
+      });
+    });
+
+    test.each(entriesOfKind('constant'))('constant %s', (key, def) => {
+      expect(getBuilder(key)(loc)).toEqual({
+        type: def.name,
+        id: expect.any(Number),
+        loc,
+      });
+    });
+
+    // Operations, relations and constructors take their arguments first,
+    // followed by a value for each option, followed by the location.
+    test.each(entriesOfKind('operation', 'relation', 'constructor'))(
+      '%s',
+      (key, def) => {
+        const optionNames =
+          'options' in def && def.options ? Object.keys(def.options) : [];
+        const optionValues = optionNames.map((name) => `${name}-value`);
+
+        const arity = 'arity' in def ? def.arity : undefined;
+        const positional: unknown[] =
+          arity === 'unary' ? [x] : arity === 'binary' ? [x, y] : [[x, y]];
+        const node = getBuilder(key)(
+          ...positional,
+          ...optionValues,
+          loc,
+        ) as unknown as Record<string, unknown>;
+
+        expect(node.type).toBe(def.name);
+        expect(typeof node.id).toBe('number');
+        expect(node.loc).toBe(loc);
+
+        if (arity === 'unary') {
+          expect(node.arg).toBe(x);
+        } else if ('argNames' in def && def.argNames) {
+          expect(node[def.argNames[0]]).toBe(x);
+          expect(node[def.argNames[1]]).toBe(y);
+        } else {
+          expect(node.args).toEqual([x, y]);
+        }
+
+        optionNames.forEach((name, i) => {
+          expect(node[name]).toBe(optionValues[i]);
+        });
+      },
+    );
   });
 });
