@@ -48,9 +48,9 @@ const isNode = (value: unknown): value is Semantic.types.Node =>
 
 /**
  * Rewrites `<` and `≤` as `>` and `≥` with their sides swapped, so that
- * `x < 3` and `3 > x` get the same key. This only goes one way: mapping
- * `>` back to `<` as well would swap the two spellings instead of making
- * them match.
+ * `x < 3` and `3 > x` get the same canonical string. This only goes one way:
+ * mapping `>` back to `<` as well would swap the two spellings instead of
+ * making them match.
  */
 const TO_GREATER_THAN: Readonly<Record<string, string>> = {
   [NodeType.LessThan]: NodeType.GreaterThan,
@@ -59,9 +59,9 @@ const TO_GREATER_THAN: Readonly<Record<string, string>> = {
 
 /**
  * Nodes whose children can appear in any order once they've been turned into
- * keys. For `Add`, this relies on `canonicalKey` ignoring the `subtraction`
- * flag: `x - 2` is `x + (-2)`, so its terms can be reordered to `-2 + x`
- * without changing its value. Sorting the raw nodes instead would move a
+ * canonical strings. For `Add`, this relies on `canonicalString` ignoring the
+ * `subtraction` flag: `x - 2` is `x + (-2)`, so its terms can be reordered to
+ * `-2 + x` without changing its value. Sorting the raw nodes instead would move a
  * subtraction to the front, where it would read as a different expression.
  */
 const UNORDERED: readonly string[] = [
@@ -110,10 +110,10 @@ const evalRelation = (
  * that don't change their meaning: term and factor order, which side of an
  * equation is which, implicit versus explicit multiplication, and whether a
  * negative was written as subtraction, and the order of a quadratic's
- * solutions. A relation with no variables, such as
- * `0 = 0`, becomes `true` or `false`.
+ * solutions. A relation with no variables, such as `0 = 0`, becomes `true`
+ * or `false`.
  */
-const canonicalKey = (node: Semantic.types.Node): string => {
+const canonicalString = (node: Semantic.types.Node): string => {
   if (node.type === NodeType.Identifier) {
     return node.name;
   }
@@ -135,10 +135,12 @@ const canonicalKey = (node: Semantic.types.Node): string => {
     }
     if (Array.isArray(value)) {
       children.push(
-        ...value.map((v) => (isNode(v) ? canonicalKey(v) : JSON.stringify(v))),
+        ...value.map((v) =>
+          isNode(v) ? canonicalString(v) : JSON.stringify(v),
+        ),
       );
     } else if (isNode(value)) {
-      children.push(`${key}:${canonicalKey(value)}`);
+      children.push(`${key}:${canonicalString(value)}`);
     } else {
       children.push(`${key}:${JSON.stringify(value)}`);
     }
@@ -392,7 +394,7 @@ export const checkStep = (
 
   if (
     prevSolved.kind === nextSolved.kind &&
-    canonicalKey(prevSolved.answer) === canonicalKey(nextSolved.answer)
+    canonicalString(prevSolved.answer) === canonicalString(nextSolved.answer)
   ) {
     return { status: 'equivalent', answer: prevSolved.answer };
   }
