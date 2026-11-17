@@ -8,7 +8,6 @@ import type { Token } from './text-lexer';
 
 const { NodeType } = Semantic;
 
-// TODO: fill out this list
 type Operator =
   | 'add'
   | 'sub'
@@ -195,7 +194,6 @@ const parseNaryArgs = (
   parser: TextParser,
   op: NAryOperator,
 ): OneOrMore<Node> => {
-  // TODO: handle implicit multiplication
   const token = parser.peek();
 
   if (token.type === 'identifier' || token.type === 'number') {
@@ -229,33 +227,6 @@ const parseNaryArgs = (
   } else {
     return [expr];
   }
-
-  // if (token.type === "Parens") {
-  //     parser.consume();
-  //     const expr = parser.parse(token.children);
-  //     const nextToken = parser.peek();
-  //     if (nextToken.type === token.type) {
-  //         return [expr, ...parseNaryArgs(parser, "mul")];
-  //     } else {
-  //         return [expr];
-  //     }
-  // } else if (token.type === "root") {
-  //     parser.consume();
-  //     const [arg, index] = token.children;
-  //     const expr = root(
-  //         parser.parse(arg.children),
-  //         index ? parser.parse(index.children) : undefined,
-  //     );
-  //     const nextToken = parser.peek();
-  //     if (nextToken.type === "root" || nextToken.type === "identifier") {
-  //         return [expr, ...parseNaryArgs(parser, "mul")];
-  //     } else {
-  //         return [expr];
-  //     }
-  // } else {
-  //     throw new Error(`we don't handle ${token.type} tokens yet`);
-  //     // TODO: deal with frac, subsup, etc.
-  // }
 };
 
 const getOpPrecedence = (op: Operator): number => {
@@ -306,8 +277,6 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
         return;
       }
 
-      // TODO: use the precedence of the operators to determine whether
-      // the parens are necessary or not.
       if (node.type === NodeType.Parens) {
         const { arg } = node;
         if (parent.type === NodeType.Parens) {

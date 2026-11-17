@@ -1,4 +1,3 @@
-// TODO: share these with editor-lexer.js
 type Ident = { readonly type: 'identifier'; readonly name: string };
 type Num = { readonly type: 'number'; readonly value: string };
 type Trig = { readonly type: 'trig'; readonly name: string };
@@ -99,7 +98,6 @@ export const lex = (str: string): Token[] => {
     } else if (name) {
       tokens.push(identifier(name));
     }
-    // TODO: check if there are leftover characters between token matches
   }
 
   return tokens;

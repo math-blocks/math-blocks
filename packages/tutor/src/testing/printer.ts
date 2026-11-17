@@ -5,17 +5,9 @@ import * as Semantic from '@math-blocks/semantic';
 
 const { NodeType } = Semantic;
 
-// TODO: Use the operator precedence numbers from text-parser to determine when
-// to add parens (or not).
-
-// TODO: handle the case when there's a neg.sub node at the start of an expression
-
 export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
   switch (expr.type) {
     case NodeType.Identifier: {
-      // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
-      // TODO: handle subscripts
-
       return expr.name;
     }
     case NodeType.Number: {
@@ -135,7 +127,6 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
           ? `(${print(expr.args[1], oneToOne)})`
           : print(expr.args[1], oneToOne);
 
-      // TODO: change the spacing depending on the parent.
       return `${numerator} / ${denominator}`;
     }
     case NodeType.LessThan:
@@ -143,7 +134,6 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     case NodeType.GreaterThan:
     case NodeType.GreaterThanOrEquals:
     case NodeType.Equals: {
-      // TODO: add a check to make sure this is true
       const args = expr.args as TwoOrMore<Semantic.types.Node>;
       let operation = ' = ';
       if (expr.type === NodeType.LessThan) {
