@@ -8,9 +8,5 @@
     ],
     "publishConfig": {
         "access": "public"
-    },
-    "dependencies": {
-        "@math-blocks/core": "^0.0.12",
-        "@math-blocks/semantic": "^0.1.0"
     }
 }
