@@ -2,6 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { parse, print } from '../../../test-util';
 
+import * as Distribute from '../distribute';
 import { expandPow } from '../expand-pow';
 
 describe('expandPow', () => {
@@ -41,5 +42,18 @@ describe('expandPow', () => {
   test('does nothing inside a fraction', () => {
     const div = parse('\\frac{1}{(x + 1)^2}') as Semantic.types.Div;
     expect(expandPow(div.args[1], [div])).toBeUndefined();
+  });
+
+  test('does nothing if distribute does nothing', () => {
+    // `distribute` always handles a product of two sums today, so stub it to
+    // check that we don't return a half-expanded (x + 1)(x + 1).
+    const spy = jest
+      .spyOn(Distribute, 'distribute')
+      .mockReturnValueOnce(undefined);
+
+    expect(expandPow(parse('(x + 1)^2'), [])).toBeUndefined();
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    spy.mockRestore();
   });
 });
