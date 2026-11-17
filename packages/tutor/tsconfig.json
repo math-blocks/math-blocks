@@ -7,7 +7,6 @@
     "tsBuildInfoFile": "../../.buildcache/tutor.tsbuildinfo"
   },
   "references": [
-    {"path": "../editor"},
     {"path": "../parser"},
     {"path": "../semantic"},
     {"path": "../solver"}

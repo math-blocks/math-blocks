@@ -1,7 +1,7 @@
 # @math-blocks/tutor
 
 Helps students work through math problems. It gives hints, shows the next
-step, and checks the steps a student writes, reporting common mistakes.
+step, and checks whether a step a student writes is valid.
 
 It depends only on `@math-blocks/semantic` and `@math-blocks/solver`.
 
@@ -23,24 +23,34 @@ Applies the step from `getHint` and returns the resulting expression or
 relation.
 
 ```typescript
-checkStep(prev: Semantic.types.Node, next: Semantic.types.Node): {
-  result?: Result;
-  successfulChecks: ReadonlySet<string>;
-  mistakes: readonly Mistake[];
-}
+checkStep(prev: Semantic.types.Node, next: Semantic.types.Node): CheckStepResult
 ```
 
-Compares two consecutive lines of a student's work. If `next` follows from
-`prev`, `result.steps` lists the properties and rules that connect them, such
-as "commutative property" or "adding the same value to both sides". If it
-doesn't, `result` is `undefined` and `mistakes` describes what went wrong.
-Each `Mistake` has a `MistakeId`, the nodes involved, and suggested
-corrections.
+Checks whether `next` is a valid step from `prev` by running the solver on
+both and comparing their solutions:
 
-```typescript
-replaceNodeWithId(root: Semantic.types.Node, id: number, replacement: Semantic.types.Node): void
-```
+- Expressions are simplified.
+- Equations and inequalities are solved for their variable. Both steps must
+  use the same single variable.
 
-Replaces the node with the given `id` inside `root`. It modifies `root` in
-place, so pass it a copy if you need to keep the original. Use it to apply a
-mistake's corrections.
+The result's `status` is one of:
+
+- `'equivalent'`: both steps have the same solution, returned as `answer`.
+- `'not-equivalent'`: the solutions differ. Both are returned, as
+  `prevAnswer` and `nextAnswer`.
+- `'unknown'`: the solver couldn't solve one of the steps, so `checkStep`
+  can't tell. `reason` says why.
+
+The comparison ignores differences that don't change the meaning:
+
+- the order of terms and factors
+- which side of an equation is which, and flipped inequalities such as
+  `x < 3` and `3 > x`
+- implicit versus explicit multiplication
+- the order of a quadratic's solutions
+
+Two identities, such as `0 = 0` and `1 = 1`, count as equivalent. So do two
+contradictions.
+
+`checkStep` only says whether a step is valid. It doesn't say which rule the
+student applied, or what mistake they made.

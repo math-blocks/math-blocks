@@ -56,4 +56,20 @@ describe('#showMeHow', () => {
 
     expect(Testing.print(result)).toMatchInlineSnapshot(`"(x + 2)(x + 3) = 0"`);
   });
+
+  it('should work with systems of equations', () => {
+    const problem: Solver.Problem = {
+      type: 'SolveSystemOfEquations',
+      equations: Semantic.builders.sequence([
+        Testing.parse('3x - y = 6'),
+        Testing.parse('x + 2y = -1'),
+      ]),
+    };
+
+    const result = showMeHow(problem);
+
+    expect(Testing.print(result)).toMatchInlineSnapshot(
+      `"x = 2 + y / 3, x + 2y = -1"`,
+    );
+  });
 });

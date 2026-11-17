@@ -7,7 +7,6 @@
     "declarationDir": ".",
   },
   "references": [
-    {"path": "../editor"},
     {"path": "../parser"},
     {"path": "../semantic"},
     {"path": "../solver"}
