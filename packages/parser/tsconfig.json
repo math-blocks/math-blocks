@@ -5,9 +5,5 @@
     "outDir": "out",
     "rootDir": "src",
     "tsBuildInfoFile": "../../.buildcache/parser.tsbuildinfo"
-  },
-  "references": [
-    {"path": "../core"},
-    {"path": "../semantic"}
-  ]
+  }
 }

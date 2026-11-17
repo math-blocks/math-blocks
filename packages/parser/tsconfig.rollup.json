@@ -5,9 +5,5 @@
     "outDir": "dist",
     "rootDir": "src",
     "declarationDir": ".",
-  },
-  "references": [
-    {"path": "../core"},
-    {"path": "../semantic"}
-  ]
+  }
 }
