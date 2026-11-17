@@ -46,8 +46,13 @@ const IGNORED_KEYS = ['id', 'loc', 'source', 'type', 'implicit', 'subtraction'];
 const isNode = (value: unknown): value is Semantic.types.Node =>
   typeof value === 'object' && value !== null && 'type' in value;
 
-/** Relations that mean the same thing with their sides swapped. */
-const FLIPPED: Readonly<Record<string, string>> = {
+/**
+ * Rewrites `<` and `≤` as `>` and `≥` with their sides swapped, so that
+ * `x < 3` and `3 > x` get the same key. This only goes one way: mapping
+ * `>` back to `<` as well would swap the two spellings instead of making
+ * them match.
+ */
+const TO_GREATER_THAN: Readonly<Record<string, string>> = {
   [NodeType.LessThan]: NodeType.GreaterThan,
   [NodeType.LessThanOrEquals]: NodeType.GreaterThanOrEquals,
 };
@@ -133,8 +138,8 @@ const canonicalKey = (node: Semantic.types.Node): string => {
     }
   }
 
-  if (type in FLIPPED) {
-    type = FLIPPED[type];
+  if (type in TO_GREATER_THAN) {
+    type = TO_GREATER_THAN[type];
     children = [...children].reverse();
   }
   if (UNORDERED.includes(type)) {
