@@ -15,6 +15,8 @@ module.exports = {
     '/stories/',
     '\\.d\\.ts',
     '\\/test-util\\.ts$',
+    // Test-only helpers for parsing and printing plain-text math.
+    '/packages/tutor/src/testing/',
   ],
   setupFilesAfterEnv: ['./jest.setup.cjs'],
 };

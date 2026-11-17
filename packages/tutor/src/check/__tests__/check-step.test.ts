@@ -101,6 +101,17 @@ describe('checkStep', () => {
       expect(statusOf('x + 1 < x', '1 < 0')).toBe('equivalent');
       expect(statusOf('x + 1 > x', '1 < 0')).toBe('not-equivalent');
     });
+
+    it('compares non-strict inequalities that are always true or false', () => {
+      expect(statusOf('x + 1 ≥ x', '1 ≥ 0')).toBe('equivalent');
+      expect(statusOf('x + 1 ≤ x', '1 ≤ 0')).toBe('equivalent');
+      expect(statusOf('x + 1 ≥ x', '1 ≤ 0')).toBe('not-equivalent');
+    });
+
+    it('handles non-strict inequalities', () => {
+      expect(statusOf('2x + 1 ≤ 7', 'x ≤ 3')).toBe('equivalent');
+      expect(statusOf('2x + 1 ≥ 7', '3 ≤ x')).toBe('equivalent');
+    });
   });
 
   describe('quadratic equations', () => {
