@@ -1,10 +1,15 @@
-/**
- * Converts a Semantic AST to an Editor AST.
- */
 import * as Semantic from '@math-blocks/semantic';
 
 const { NodeType } = Semantic;
 
+/**
+ * Prints a Semantic AST as plain-text math, such as `2x + 3`, in the format
+ * that `parse` in `text-parser.ts` reads. Only tests use it.
+ *
+ * With `oneToOne`, a negative factor is wrapped in parentheses even at the
+ * start of a product, as in `(-2)(x)`, so the printed text parses back into
+ * the same tree.
+ */
 export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
   switch (expr.type) {
     case NodeType.Identifier: {
