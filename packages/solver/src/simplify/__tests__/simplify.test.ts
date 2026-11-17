@@ -677,17 +677,54 @@ describe('simplify', () => {
       expect(print(fifth)).toMatchInlineSnapshot(`"x^{2}+4x+3"`);
     });
 
-    test.skip('(x + 1)^2 -> x^2 + 2x + 1', () => {
+    test('(x + 1)^2 -> x^2 + 2x + 1', () => {
       const ast = parse('(x + 1)^2');
 
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'evaluate addition',
+        'expand power',
         'distribute',
+        'drop parentheses',
+        'collect like terms',
+        'repeated multiplication can be written as a power',
       ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`'x^2 + 2x + 1'`);
+      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}+2x+1"`);
+
+      expect(
+        step.substeps[0].substeps.map((substep) => substep.message),
+      ).toEqual(['a power is repeated multiplication', 'distribute']);
+
+      const first = applyStep(ast, step.substeps[0]);
+      expect(print(first)).toMatchInlineSnapshot(`"(x+1)x+(x+1)"`);
+      const second = applyStep(first, step.substeps[1]);
+      expect(print(second)).toMatchInlineSnapshot(`"xx+x+(x+1)"`);
+      const third = applyStep(second, step.substeps[2]);
+      expect(print(third)).toMatchInlineSnapshot(`"xx+x+x+1"`);
+      const fourth = applyStep(third, step.substeps[3]);
+      expect(print(fourth)).toMatchInlineSnapshot(`"xx+2x+1"`);
+      const fifth = applyStep(fourth, step.substeps[4]);
+      expect(print(fifth)).toMatchInlineSnapshot(`"x^{2}+2x+1"`);
+    });
+
+    test('1 + (x - 1)^2 -> x^2 - 2x + 2', () => {
+      const ast = parse('1 + (x - 1)^2');
+
+      const step = simplify(ast);
+
+      expect(print(step.after)).toMatchInlineSnapshot(`"2+x^{2}-2x"`);
+    });
+
+    test('(x + 1)^3 is left alone', () => {
+      expect(_simplify(parse('(x + 1)^3'))).toBeUndefined();
+    });
+
+    test('(x + 1)^2 inside a fraction is left alone', () => {
+      expect(_simplify(parse('\\frac{1}{(x + 1)^2}'))).toBeUndefined();
+      expect(
+        print(simplify(parse('\\frac{(x + 1)^2}{x + 1}')).after),
+      ).toMatchInlineSnapshot(`"x+1"`);
     });
   });
 
