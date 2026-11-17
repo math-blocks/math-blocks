@@ -185,20 +185,13 @@ const isSolvedFor = (
   );
 };
 
-/**
- * Returns a deep copy of `node`. Some solver functions modify the nodes they
- * are given, so each call gets its own copy.
- */
-const copy = <T extends Semantic.types.Node>(node: T): T =>
-  JSON.parse(JSON.stringify(node));
-
 const solveRelation = (
   relation: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
 ): Semantic.types.Node | undefined => {
   const linear = Solver.solveProblem({
     type: 'SolveLinearRelation',
-    relation: copy(relation),
+    relation,
     variable,
   });
   if (linear && isSolvedFor(linear.answer, variable)) {
@@ -207,7 +200,7 @@ const solveRelation = (
   if (relation.type === NodeType.Equals && relation.args.length === 2) {
     // The quadratic solver expects `... = 0`, so move everything to the left
     // and simplify it first.
-    const [left, right] = copy(relation).args;
+    const [left, right] = relation.args;
     const difference = Semantic.builders.add([
       left,
       Semantic.builders.neg(right, true),
@@ -252,7 +245,7 @@ const solve = (
   // which case the expression is its own answer.
   const solution = Solver.solveProblem({
     type: 'SimplifyExpression',
-    expression: copy(node),
+    expression: node,
   });
   return { kind: 'expression', answer: solution ? solution.answer : node };
 };
