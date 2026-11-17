@@ -1,4 +1,4 @@
-import { traverse } from '../util';
+import { traverse, traverseNumeric } from '../util';
 import * as types from '../types';
 import { NodeType } from '../enums';
 
@@ -212,5 +212,65 @@ describe('traverse', () => {
 
     // @ts-expect-error: we know sum.args[0] is an Identifier
     expect(sum.args[0].name).toEqual('x');
+  });
+});
+
+describe('traverseNumeric', () => {
+  const x: types.Identifier = { id: 1, type: NodeType.Identifier, name: 'x' };
+  const three: types.Number = { id: 2, type: NodeType.Number, value: '3' };
+  const sum: types.Add = { id: 0, type: NodeType.Add, args: [x, three] };
+
+  it('visits every node, entering parents before children', () => {
+    const entered: types.Node[] = [];
+    const exited: types.Node[] = [];
+
+    traverseNumeric(sum, {
+      enter: (node) => entered.push(node),
+      exit: (node) => {
+        exited.push(node);
+      },
+    });
+
+    expect(entered.map((node) => node.id)).toEqual([0, 1, 2]);
+    expect(exited.map((node) => node.id)).toEqual([1, 2, 0]);
+  });
+
+  it('visits nodes stored in non-array properties', () => {
+    const pow: types.Pow = { id: 3, type: NodeType.Power, base: x, exp: three };
+    const enter = jest.fn();
+
+    traverseNumeric(pow, { enter });
+
+    expect(enter).toHaveBeenCalledTimes(3);
+    expect(enter).toHaveBeenCalledWith(x);
+    expect(enter).toHaveBeenCalledWith(three);
+  });
+
+  it('works without any callbacks', () => {
+    expect(traverseNumeric(sum, {})).toEqual(sum);
+  });
+
+  it('replaces nodes with the value returned from exit', () => {
+    const result = traverseNumeric(sum, {
+      exit: (node) => {
+        if (node.type === NodeType.Identifier) {
+          return { ...node, name: 'y' };
+        }
+      },
+    });
+
+    expect(result).toEqual({
+      ...sum,
+      args: [{ ...x, name: 'y' }, three],
+    });
+    expect(x.name).toEqual('x');
+  });
+
+  it('can replace the root node', () => {
+    const result = traverseNumeric(sum, {
+      exit: (node) => (node.type === NodeType.Add ? three : undefined),
+    });
+
+    expect(result).toBe(three);
   });
 });
