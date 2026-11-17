@@ -218,13 +218,17 @@ const polynomialDegree = (
       case NodeType.Neg:
         return factorDegree(factor.arg);
       case NodeType.Power: {
+        // `x^2` has degree 2 and `(x + 1)^2` has degree 2 too: the base's
+        // degree times a whole-number exponent.
         const { base, exp } = factor;
+        const baseDegree = termDegree(base);
         if (
-          base.type === NodeType.Identifier &&
+          baseDegree !== undefined &&
           exp.type === NodeType.Number &&
-          Number.isInteger(Number(exp.value))
+          Number.isInteger(Number(exp.value)) &&
+          Number(exp.value) >= 0
         ) {
-          return Number(exp.value);
+          return baseDegree * Number(exp.value);
         }
         return undefined;
       }
@@ -278,30 +282,26 @@ const solveRelation = (
     return undefined;
   }
 
-  // Move every term to the left and simplify, so that `x^2 + 5x = -6`
-  // becomes `x^2 + 5x + 6`. This tells us the relation's degree, and it's
-  // the `... = 0` form the quadratic solver needs.
+  // Use the higher of the two sides' degrees, measured as written. The
+  // quadratic solver rearranges and simplifies the equation itself, so we
+  // don't need to.
   const [left, right] = relation.args;
-  const difference = Semantic.builders.add([
-    left,
-    Semantic.builders.neg(right, true),
-  ]);
-  const simplified = Solver.solveProblem({
-    type: 'SimplifyExpression',
-    expression: difference,
-  });
-  const leftSide = simplified ? simplified.answer : difference;
-  const degree = polynomialDegree(leftSide, variable);
+  const leftDegree = polynomialDegree(left, variable);
+  const rightDegree = polynomialDegree(right, variable);
+  const degree =
+    leftDegree === undefined || rightDegree === undefined
+      ? undefined
+      : Math.max(leftDegree, rightDegree);
 
   if (degree === 2) {
     // Only equations can be quadratic here; the solver doesn't handle
-    // quadratic inequalities.
+    // quadratic inequalities correctly.
     if (relation.type !== NodeType.Equals) {
       return undefined;
     }
     const quadratic = Solver.solveProblem({
       type: 'SolveQuadraticEquation',
-      relation: Semantic.builders.eq([leftSide, Semantic.builders.number('0')]),
+      relation,
       variable,
     });
     // Check the answer, since the solver can return a step that doesn't
@@ -316,15 +316,14 @@ const solveRelation = (
     return undefined;
   }
 
-  // Degree 0 or 1, or not a polynomial in the variable. The linear solver
-  // handles terms on both sides, so give it the original relation.
+  // Degree 0 or 1, or not a polynomial in the variable.
   const linear = Solver.solveProblem({
     type: 'SolveLinearRelation',
     relation,
     variable,
   });
-  // As above, the linear solver sometimes returns a relation it couldn't
-  // solve, such as `-x > 2` (#704), so check that the variable is isolated.
+  // The linear solver sometimes returns a relation it couldn't solve, such
+  // as `-x > 2` (#704), so check that the variable is isolated.
   return linear && isSolvedFor(linear.answer, variable)
     ? linear.answer
     : undefined;

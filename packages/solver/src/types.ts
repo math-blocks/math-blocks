@@ -68,6 +68,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       }
     >
   | StepType<'move terms to one side', TNode>
+  | StepType<'move all terms to one side', TNode>
   | StepType<
       'move matching variable terms to one side',
       TNode,

@@ -88,6 +88,93 @@ describe('solveQuadtratic', () => {
     `);
   });
 
+  describe('equations not in ax^2 + bx + c = 0 form', () => {
+    it('x^2 + 5x = -6', () => {
+      const before = parseNumRel('x^2 + 5x = -6');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "x^{2}+5x=-6",
+          "x^{2}+5x=-6 => x^{2}+5x+6=0",
+          "x^{2}+5x+6 => (x+2)(x+3)",
+          "(x+2)(x+3)=0 => x+2=0, x+3=0",
+          "x+2=0 => x=-2",
+          "x+3=0 => x=-3",
+          "x=-2, x=-3",
+        ]
+      `);
+    });
+
+    it('x^2 - 5x = 6', () => {
+      const before = parseNumRel('x^2 - 5x = 6');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "x^{2}-5x=6",
+          "x^{2}-5x=6 => x^{2}-5x-6=0",
+          "x^{2}-5x-6 => (x-6)(x+1)",
+          "(x-6)(x+1)=0 => x-6=0, x+1=0",
+          "x-6=0 => x=6",
+          "x+1=0 => x=-1",
+          "x=6, x=-1",
+        ]
+      `);
+    });
+
+    it('(x + 2)(x + 3) = 0 skips factoring', () => {
+      const before = parseNumRel('(x + 2)(x + 3) = 0');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "(x+2)(x+3)=0",
+          "(x+2)(x+3)=0 => x+2=0, x+3=0",
+          "x+2=0 => x=-2",
+          "x+3=0 => x=-3",
+          "x=-2, x=-3",
+        ]
+      `);
+    });
+
+    it('x(x + 5) = 0 keeps x = 0 as a solution', () => {
+      const before = parseNumRel('x(x + 5) = 0');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "x(x+5)=0",
+          "x(x+5)=0 => x=0, x+5=0",
+          "x+5=0 => x=-5",
+          "x=0, x=-5",
+        ]
+      `);
+    });
+
+    it('x(x + 5) + 6 = 0 simplifies before factoring', () => {
+      const before = parseNumRel('x(x + 5) + 6 = 0');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "x(x+5)+6=0",
+          "x(x+5)+6=0 => x^{2}+5x+6=0",
+          "x^{2}+5x+6 => (x+2)(x+3)",
+          "(x+2)(x+3)=0 => x+2=0, x+3=0",
+          "x+2=0 => x=-2",
+          "x+3=0 => x=-3",
+          "x=-2, x=-3",
+        ]
+      `);
+    });
+  });
+
   describe('bail-out cases', () => {
     it('5x = 0', () => {
       const node = parseNumRel('5x = 0');
@@ -98,9 +185,22 @@ describe('solveQuadtratic', () => {
       expect(result).toBeUndefined();
     });
 
-    // TODO: handle this case
-    it('x^2 - 5x = 6', () => {
-      const node = parseNumRel('x^2 - 5x = 6');
+    it('2(x + 2)(x + 3) = 0', () => {
+      // A constant factor means simplifying gives 2x^2 + 10x + 12, which
+      // factor() can't handle yet because it doesn't pull out a common
+      // factor.
+      const node = parseNumRel('2(x + 2)(x + 3) = 0');
+      const ident = builders.identifier('x');
+
+      const result = solveQuadratic(node, ident);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('0 = x^2 + 5x + 6', () => {
+      // Moving every term to the left gives a negative leading coefficient,
+      // and solveLinear can't solve the resulting -x - 2 = 0 (#704).
+      const node = parseNumRel('0 = x^2 + 5x + 6');
       const ident = builders.identifier('x');
 
       const result = solveQuadratic(node, ident);

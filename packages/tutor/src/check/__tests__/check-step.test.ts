@@ -184,6 +184,17 @@ describe('checkStep', () => {
       expect(statusOf('1/x + 1 = 2', 'x = 1')).toBe('unknown');
     });
 
+    it('returns unknown for the square of a sum', () => {
+      // The solver's simplify doesn't expand (x + 1)^2 yet.
+      expect(statusOf('(x + 1)^2 = 4', 'x^2 + 2x - 3 = 0')).toBe('unknown');
+    });
+
+    it('returns unknown when squared terms cancel', () => {
+      // Measured as written, both sides have degree 2, so this goes to the
+      // quadratic solver, which can't factor the linear x - 3.
+      expect(statusOf('x^2 + x = x^2 + 3', 'x = 3')).toBe('unknown');
+    });
+
     it('returns unknown for quadratic inequalities', () => {
       expect(statusOf('x^2 > 4', 'x^2 - 4 > 0')).toBe('unknown');
     });
