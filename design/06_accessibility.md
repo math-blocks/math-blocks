@@ -154,8 +154,8 @@ well enough for editors because announcements follow the user's own keystrokes.
 
   Rendering differences don't matter much to us, since our MathML would be visually hidden.
 - **Screen readers**: MathCAT (Neil Soiffer, now DAISY) is built into NVDA
-  2026.1 and on by default in JAWS 2026. It gives ClearSpeak/SimpleSpeak/
-  MathSpeak speech, Nemeth/UEB/etc. braille, and tree navigation from **real
+  2026.1 and on by default in JAWS 2026. It gives ClearSpeak/SimpleSpeak
+  speech (MathCAT ships no MathSpeak rules), Nemeth/UEB/etc. braille, and tree navigation from **real
   MathML** in the accessibility tree. VoiceOver reads MathML with its own (less
   granular) engine. So on Windows, exposing MathML beats any author-written label.
 - **MathML 4 `intent`** (Working Draft Oct 2026, CR expected around Q4 2026) lets
@@ -236,6 +236,17 @@ Verification status:
   `·` → "times", `±` → "plus or minus", Greek letters), and opt-in shorthand
   ("x squared", "one half") for whole-expression reads only. ~300–500 LOC plus
   tests — MathQuill's equivalent is spread across a few hundred lines.
+  Keep the words out of the code from the start. MathQuill hard-codes English
+  strings and has no localization. Instead, follow Speech Rule Engine's layout for each
+  locale:
+  - a message table (`START`, `FRAC_OVER`, `ENDFRAC`, `SUPER`, `BASELINE`, …)
+  - a table of character names
+  - a function that turns numbers into words
+  - per-locale overrides where word order or grammar differs, e.g. German
+    inflects adjectives like "fettes" and puts some of them after the noun
+
+  English ships first. Other languages can then be added without touching
+  the generator, or delegated to SRE.
 - **`describe(prev, action, next): string`** — a pure function in
   `@math-blocks/editor`. It compares cursor paths to work out "beginning of
   numerator", "after StartFraction … EndFraction", "end of superscript", what
