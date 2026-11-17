@@ -14,3 +14,4 @@ gate-keeper.
 3. [Parsing and Printing](03_parsing_and_printing.md)
 4. [Simplifying and Solving](04_simplifying_and_solving.md)
 5. [Checking work](05_checking_work.md)
+6. [Diagnosing mistakes](06_diagnosing_mistakes.md)
