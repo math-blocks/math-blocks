@@ -9,6 +9,7 @@
     {"path": "./packages/react"},
     {"path": "./packages/semantic"},
     {"path": "./packages/solver"},
+    {"path": "./packages/tutor"},
     {"path": "./packages/tex"},
     {"path": "./packages/typesetter"}
   ]
