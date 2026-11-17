@@ -116,8 +116,19 @@ MathQuill's design is compact and maps cleanly onto ours:
   (current block), Ctrl+Alt+Left/Right (siblings), Ctrl+Alt+Shift+Down
   (selection), Ctrl+Alt+= (`ariaPostLabel`, e.g. evaluation result or error).
 - **API**: `setAriaLabel`, `setAriaPostLabel(text, timeout)`, `mathspeak()`.
-- Desmos adds on top: braille mode (Nemeth/UEB input and output, six-key
-  entry via S D F J K L), audio trace for graphs.
+- Desmos adds on top (confirmed in the Desmos API v1.12 docs):
+  - **Braille mode:** `brailleMode: 'nemeth' | 'ueb'` sets input *and* output
+    code, and `brailleControls` adds a settings menu entry plus shortcut keys to switch modes.
+  - **Six-key entry:** `sixKeyInput` types six-dot braille with S D F J K L.
+  - **Screen-reader positions:** `screenReaderPositions` sets how positions on the graph are reported.
+  - **Audio trace** for graphs.
+  - Desmos recommends letting users switch between braille and visual math with shortcuts.
+- Desmos's **Abraham** library converts LaTeX ↔ Nemeth/UEB
+  (`latexToNemeth`, `nemethToLatex`, `latexToUeb`, `uebToLatex`). In permissive mode
+  it inserts missing fraction and radical delimiters, so it can translate while
+  the user is still typing. It's available only by agreement with Desmos
+  (partnerships@desmos.com). Since `@math-blocks/tex` already prints editor
+  trees as LaTeX, Abraham would cover both braille output and braille input.
 
 MathLive is similar: a `role=textbox` sink, an `aria-live` status span, and a
 `relationName()` table for "numerator", "radicand", "start of fraction" etc.
@@ -131,6 +142,17 @@ well enough for editors because announcements follow the user's own keystrokes.
 
 - **MathML Core** ships in all three engines (Chrome since 109). Chromium's
   MathML accessibility-tree mappings now match Gecko/WebKit on macOS and Linux.
+  wpt.fyi stable runs (Nov 15–16 2026) for `/mathml/`, counting subtests:
+  - Chrome 157: 97.7%
+  - Firefox 160: 80.6%
+  - Safari 27.2: 83.6%
+
+  The `/mathml-aam/` accessibility-mapping tests:
+  - Chrome: 62/64
+  - Firefox: 64/64
+  - Safari: not run
+
+  Rendering differences don't matter much to us, since our MathML would be visually hidden.
 - **Screen readers**: MathCAT (Neil Soiffer, now DAISY) is built into NVDA
   2026.1 and on by default in JAWS 2026. It gives ClearSpeak/SimpleSpeak/
   MathSpeak speech, Nemeth/UEB/etc. braille, and tree navigation from **real
@@ -158,10 +180,17 @@ well enough for editors because announcements follow the user's own keystrokes.
 - **AI-generated descriptions** of math are not reliable yet, and we have the AST anyway.
   Generate speech deterministically.
 
-Most of the survey's sources came from GitHub source code, with the rest from
-search summaries. W3C, Desmos-help, and MathJax-docs pages couldn't be
-fetched directly from this environment, so check exact version and date claims
-before quoting them.
+Verification status:
+- **Checked against primary sources:**
+  - the MathJax 4 claims (docs.mathjax.org accessibility and explorer-command pages)
+  - the Desmos API and Abraham docs
+  - wpt.fyi results
+  - the DAISY page on recommended JAWS settings: MathCAT is on by default from JAWS 2026
+  - the arXiv papers
+- **Still second-hand:** W3C material (MathML 4 WD dates, `intent` status,
+  charter, WG minutes). The W3C sites couldn't be reached from this environment,
+  and help.desmos.com and dl.acm.org block automated fetches. Check those before
+  quoting them.
 
 ## Proposed plan
 
@@ -240,7 +269,9 @@ before quoting them.
 
 Nemeth/UEB back-translation and six-key entry, as Desmos does. This needs braille
 expertise and user testing. Braille *output* in Phase 3 via SRE or MathCAT
-covers most of the value first.
+covers most of the value first. Licensing Desmos's Abraham (LaTeX ↔ Nemeth/UEB,
+tolerant of incomplete input) through `@math-blocks/tex` would cut this
+from months to weeks, if a partnership is possible.
 
 ## References
 
