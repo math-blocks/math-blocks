@@ -78,6 +78,7 @@ describe('checkStep', () => {
       ['2x + 5 = 10', 'x = 5/2'],
       ['2x + 5 = 10', '5 = 10 - 2x'],
       ['2x = 6', '3 = x'],
+      ['x / 2 = 3', 'x = 6'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
@@ -138,6 +139,16 @@ describe('checkStep', () => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
 
+    it('expands a product before checking the degree', () => {
+      expect(statusOf('x(x + 1) = 6', 'x^2 + x = 6')).toBe('equivalent');
+    });
+
+    it('handles x * x as a square', () => {
+      expect(statusOf('x * x + 5x + 6 = 0', '(x + 2)(x + 3) = 0')).toBe(
+        'equivalent',
+      );
+    });
+
     it('detects a sign error', () => {
       expect(statusOf('x^2 + 5x + 6 = 0', 'x^2 + 5x = 6')).toBe(
         'not-equivalent',
@@ -162,6 +173,19 @@ describe('checkStep', () => {
 
     it('returns unknown when the variable changes', () => {
       expect(statusOf('x + 1 = 3', 'y + 1 = 3')).toBe('unknown');
+    });
+
+    it('returns unknown for cubic equations', () => {
+      expect(statusOf('x^3 = 8', 'x = 2')).toBe('unknown');
+    });
+
+    it('returns unknown when the variable is in an exponent or denominator', () => {
+      expect(statusOf('2^x = 8', 'x = 3')).toBe('unknown');
+      expect(statusOf('1/x + 1 = 2', 'x = 1')).toBe('unknown');
+    });
+
+    it('returns unknown for quadratic inequalities', () => {
+      expect(statusOf('x^2 > 4', 'x^2 - 4 > 0')).toBe('unknown');
     });
 
     it("returns unknown when the solver can't isolate the variable", () => {

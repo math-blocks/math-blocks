@@ -196,43 +196,138 @@ const isSolvedFor = (
   );
 };
 
+/**
+ * Returns the degree of `node` as a polynomial in `variable`, e.g. 2 for
+ * `x^2 + 5x + 6`. Returns `undefined` if `node` isn't a polynomial in
+ * `variable`, such as when the variable is in a denominator or an exponent.
+ */
+const polynomialDegree = (
+  node: Semantic.types.Node,
+  variable: Semantic.types.Identifier,
+): number | undefined => {
+  const hasVariable = (n: Semantic.types.Node): boolean =>
+    getVariableNames(n).has(variable.name);
+
+  const factorDegree = (factor: Semantic.types.Node): number | undefined => {
+    if (!hasVariable(factor)) {
+      return 0;
+    }
+    switch (factor.type) {
+      case NodeType.Identifier:
+        return 1;
+      case NodeType.Neg:
+        return factorDegree(factor.arg);
+      case NodeType.Power: {
+        const { base, exp } = factor;
+        if (
+          base.type === NodeType.Identifier &&
+          exp.type === NodeType.Number &&
+          Number.isInteger(Number(exp.value))
+        ) {
+          return Number(exp.value);
+        }
+        return undefined;
+      }
+      case NodeType.Div: {
+        // A numeric denominator, as in `x / 2`, doesn't change the degree.
+        const [numerator, denominator] = factor.args;
+        return hasVariable(denominator) ? undefined : termDegree(numerator);
+      }
+      case NodeType.Mul:
+      case NodeType.Add:
+        return termDegree(factor);
+      default:
+        return undefined;
+    }
+  };
+
+  // The degree of a sum is its highest-degree term. The degree of a product
+  // is the sum of its factors' degrees, so `x * x` has degree 2.
+  const termDegree = (term: Semantic.types.Node): number | undefined => {
+    if (term.type === NodeType.Add) {
+      let max = 0;
+      for (const t of term.args) {
+        const d = termDegree(t);
+        if (d === undefined) {
+          return undefined;
+        }
+        max = Math.max(max, d);
+      }
+      return max;
+    }
+    let total = 0;
+    for (const factor of Semantic.util.getFactors(term)) {
+      const d = factorDegree(factor);
+      if (d === undefined) {
+        return undefined;
+      }
+      total += d;
+    }
+    return total;
+  };
+
+  return termDegree(node);
+};
+
 const solveRelation = (
   relation: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
 ): Semantic.types.Node | undefined => {
+  if (relation.args.length !== 2) {
+    // Chained relations such as `1 < x < 3` aren't supported.
+    return undefined;
+  }
+
+  // Move every term to the left and simplify, so that `x^2 + 5x = -6`
+  // becomes `x^2 + 5x + 6`. This tells us the relation's degree, and it's
+  // the `... = 0` form the quadratic solver needs.
+  const [left, right] = relation.args;
+  const difference = Semantic.builders.add([
+    left,
+    Semantic.builders.neg(right, true),
+  ]);
+  const simplified = Solver.solveProblem({
+    type: 'SimplifyExpression',
+    expression: difference,
+  });
+  const leftSide = simplified ? simplified.answer : difference;
+  const degree = polynomialDegree(leftSide, variable);
+
+  if (degree === 2) {
+    // Only equations can be quadratic here; the solver doesn't handle
+    // quadratic inequalities.
+    if (relation.type !== NodeType.Equals) {
+      return undefined;
+    }
+    const quadratic = Solver.solveProblem({
+      type: 'SolveQuadraticEquation',
+      relation: Semantic.builders.eq([leftSide, Semantic.builders.number('0')]),
+      variable,
+    });
+    // Check the answer, since the solver can return a step that doesn't
+    // isolate the variable.
+    return quadratic && isSolvedFor(quadratic.answer, variable)
+      ? quadratic.answer
+      : undefined;
+  }
+
+  if (degree !== undefined && degree > 2) {
+    // Neither solver handles cubics or higher.
+    return undefined;
+  }
+
+  // Degree 0 or 1, or not a polynomial in the variable. The linear solver
+  // handles terms on both sides, so give it the original relation.
   const linear = Solver.solveProblem({
     type: 'SolveLinearRelation',
     relation,
     variable,
   });
-  if (linear && isSolvedFor(linear.answer, variable)) {
-    return linear.answer;
-  }
-  if (relation.type === NodeType.Equals && relation.args.length === 2) {
-    // The quadratic solver expects `... = 0`, so move everything to the left
-    // and simplify it first.
-    const [left, right] = relation.args;
-    const difference = Semantic.builders.add([
-      left,
-      Semantic.builders.neg(right, true),
-    ]);
-    const simplified = Solver.solveProblem({
-      type: 'SimplifyExpression',
-      expression: difference,
-    });
-    const quadratic = Solver.solveProblem({
-      type: 'SolveQuadraticEquation',
-      relation: Semantic.builders.eq([
-        simplified ? simplified.answer : difference,
-        Semantic.builders.number('0'),
-      ]),
-      variable,
-    });
-    if (quadratic && isSolvedFor(quadratic.answer, variable)) {
-      return quadratic.answer;
-    }
-  }
-  return undefined;
+  // As above, the linear solver sometimes returns a relation it couldn't
+  // solve, such as `-x > 2` (#704), so check that the variable is isolated.
+  return linear && isSolvedFor(linear.answer, variable)
+    ? linear.answer
+    : undefined;
 };
 
 const solve = (
