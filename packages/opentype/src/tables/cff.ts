@@ -112,7 +112,7 @@ const getString = (operand: number, stringIndex: Index): string => {
   return decoder.decode(data.slice(start, end));
 };
 
-const parseTopDictData = (
+export const parseTopDictData = (
   data: Uint8Array,
   dict: Mutable<TopDict>,
   stringIndex: Index,
@@ -304,9 +304,10 @@ const parseTopDictData = (
       const b1 = data[i++];
       stack.push(-(b0 - 251) * 256 - b1 - 108);
     } else if (b0 === 28) {
+      // int16: shift into the top 16 bits and back so the sign is preserved.
       const b1 = data[i++];
       const b2 = data[i++];
-      stack.push((b1 << 8) | b2);
+      stack.push(((b1 << 24) | (b2 << 16)) >> 16);
     } else if (b0 === 29) {
       const b1 = data[i++];
       const b2 = data[i++];
