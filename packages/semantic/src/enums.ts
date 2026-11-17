@@ -26,7 +26,7 @@ export enum NodeType {
 
   // Pre-calculus
   AbsoluteValue = 'AbsoluteValue',
-  Summation = 'Summation',
+  Summation = 'Sum',
   Product = 'Product',
 
   // Calculus

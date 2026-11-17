@@ -1,4 +1,5 @@
 import { builders, util } from '../index';
+import { NodeType } from '../enums';
 import type * as types from '../types';
 import type { Node } from '../types';
 
@@ -221,10 +222,7 @@ describe('util helpers', () => {
       expect(util.isNumeric(node)).toBe(false);
     });
 
-    // TODO: isNumeric checks for NodeType.Summation ('Summation'), but
-    // builders.sum() creates nodes with type 'Sum'.
-    // https://github.com/math-blocks/math-blocks/issues/689
-    test.skip('Sum nodes are numeric', () => {
+    test('Sum nodes are numeric', () => {
       expect(util.isNumeric(builders.sum(a, b, num('1'), c))).toBe(true);
     });
   });
@@ -442,5 +440,13 @@ describe('util helpers', () => {
 
   test('normalize is re-exported from util', () => {
     expect(util.normalize(builders.add([b, a]))).toEqual('(Add a b)');
+  });
+});
+
+describe('NodeType', () => {
+  test('Summation matches the type of nodes built by builders.sum', () => {
+    const a = builders.identifier('a');
+    const node = builders.sum(a, a, builders.number('1'), a);
+    expect(node.type).toBe(NodeType.Summation);
   });
 });
