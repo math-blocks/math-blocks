@@ -125,6 +125,25 @@ describe('solveQuadtratic', () => {
       `);
     });
 
+    it('x^2 = 5x - 6', () => {
+      // The subtracted 6 on the right becomes + 6 on the left.
+      const before = parseNumRel('x^2 = 5x - 6');
+      const ident = builders.identifier('x');
+      const result = transform(before, ident);
+
+      expect(printSteps(result)).toMatchInlineSnapshot(`
+        [
+          "x^{2}=5x-6",
+          "x^{2}=5x-6 => x^{2}-5x+6=0",
+          "x^{2}-5x+6 => (x-3)(x-2)",
+          "(x-3)(x-2)=0 => x-3=0, x-2=0",
+          "x-3=0 => x=3",
+          "x-2=0 => x=2",
+          "x=3, x=2",
+        ]
+      `);
+    });
+
     it('(x + 2)(x + 3) = 0 skips factoring', () => {
       const before = parseNumRel('(x + 2)(x + 3) = 0');
       const ident = builders.identifier('x');

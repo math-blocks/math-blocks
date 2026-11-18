@@ -49,12 +49,12 @@ export function solveQuadratic(
   if (!isZero(right)) {
     // Subtract each term on the right from the left, so `x^2 + 5x = -6`
     // becomes `x^2 + 5x + 6 = 0` rather than `(x^2 + 5x) - -6 = 0`.
+    // A negative term, whether written as `-6` or as `- 6`, becomes its
+    // positive argument. Any other term is subtracted.
     const negatedRight = util
       .getTerms(right)
       .map((term) =>
-        term.type === 'Neg' && !term.subtraction
-          ? term.arg
-          : builders.neg(term.type === 'Neg' ? term.arg : term, true),
+        term.type === 'Neg' ? term.arg : builders.neg(term, true),
       );
     const moved = builders.numRel(
       [
