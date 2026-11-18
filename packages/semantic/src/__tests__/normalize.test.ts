@@ -175,7 +175,7 @@ describe('normalize', () => {
       degree: builders.number('1'),
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Derivative (Power :base x :exp 2) :degree [object Object])"`,
+      `"(Derivative (Power :base x :exp 2) :bvar x :degree 1)"`,
     );
   });
 
@@ -188,7 +188,7 @@ describe('normalize', () => {
       degree: builders.number('2'),
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Derivative (Power :base x :exp 2) :degree [object Object])"`,
+      `"(Derivative (Power :base x :exp 2) :bvar x :degree 2)"`,
     );
   });
 
@@ -385,15 +385,27 @@ describe('normalize node types', () => {
       ...builders.diff(builders.pow(x, one), x, one),
       degree: undefined,
     } as unknown as Node;
-    expect(print(ast)).toEqual('(Derivative (Power :base x :exp 1))');
+    expect(print(ast)).toEqual('(Derivative (Power :base x :exp 1) :bvar x)');
   });
 
-  // TODO: print() interpolates the degree node directly, so it prints
-  // "[object Object]" instead of the degree.  The bvar is also dropped.
-  // https://github.com/math-blocks/math-blocks/issues/687
-  test.skip('a derivative prints its degree', () => {
+  test('a derivative prints its variable and degree', () => {
     const ast = builders.diff(builders.pow(x, one), x, builders.number('2'));
-    expect(print(ast)).toEqual('(Derivative (Power :base x :exp 1) :degree 2)');
+    expect(print(ast)).toEqual(
+      '(Derivative (Power :base x :exp 1) :bvar x :degree 2)',
+    );
+  });
+
+  test('derivatives with different degrees normalize differently', () => {
+    const first = builders.diff(builders.pow(x, one), x, one);
+    const second = builders.diff(builders.pow(x, one), x, builders.number('2'));
+    expect(print(first)).not.toEqual(print(second));
+  });
+
+  test('derivatives with respect to different variables normalize differently', () => {
+    const y = builders.identifier('y');
+    const dx = builders.diff(builders.mul([x, y]), x, one);
+    const dy = builders.diff(builders.mul([x, y]), y, one);
+    expect(print(dx)).not.toEqual(print(dy));
   });
 
   test('NotElementOf', () => {
