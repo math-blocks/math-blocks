@@ -45,6 +45,7 @@ const describeKind = (step: Step): string => {
     case StepKind.SimplifyBothSides:
     case StepKind.SimplifyLeftHandSide:
     case StepKind.SimplifyRightHandSide:
+    case StepKind.IsolateVariable:
     case StepKind.FactorQuadratic:
     case StepKind.SolveQuadratic:
     case StepKind.SplitFactoredEquation:
