@@ -155,9 +155,7 @@ describe('builders', () => {
       });
     });
 
-    // TODO: numRel accepts a `loc` argument but doesn't add it to the node.
-    // https://github.com/math-blocks/math-blocks/issues/688
-    test.skip('keeps the location', () => {
+    test('keeps the location', () => {
       expect(builders.numRel([x, y], NodeType.Equals, loc).loc).toBe(loc);
     });
   });
