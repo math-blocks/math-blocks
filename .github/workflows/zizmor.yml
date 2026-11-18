@@ -1,0 +1,34 @@
+name: zizmor
+
+# Audits the GitHub Actions workflows and Dependabot config for security
+# issues. The job fails when zizmor reports a finding.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+  pull_request:
+    paths:
+      - ".github/**"
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Audit workflows with zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          # Fail the job on findings and annotate the PR, rather than upload
+          # results to the Security tab.
+          advanced-security: false
+          annotations: true
