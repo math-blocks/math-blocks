@@ -52,6 +52,8 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'multiply powers', TNode>
   | StepType<'divide powers', TNode>
   | StepType<'repeated multiplication can be written as a power', TNode>
+  | StepType<'a power is repeated multiplication', TNode>
+  | StepType<'expand power', TNode>
   | StepType<'reduce fraction', TNode>
   | StepType<'simplify multiplication', TNode>
   | StepType<

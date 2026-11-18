@@ -17,6 +17,9 @@ describe('checkStep', () => {
       ['1/2 + 1/3', '5/6'],
       ['2(x + 3)', '2x + 6'],
       ['2x + 1', '2x * 1 + 1'],
+      ['(x + 1)(x + 2)', 'x^2 + 3x + 2'],
+      ['(x + 1)^2', 'x^2 + 2x + 1'],
+      ['(x - 3)^2', 'x^2 - 6x + 9'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
@@ -50,6 +53,7 @@ describe('checkStep', () => {
       ['2x + 3x', '6x'],
       ['2 + 3', '6'],
       ['2(x + 3)', '2x + 3'],
+      ['(x + 1)^2', 'x^2 + 1'],
     ])('%s -> %s is not equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('not-equivalent');
     });
@@ -135,6 +139,7 @@ describe('checkStep', () => {
     test.each([
       ['x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0'],
       ['x^2 + 5x + 6 = 0', 'x^2 + 5x = -6'],
+      ['(x + 1)^2 = 4', 'x^2 + 2x - 3 = 0'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
@@ -182,11 +187,6 @@ describe('checkStep', () => {
     it('returns unknown when the variable is in an exponent or denominator', () => {
       expect(statusOf('2^x = 8', 'x = 3')).toBe('unknown');
       expect(statusOf('1/x + 1 = 2', 'x = 1')).toBe('unknown');
-    });
-
-    it('returns unknown for the square of a sum', () => {
-      // The solver's simplify doesn't expand (x + 1)^2 yet.
-      expect(statusOf('(x + 1)^2 = 4', 'x^2 + 2x - 3 = 0')).toBe('unknown');
     });
 
     it('returns unknown when squared terms cancel', () => {
