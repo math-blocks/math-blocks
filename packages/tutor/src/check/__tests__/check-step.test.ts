@@ -17,6 +17,9 @@ describe('checkStep', () => {
       ['1/2 + 1/3', '5/6'],
       ['2(x + 3)', '2x + 6'],
       ['2x + 1', '2x * 1 + 1'],
+      ['(x + 1)(x + 2)', 'x^2 + 3x + 2'],
+      ['(x + 1)^2', 'x^2 + 2x + 1'],
+      ['(x - 3)^2', 'x^2 - 6x + 9'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
@@ -50,6 +53,7 @@ describe('checkStep', () => {
       ['2x + 3x', '6x'],
       ['2 + 3', '6'],
       ['2(x + 3)', '2x + 3'],
+      ['(x + 1)^2', 'x^2 + 1'],
     ])('%s -> %s is not equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('not-equivalent');
     });
@@ -135,6 +139,7 @@ describe('checkStep', () => {
     test.each([
       ['x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0'],
       ['x^2 + 5x + 6 = 0', 'x^2 + 5x = -6'],
+      ['(x + 1)^2 = 4', 'x^2 + 2x - 3 = 0'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
