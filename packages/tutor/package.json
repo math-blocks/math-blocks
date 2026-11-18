@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/tutor",
-    "version": "0.0.10",
+    "version": "0.1.0",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -11,10 +11,10 @@
     },
     "dependencies": {
         "@math-blocks/core": "^0.0.12",
-        "@math-blocks/semantic": "^0.1.0",
-        "@math-blocks/solver": "^0.0.13"
+        "@math-blocks/semantic": "^0.1.1",
+        "@math-blocks/solver": "^0.0.14"
     },
     "devDependencies": {
-        "@math-blocks/parser": "^0.0.13"
+        "@math-blocks/parser": "^0.0.14"
     }
 }

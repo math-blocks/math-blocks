@@ -561,6 +561,7 @@ const builders = {
     type,
     id: getId(),
     args,
+    loc,
   }),
 
   number: (
