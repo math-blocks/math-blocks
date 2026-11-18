@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@math-blocks/semantic": "^0.1.1",
-        "fraction.js": "^4.0.12"
+        "fraction.js": "^5.3.4"
     },
     "devDependencies": {
         "@math-blocks/editor": "^0.0.14",
