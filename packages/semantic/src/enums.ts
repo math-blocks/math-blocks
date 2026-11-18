@@ -13,8 +13,8 @@ export enum NodeType {
   Power = 'Power',
   Log = 'Log',
 
-  PlusMinus = 'plusminus',
-  MinusPlus = 'minusplus',
+  PlusMinus = 'PlusMinus',
+  MinusPlus = 'MinusPlus',
 
   Function = 'Function', // TODO: split into FunctionDefinition and FunctionEvaluation
   Ellipsis = 'Ellipsis',
@@ -91,6 +91,6 @@ export enum NodeType {
   Complexes = 'Complexes',
 
   // Linear Algebra
-  Vector = 'vector',
-  Matrix = 'matrix',
+  Vector = 'Vector',
+  Matrix = 'Matrix',
 }
