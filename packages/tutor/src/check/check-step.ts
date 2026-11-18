@@ -3,6 +3,25 @@ import * as Solver from '@math-blocks/solver';
 
 const { NodeType } = Semantic;
 
+/**
+ * How `checkStep` compares the two steps' solved answers.
+ *
+ * - `'value'`: an answer that gives the variable a number, such as `x = 4/2`
+ *   or `2.5 > x`, matches another that uses the same variable and relation
+ *   and gives it the same number, however that number is written. So do
+ *   expressions that simplify to equal numbers. Answers that aren't numeric
+ *   are compared as with `'form'`.
+ * - `'form'`: answers match only when they're written the same way, up to
+ *   term order, which side of a relation the variable is on, and the like.
+ *   Use this to tell a correct step from a finished, simplified answer.
+ */
+export type AnswerComparison = 'value' | 'form';
+
+export type CheckStepOptions = {
+  /** How to compare the solved answers. Defaults to `'value'`. */
+  readonly answers?: AnswerComparison;
+};
+
 export type CheckStepResult =
   | {
       /** Both steps have the same solution. */
@@ -359,6 +378,128 @@ const solve = (
 };
 
 /**
+ * The inverse of each relation, for when its sides are swapped, so that
+ * `3 > x` reads as `x < 3`.
+ */
+const SWAPPED: Readonly<Record<string, string>> = {
+  [NodeType.Equals]: NodeType.Equals,
+  [NodeType.NotEquals]: NodeType.NotEquals,
+  [NodeType.LessThan]: NodeType.GreaterThan,
+  [NodeType.LessThanOrEquals]: NodeType.GreaterThanOrEquals,
+  [NodeType.GreaterThan]: NodeType.LessThan,
+  [NodeType.GreaterThanOrEquals]: NodeType.LessThanOrEquals,
+};
+
+type Value = ReturnType<typeof Semantic.util.evalNode>;
+
+/** A solved relation with the variable on the left, e.g. `x < 5/2`. */
+type NumericAnswer = {
+  readonly type: string;
+  readonly variable: string;
+  readonly value: Value;
+};
+
+/**
+ * Returns the exact value of `node`, or `undefined` if it isn't a number,
+ * e.g. because it contains a variable or a power.
+ */
+const evalNumber = (node: Semantic.types.Node): Value | undefined => {
+  try {
+    return Semantic.util.evalNode(node);
+  } catch {
+    // evalNode throws on anything that isn't a number.
+    return undefined;
+  }
+};
+
+/**
+ * Turns a solved relation such as `x = 5/2` or `2.5 > x` into a
+ * `NumericAnswer`, with the variable moved to the left. A quadratic's
+ * sequence of solutions gives one answer per solution. Returns `undefined`
+ * if any relation doesn't have a variable alone on one side and a number on
+ * the other.
+ */
+const toNumericAnswers = (
+  node: Semantic.types.Node,
+): NumericAnswer[] | undefined => {
+  if (node.type === 'Sequence') {
+    const answers: NumericAnswer[] = [];
+    for (const arg of node.args) {
+      const argAnswers = toNumericAnswers(arg);
+      if (!argAnswers) {
+        return undefined;
+      }
+      answers.push(...argAnswers);
+    }
+    return answers;
+  }
+  if (!isNumericRelation(node) || node.args.length !== 2) {
+    return undefined;
+  }
+  const [left, right] = node.args;
+  if (left.type === NodeType.Identifier) {
+    const value = evalNumber(right);
+    return value && [{ type: node.type, variable: left.name, value }];
+  }
+  if (right.type === NodeType.Identifier) {
+    const value = evalNumber(left);
+    return value && [{ type: SWAPPED[node.type], variable: right.name, value }];
+  }
+  return undefined;
+};
+
+/**
+ * Whether each of `prev`'s answers matches a different one of `next`'s, in
+ * any order, since a quadratic's solutions can be listed either way.
+ */
+const sameNumericAnswers = (
+  prev: readonly NumericAnswer[],
+  next: readonly NumericAnswer[],
+): boolean => {
+  if (prev.length !== next.length) {
+    return false;
+  }
+  const unmatched = [...next];
+  return prev.every((p) => {
+    const index = unmatched.findIndex(
+      (n) =>
+        n.type === p.type &&
+        n.variable === p.variable &&
+        n.value.equals(p.value),
+    );
+    if (index === -1) {
+      return false;
+    }
+    unmatched.splice(index, 1);
+    return true;
+  });
+};
+
+/**
+ * Compares two solved answers by their numeric values. Returns `undefined`
+ * when either answer isn't numeric, so the caller can fall back to comparing
+ * them by form.
+ *
+ * `evalNode` works with exact fractions, and decimals such as `2.5` are
+ * read exactly too, so equal values compare equal without a tolerance.
+ */
+const compareValues = (prev: Solved, next: Solved): boolean | undefined => {
+  if (prev.kind === 'unsolved' || prev.kind !== next.kind) {
+    return undefined;
+  }
+  if (prev.kind === 'expression') {
+    const prevValue = evalNumber(prev.answer);
+    const nextValue = evalNumber(next.answer);
+    return prevValue && nextValue ? prevValue.equals(nextValue) : undefined;
+  }
+  const prevAnswers = toNumericAnswers(prev.answer);
+  const nextAnswers = toNumericAnswers(next.answer);
+  return prevAnswers && nextAnswers
+    ? sameNumericAnswers(prevAnswers, nextAnswers)
+    : undefined;
+};
+
+/**
  * Checks whether `next` is a valid step from `prev` by solving both and
  * comparing their solutions.
  *
@@ -366,11 +507,21 @@ const solve = (
  * their variable, so both must contain the same single variable. Steps
  * that the solver can't handle come back as `'unknown'` rather than
  * `'not-equivalent'`.
+ *
+ * `options.answers` sets how the solutions are compared; see
+ * `AnswerComparison`. With `'value'`, the default, `x + 3 = 5 -> x = 4/2`
+ * and `2x + 5 = 10 -> x = 2.5` are equivalent, because `4/2` and `2.5` have
+ * the same values as the solver's `2` and `5/2`. With `'form'`, they're
+ * not-equivalent, because `next` isn't written the way the solver writes
+ * its answer, e.g. in simplest form.
  */
 export const checkStep = (
   prev: Semantic.types.Node,
   next: Semantic.types.Node,
+  options: CheckStepOptions = {},
 ): CheckStepResult => {
+  const { answers = 'value' } = options;
+
   const prevVars = getVariableNames(prev);
   const nextVars = getVariableNames(next);
 
@@ -393,10 +544,14 @@ export const checkStep = (
     return { status: 'unknown', reason: nextSolved.reason };
   }
 
-  if (
-    prevSolved.kind === nextSolved.kind &&
-    canonicalString(prevSolved.answer) === canonicalString(nextSolved.answer)
-  ) {
+  const sameValue =
+    answers === 'value' ? compareValues(prevSolved, nextSolved) : undefined;
+  const equivalent =
+    sameValue ??
+    (prevSolved.kind === nextSolved.kind &&
+      canonicalString(prevSolved.answer) ===
+        canonicalString(nextSolved.answer));
+  if (equivalent) {
     return { status: 'equivalent', answer: prevSolved.answer };
   }
 

@@ -1,7 +1,7 @@
 import * as Testing from '../../testing';
 
 import { checkStep } from '../check-step';
-import type { CheckStepResult } from '../check-step';
+import type { AnswerComparison, CheckStepResult } from '../check-step';
 
 const check = (prev: string, next: string): CheckStepResult =>
   checkStep(Testing.parse(prev), Testing.parse(next));
@@ -197,6 +197,150 @@ describe('checkStep', () => {
       // The linear solver doesn't divide inequalities by negative numbers yet.
       expect(statusOf('-x > 2', 'x < -2')).toBe('unknown');
       expect(statusOf('x < -2', '-x > 2')).toBe('unknown');
+    });
+  });
+
+  describe('comparing answers', () => {
+    const statusWith = (
+      prev: string,
+      next: string,
+      answers: AnswerComparison,
+    ): CheckStepResult['status'] =>
+      checkStep(Testing.parse(prev), Testing.parse(next), { answers }).status;
+
+    // The cases from #728: valid steps whose answers aren't written the way
+    // the solver writes them.
+    const unsimplified = [
+      ['x + 3 = 5', 'x = 4/2'],
+      ['2x + 5 = 10', 'x = 2.5'],
+      ['2x = 5', 'x = 5 * 1/2'],
+    ];
+
+    test.each(unsimplified)(
+      "%s -> %s is equivalent with answers: 'value'",
+      (prev, next) => {
+        expect(statusWith(prev, next, 'value')).toBe('equivalent');
+      },
+    );
+
+    test.each(unsimplified)(
+      '%s -> %s is equivalent by default',
+      (prev, next) => {
+        expect(statusOf(prev, next)).toBe('equivalent');
+      },
+    );
+
+    test.each(unsimplified)(
+      "%s -> %s is not equivalent with answers: 'form'",
+      (prev, next) => {
+        expect(statusWith(prev, next, 'form')).toBe('not-equivalent');
+      },
+    );
+
+    describe("answers: 'value'", () => {
+      test.each([
+        // Fractions
+        ['x + 1 = 3', 'x = 6/3'],
+        ['2x = 1', 'x = 2/4'],
+        ['2x = -1', 'x = -2/4'],
+        // Decimals
+        ['x + 1 = 3', 'x = 2.0'],
+        ['4x = 1', 'x = 0.25'],
+        ['x = 0.1 + 0.2', 'x = 0.3'],
+        ['2x = 1', 'x = 0.5'],
+        // The variable on either side
+        ['2x + 5 = 10', '2.5 = x'],
+        ['2x + 5 = 10', '5/2 = x'],
+        ['x + 3 = 5', '4/2 = x'],
+        ['2.5 = x', 'x = 5/2'],
+        // Inequalities
+        ['2x + 1 > 6', 'x > 2.5'],
+        ['2x + 1 > 6', '2.5 < x'],
+        ['2x + 1 ≤ 6', 'x ≤ 10/4'],
+        ['2x + 1 ≥ 6', '5/2 ≤ x'],
+        // Expressions
+        ['1/2 + 1/3', '5/6'],
+        ['1/2 + 1/4', '0.75'],
+        ['5/2', '2.5'],
+      ])('%s -> %s is equivalent', (prev, next) => {
+        expect(statusWith(prev, next, 'value')).toBe('equivalent');
+      });
+
+      test.each([
+        ['x + 3 = 5', 'x = 6/2'],
+        ['2x + 5 = 10', 'x = 2.4'],
+        ['2x + 5 = 10', '2.4 = x'],
+        ['x = 0.1 + 0.2', 'x = 0.30001'],
+        // The value matches, but the relation doesn't.
+        ['2x + 1 > 6', 'x ≥ 2.5'],
+        ['2x + 1 > 6', 'x < 2.5'],
+        ['2x + 1 > 6', '2.5 > x'],
+        ['2x + 5 = 10', 'x > 2.5'],
+        // Expressions
+        ['1/2 + 1/4', '0.7'],
+      ])('%s -> %s is not equivalent', (prev, next) => {
+        expect(statusWith(prev, next, 'value')).toBe('not-equivalent');
+      });
+
+      it('compares the solutions of a quadratic in any order', () => {
+        expect(
+          statusWith('x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0', 'value'),
+        ).toBe('equivalent');
+        expect(statusWith('x^2 - 5x + 6 = 0', 'x^2 = 5x - 6', 'value')).toBe(
+          'equivalent',
+        );
+      });
+
+      it('falls back to comparing by form when an answer is not numeric', () => {
+        expect(statusWith('2x + 3x', '5x', 'value')).toBe('equivalent');
+        expect(statusWith('2x + 3x', '6x', 'value')).toBe('not-equivalent');
+        expect(statusWith('x - 2', '2 - x', 'value')).toBe('not-equivalent');
+        expect(statusWith('x + 1 = x + 1', '1 = 1', 'value')).toBe(
+          'equivalent',
+        );
+        expect(statusWith('x + 1 = x + 1', '1 = 2', 'value')).toBe(
+          'not-equivalent',
+        );
+      });
+
+      it("doesn't match an equation with an expression of the same value", () => {
+        expect(statusWith('x + 3 = 5', '2', 'value')).toBe('not-equivalent');
+      });
+
+      it('still returns unknown when the variable changes', () => {
+        expect(statusWith('x + 3 = 5', 'y = 2', 'value')).toBe('unknown');
+      });
+
+      it("returns the solver's answer", () => {
+        const result = checkStep(
+          Testing.parse('2x + 5 = 10'),
+          Testing.parse('x = 2.5'),
+          { answers: 'value' },
+        );
+        expect(result.status).toBe('equivalent');
+        if (result.status === 'equivalent') {
+          expect(Testing.print(result.answer)).toBe('x = 5 / 2');
+        }
+      });
+    });
+
+    describe("answers: 'form'", () => {
+      test.each([
+        ['x + 1 = 3', 'x = 2.0'],
+        ['2x + 5 = 10', '2.5 = x'],
+        ['2x + 1 > 6', 'x > 2.5'],
+        ['1/2 + 1/4', '0.75'],
+      ])('%s -> %s is not equivalent', (prev, next) => {
+        expect(statusWith(prev, next, 'form')).toBe('not-equivalent');
+      });
+
+      test.each([
+        ['2x + 5 = 10', 'x = 5/2'],
+        ['2x + 5 = 10', '5/2 = x'],
+        ['x + 1 > 3', '2 < x'],
+      ])('%s -> %s is still equivalent', (prev, next) => {
+        expect(statusWith(prev, next, 'form')).toBe('equivalent');
+      });
     });
   });
 
