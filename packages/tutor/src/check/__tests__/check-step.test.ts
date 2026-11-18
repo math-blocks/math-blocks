@@ -140,6 +140,7 @@ describe('checkStep', () => {
       ['x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0'],
       ['x^2 + 5x + 6 = 0', 'x^2 + 5x = -6'],
       ['(x + 1)^2 = 4', 'x^2 + 2x - 3 = 0'],
+      ['x^2 = 5x - 6', 'x^2 - 5x + 6 = 0'],
     ])('%s -> %s is equivalent', (prev, next) => {
       expect(statusOf(prev, next)).toBe('equivalent');
     });
@@ -154,8 +155,17 @@ describe('checkStep', () => {
       );
     });
 
+    it('solves equations whose squared terms cancel', () => {
+      expect(statusOf('x^2 + x = x^2 + 3', 'x = 3')).toBe('equivalent');
+      expect(statusOf('x^2 + x = x^2 + 3', 'x = 4')).toBe('not-equivalent');
+      expect(statusOf('x^2 + 2x = x^2 - 6', 'x = -3')).toBe('equivalent');
+    });
+
     it('detects a sign error', () => {
       expect(statusOf('x^2 + 5x + 6 = 0', 'x^2 + 5x = 6')).toBe(
+        'not-equivalent',
+      );
+      expect(statusOf('x^2 = 5x - 6', 'x^2 - 5x - 6 = 0')).toBe(
         'not-equivalent',
       );
     });
