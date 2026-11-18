@@ -1,0 +1,20 @@
+{
+    "name": "@math-blocks/tutor",
+    "version": "0.0.10",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@math-blocks/core": "^0.0.12",
+        "@math-blocks/semantic": "^0.1.0",
+        "@math-blocks/solver": "^0.0.13"
+    },
+    "devDependencies": {
+        "@math-blocks/parser": "^0.0.13"
+    }
+}
