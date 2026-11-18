@@ -2,13 +2,13 @@ import * as Semantic from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-import { distribute } from './distribute';
+import { distributeLeftSum } from './distribute';
 
 const { NodeType } = Semantic;
 
 /**
  * Expands the square of a sum, e.g.
- * (x + 1)^2 -> (x + 1)(x + 1) -> (x + 1)x + (x + 1).  The remaining
+ * (x + 1)^2 -> (x + 1)(x + 1) -> x(x + 1) + (x + 1).  The remaining
  * distribution and collecting of like terms is left to other transforms.
  *
  * We distribute right away instead of returning (x + 1)(x + 1) because
@@ -42,7 +42,7 @@ export function expandPow(
     return;
   }
 
-  const mul = Semantic.builders.mul([base, base], true);
+  const mul = Semantic.builders.mul([base, base], true) as Semantic.types.Mul;
 
   const expandStep: Step<Semantic.types.Node> = {
     message: 'a power is repeated multiplication',
@@ -51,11 +51,10 @@ export function expandPow(
     substeps: [],
   };
 
-  // Passing an empty path lets `distribute` act on `mul` even when `node` is
-  // a term in a sum.  `distribute` always handles a product of two sums.  If
-  // that ever changes, we leave the power alone rather than return
-  // (x + 1)(x + 1), which mulToPow would turn straight back into (x + 1)^2.
-  const distributeStep = distribute(mul, []);
+  // `distributeLeftSum` always handles a product of two sums.  If that ever
+  // changes, we leave the power alone rather than return (x + 1)(x + 1),
+  // which mulToPow would turn straight back into (x + 1)^2.
+  const distributeStep = distributeLeftSum(mul);
   if (!distributeStep) {
     return undefined;
   }

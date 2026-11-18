@@ -8,9 +8,9 @@ import { expandPow } from '../expand-pow';
 describe('expandPow', () => {
   test.each`
     input          | output
-    ${'(x + 1)^2'} | ${'(x+1)x+(x+1)'}
-    ${'(x - 3)^2'} | ${'(x-3)x-3(x-3)'}
-    ${'(a + b)^2'} | ${'(a+b)a+(a+b)b'}
+    ${'(x + 1)^2'} | ${'x(x+1)+(x+1)'}
+    ${'(x - 3)^2'} | ${'x(x-3)-3(x-3)'}
+    ${'(a + b)^2'} | ${'a(a+b)+b(a+b)'}
   `('expandPow($input) -> $output', ({ input, output }) => {
     const result = expandPow(parse(input), []);
 
@@ -44,11 +44,11 @@ describe('expandPow', () => {
     expect(expandPow(div.args[1], [div])).toBeUndefined();
   });
 
-  test('does nothing if distribute does nothing', () => {
-    // `distribute` always handles a product of two sums today, so stub it to
+  test('does nothing if distributeLeftSum does nothing', () => {
+    // `distributeLeftSum` always handles a product of two sums today, so stub it to
     // check that we don't return a half-expanded (x + 1)(x + 1).
     const spy = jest
-      .spyOn(Distribute, 'distribute')
+      .spyOn(Distribute, 'distributeLeftSum')
       .mockReturnValueOnce(undefined);
 
     expect(expandPow(parse('(x + 1)^2'), [])).toBeUndefined();

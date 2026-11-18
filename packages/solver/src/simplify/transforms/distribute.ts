@@ -66,8 +66,8 @@ const negToSub = (
   return before;
 };
 
-// a(b + c) -> ab + bc
-const distMul = (
+// a(b + c) -> ab + ac
+const distMulRight = (
   node: Semantic.types.Mul,
   substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.Node[] | undefined => {
@@ -122,7 +122,18 @@ const distMul = (
         const newTerm = simplifyMul(term as Semantic.types.Mul, substeps);
         return newTerm;
       });
-    } else if (node.args[0].type === NodeType.Add) {
+    }
+  }
+  return undefined;
+};
+
+// (a + b)c -> ac + bc
+const distMulLeft = (
+  node: Semantic.types.Mul,
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined => {
+  if (node.args.length === 2) {
+    if (node.args[0].type === NodeType.Add) {
       const add = node.args[0];
 
       // Convert subtraction to negative within the `add` node
@@ -176,6 +187,15 @@ const distMul = (
   return undefined;
 };
 
+// a(b + c) -> ab + ac, or (a + b)c -> ac + bc when c isn't a sum
+const distMul = (
+  node: Semantic.types.Mul,
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined =>
+  distMulRight(node, substeps) ?? distMulLeft(node, substeps);
+
+type DistMul = typeof distMul;
+
 /**
  * If node is of the form a(b + c + ...) perform distribution on the node to
  * produce ab + ac + ....  If the node is a child of an 'add' node, the parent
@@ -215,6 +235,26 @@ export function distribute(
     return undefined;
   }
 
+  return applyDistribution(node, distMul);
+}
+
+/**
+ * Distributes each term of the left sum over the right factor, e.g.
+ * (a + b)(c + d) -> a(c + d) + b(c + d).  `distribute` instead multiplies the
+ * left factor into each term of a right sum, giving (a + b)c + (a + b)d.
+ *
+ * TODO: make this the default for `distribute` (#716).
+ */
+export function distributeLeftSum(
+  node: Semantic.types.Mul,
+): Step<Semantic.types.Node> | void {
+  return applyDistribution(node, distMulLeft);
+}
+
+function applyDistribution(
+  node: Semantic.types.Node,
+  distMulImpl: DistMul,
+): Step<Semantic.types.Node> | void {
   const substeps: Step<Semantic.types.Node>[] = [];
   const nodes = Semantic.util.getTerms(node);
   let changed = false;
@@ -228,7 +268,7 @@ export function distribute(
     if (node.type === NodeType.Neg) {
       newTerms = distSub(node, substeps);
     } else if (node.type === NodeType.Mul) {
-      newTerms = distMul(node, substeps);
+      newTerms = distMulImpl(node, substeps);
     }
 
     if (newTerms) {

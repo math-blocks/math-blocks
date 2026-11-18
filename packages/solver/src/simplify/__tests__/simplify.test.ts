@@ -681,7 +681,7 @@ describe('simplify', () => {
       expect(printSteps(ast, step.substeps)).toMatchInlineSnapshot(`
         [
           "(x+1)^{2}",
-          "(x+1)x+(x+1) - expand power",
+          "x(x+1)+(x+1) - expand power",
           "xx+x+(x+1) - distribute",
           "xx+x+x+1 - drop parentheses",
           "xx+2x+1 - collect like terms",
@@ -692,7 +692,7 @@ describe('simplify', () => {
         [
           "(x+1)^{2}",
           "(x+1)(x+1) - a power is repeated multiplication",
-          "(x+1)x+(x+1) - distribute",
+          "x(x+1)+(x+1) - distribute",
         ]
       `);
     });
