@@ -1,0 +1,18 @@
+packages:
+  - "packages/*"
+
+# pnpm only runs the install scripts of the dependencies listed as true.
+allowBuilds:
+  # Checks that its native binary is installed.
+  "@swc/core": true
+  # Checks that its native binary is installed.
+  esbuild: true
+  # Installs the git pre-commit hook that runs lint-staged.
+  husky: true
+  # Builds from source. The prebuilt binaries are installed as optional
+  # dependencies.
+  "@parcel/watcher": false
+  # Only print a message.
+  core-js: false
+  core-js-pure: false
+  es5-ext: false

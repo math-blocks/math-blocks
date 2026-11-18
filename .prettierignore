@@ -2,6 +2,7 @@
 *.md
 *.json
 *.yml
+*.yaml
 .rollup.cache
 out
 dist

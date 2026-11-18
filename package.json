@@ -5,10 +5,8 @@
   "author": "Kevin Barabash",
   "license": "MIT",
   "private": true,
+  "packageManager": "pnpm@12.21.0",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
@@ -82,7 +80,7 @@
     "xml2js": "^0.4.23"
   },
   "scripts": {
-    "prepublishOnly": "yarn build-rollup",
+    "prepublishOnly": "pnpm build-rollup",
     "codechecks": "codechecks",
     "build": "vite build",
     "build-ci": "vite build --base=/math-blocks/",
