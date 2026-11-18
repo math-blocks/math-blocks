@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { getCoeff, isTermOfIdent } from '../util';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -81,6 +81,7 @@ export const divByCoeff = (
   );
 
   return {
+    kind: StepKind.DoSameOperationToBothSides,
     message: 'do the same operation to both sides',
     before,
     after,

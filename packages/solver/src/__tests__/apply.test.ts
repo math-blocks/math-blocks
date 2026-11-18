@@ -2,14 +2,16 @@ import * as Semantic from '@math-blocks/semantic';
 import { parse, print } from '../test-util';
 
 import { applyStep, applySteps } from '../apply';
-import { Step } from '../types';
+import { Step, StepKind } from '../types';
 
 describe('applyStep', () => {
   test('can update root node', () => {
     const ast = parse('a');
 
     const step: Step = {
-      message: 'test',
+      // The kind is arbitrary; these tests don't look at it.
+      kind: StepKind.SimplifyExpression,
+      message: 'simplify expression',
       before: ast,
       after: parse('b'),
       substeps: [],
@@ -24,7 +26,9 @@ describe('applyStep', () => {
     const ast = parse('a + b') as Semantic.types.Add;
 
     const step: Step = {
-      message: 'test',
+      // The kind is arbitrary; these tests don't look at it.
+      kind: StepKind.SimplifyExpression,
+      message: 'simplify expression',
       before: ast.args[1],
       after: parse('c'),
       substeps: [],
@@ -39,7 +43,9 @@ describe('applyStep', () => {
     const ast = parse('a + b') as Semantic.types.Add;
 
     const step: Step = {
-      message: 'test',
+      // The kind is arbitrary; these tests don't look at it.
+      kind: StepKind.SimplifyExpression,
+      message: 'simplify expression',
       before: ast.args[1],
       after: parse('c + d'),
       substeps: [],
@@ -59,13 +65,17 @@ describe('applySteps', () => {
 
     const steps: Step[] = [];
     steps.push({
-      message: 'test',
+      // The kind is arbitrary; these tests don't look at it.
+      kind: StepKind.SimplifyExpression,
+      message: 'simplify expression',
       before: ast.args[1],
       after: c,
       substeps: [],
     });
     steps.push({
-      message: 'test',
+      // The kind is arbitrary; these tests don't look at it.
+      kind: StepKind.SimplifyExpression,
+      message: 'simplify expression',
       before: c,
       after: dPlusE,
       substeps: [],

@@ -3,7 +3,7 @@ import * as Semantic from '@math-blocks/semantic';
 import { isTermOfIdent, flipSign } from '../util';
 import { simplifyBothSides } from './simplify-both-sides';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export function moveMatchingVariableTermsToOneSide(
   before: Semantic.types.NumericRelation,
@@ -46,6 +46,7 @@ export function moveMatchingVariableTermsToOneSide(
       after = Semantic.builders.numRel([left, right], before.type);
 
       substeps.push({
+        kind: StepKind.DoSameOperationToBothSides,
         message: 'do the same operation to both sides',
         before,
         after,
@@ -60,6 +61,7 @@ export function moveMatchingVariableTermsToOneSide(
       if (step) {
         after = step.after;
         substeps.push({
+          kind: StepKind.SimplifyBothSides,
           message: 'simplify both sides',
           before: before,
           after: step.after,
@@ -72,6 +74,7 @@ export function moveMatchingVariableTermsToOneSide(
     if (!after) return;
 
     return {
+      kind: StepKind.MoveMatchingVariableTermsToOneSide,
       message: 'move matching variable terms to one side',
       before: originalBefore,
       after,

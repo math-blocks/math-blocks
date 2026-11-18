@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -42,6 +42,7 @@ export function mulFraction(
     return {
       // TODO: customize the message depending on whether there are one
       // or more factors that are fractions.
+      kind: StepKind.MultiplyFractions,
       message: 'multiply fraction(s)',
       before: node,
       after,

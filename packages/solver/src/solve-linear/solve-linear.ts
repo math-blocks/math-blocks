@@ -2,7 +2,7 @@ import Fraction from 'fraction.js';
 
 import { builders, types, util } from '@math-blocks/semantic';
 
-import { Step, NumberOfSolutions } from '../types';
+import { StepKind, Step, NumberOfSolutions } from '../types';
 
 import { divByCoeff } from './transforms/div-both-sides';
 import { mulByNumber } from './transforms/mul-both-sides';
@@ -17,7 +17,7 @@ import { simplifyBothSides } from './transforms/simplify-both-sides';
 export function solveLinear(
   node: types.NumericRelation,
   ident: types.Identifier,
-): Extract<Step, { message: 'solve for variable' }> | void {
+): Extract<Step, { kind: StepKind.SolveForVariable }> | void {
   if (!isLinear(node)) {
     return;
   }
@@ -25,6 +25,7 @@ export function solveLinear(
   // Checks if the equation is already solved for the variable.
   if (isIdentifier(node.args[0]) && util.isNumber(node.args[1])) {
     return {
+      kind: StepKind.SolveForVariable,
       message: 'solve for variable',
       before: node,
       after: node,
@@ -36,6 +37,7 @@ export function solveLinear(
   // Checks if the equation is already solved for the variable.
   if (isIdentifier(node.args[1]) && util.isNumber(node.args[0])) {
     return {
+      kind: StepKind.SolveForVariable,
       message: 'solve for variable',
       before: node,
       after: node,
@@ -71,6 +73,7 @@ export function solveLinear(
       : NumberOfSolutions.None;
 
     return {
+      kind: StepKind.SolveForVariable,
       message: 'solve for variable',
       before: node,
       after: rel,
@@ -157,6 +160,7 @@ export function solveLinear(
       : NumberOfSolutions.None;
 
     return {
+      kind: StepKind.SolveForVariable,
       message: 'solve for variable',
       before: node,
       after: rel,
@@ -199,6 +203,7 @@ export function solveLinear(
     }
 
     return {
+      kind: StepKind.SolveForVariable,
       message: 'solve for variable',
       before: node,
       after: rel,
@@ -208,6 +213,7 @@ export function solveLinear(
   }
 
   return {
+    kind: StepKind.SolveForVariable,
     message: 'solve for variable',
     before: node,
     after: rel,
@@ -296,6 +302,7 @@ const moveTerm = (
 
   // TODO: replace this with 'do the same operation to both sides'
   return {
+    kind: StepKind.DoSameOperationToBothSides,
     message: 'do the same operation to both sides',
     operation: leftTerm.type === 'Neg' ? 'add' : 'sub',
     value: newTerm.type === 'Neg' ? newTerm.arg : newTerm,

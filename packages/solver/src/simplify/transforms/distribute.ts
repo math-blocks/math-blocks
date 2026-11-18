@@ -3,7 +3,7 @@ import type { Mutable } from 'utility-types';
 
 import { simplifyMul } from '../util';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -19,6 +19,7 @@ const distSub = (
   ) as Semantic.types.Mul;
   // TODO: return new steps instead of mutating
   substeps.push({
+    kind: StepKind.NegationIsMultiplyingByNegativeOne,
     message: 'negation is the same as multiplying by negative one',
     before: node,
     after: mulNegOne,
@@ -36,6 +37,7 @@ const subToNeg = (
     const after = Semantic.builders.neg(before.arg, false);
     // TODO: return new steps instead of mutating
     substeps.push({
+      kind: StepKind.SubtractionIsAddingInverse,
       message: 'subtraction is the same as adding the inverse',
       before,
       after,
@@ -56,6 +58,7 @@ const negToSub = (
     const after = Semantic.builders.neg(before.arg, true);
     // TODO: return new steps instead of mutating
     substeps.push({
+      kind: StepKind.AddingInverseIsSubtraction,
       message: 'adding the inverse is the same as subtraction',
       before,
       after,
@@ -112,6 +115,7 @@ const distMulRight = (
 
       // TODO: return new steps instead of mutating
       substeps.push({
+        kind: StepKind.MultiplyEachTerm,
         message: 'multiply each term',
         before,
         after: newNode,
@@ -172,6 +176,7 @@ const distMulLeft = (
 
       // TODO: return new steps instead of mutating
       substeps.push({
+        kind: StepKind.MultiplyEachTerm,
         message: 'multiply each term',
         before,
         after: newNode,
@@ -269,6 +274,7 @@ export function distribute(
   const after = Semantic.builders.add(newNodes);
 
   return {
+    kind: StepKind.Distribute,
     message: 'distribute',
     before: node,
     after,

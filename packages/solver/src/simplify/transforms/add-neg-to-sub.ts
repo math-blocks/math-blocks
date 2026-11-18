@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -21,6 +21,7 @@ export function addNegToSub(
     return undefined;
   }
   return {
+    kind: StepKind.AddingInverseIsSubtraction,
     message: 'adding the inverse is the same as subtraction',
     before: node,
     after: Semantic.builders.add(newTerms),
