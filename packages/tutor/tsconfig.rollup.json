@@ -7,6 +7,7 @@
     "declarationDir": ".",
   },
   "references": [
+    {"path": "../core"},
     {"path": "../parser"},
     {"path": "../semantic"},
     {"path": "../solver"}
