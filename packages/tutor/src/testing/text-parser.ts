@@ -1,4 +1,4 @@
-import { UnreachableCaseError } from '../util';
+import { UnreachableCaseError } from '@math-blocks/core';
 import * as Parser from '@math-blocks/parser';
 import * as Semantic from '@math-blocks/semantic';
 

@@ -3,7 +3,7 @@
 Helps students work through math problems. It gives hints, shows the next
 step, and checks whether a step a student writes is valid.
 
-It depends only on `@math-blocks/semantic` and `@math-blocks/solver`.
+It depends on `@math-blocks/semantic` and `@math-blocks/solver`, plus `@math-blocks/core` for shared helpers.
 
 ## API
 

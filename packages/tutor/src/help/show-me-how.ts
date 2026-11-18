@@ -1,7 +1,7 @@
+import { UnreachableCaseError } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 import * as Solver from '@math-blocks/solver';
 
-import { UnreachableCaseError } from '../util';
 import { getHint } from './get-hint';
 
 const getProblemNode = (problem: Solver.Problem): Semantic.types.Node => {
