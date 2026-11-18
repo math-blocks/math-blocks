@@ -275,6 +275,63 @@ const polynomialDegree = (
   return termDegree(node);
 };
 
+/** Solves `relation` with the linear solver, if it isolates the variable. */
+const solveLinear = (
+  relation: Semantic.types.NumericRelation,
+  variable: Semantic.types.Identifier,
+): Semantic.types.Node | undefined => {
+  const linear = Solver.solveProblem({
+    type: 'SolveLinearRelation',
+    relation,
+    variable,
+  });
+  // The linear solver sometimes returns a relation it couldn't solve, such
+  // as `-x > 2` (#704), so check that the variable is isolated.
+  return linear && isSolvedFor(linear.answer, variable)
+    ? linear.answer
+    : undefined;
+};
+
+/**
+ * Handles an equation that looks quadratic as written but whose squared
+ * terms cancel, such as `x^2 + x = x^2 + 3`. Moves every term to the left
+ * and simplifies, and if what's left is linear, solves `... = 0` with the
+ * linear solver.
+ */
+const solveCancelledToLinear = (
+  relation: Semantic.types.NumericRelation,
+  variable: Semantic.types.Identifier,
+): Semantic.types.Node | undefined => {
+  const [left, right] = relation.args;
+  // Negate each term on the right, so `-6` becomes `6` rather than `- -6`,
+  // which simplify can't handle.
+  const negatedRight = Semantic.util
+    .getTerms(right)
+    .map((term) =>
+      term.type === NodeType.Neg ? term.arg : Semantic.builders.neg(term, true),
+    );
+  const difference = Semantic.builders.add([
+    ...Semantic.util.getTerms(left),
+    ...negatedRight,
+  ]);
+  const simplified = Solver.solveProblem({
+    type: 'SimplifyExpression',
+    expression: difference,
+  });
+  const leftSide = simplified ? simplified.answer : difference;
+  const degree = polynomialDegree(leftSide, variable);
+  if (degree === undefined || degree > 1) {
+    return undefined;
+  }
+  return solveLinear(
+    Semantic.builders.numRel(
+      [leftSide, Semantic.builders.number('0')],
+      relation.type,
+    ),
+    variable,
+  );
+};
+
 const solveRelation = (
   relation: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
@@ -308,9 +365,11 @@ const solveRelation = (
     });
     // Check the answer, since the solver can return a step that doesn't
     // isolate the variable.
-    return quadratic && isSolvedFor(quadratic.answer, variable)
-      ? quadratic.answer
-      : undefined;
+    if (quadratic && isSolvedFor(quadratic.answer, variable)) {
+      return quadratic.answer;
+    }
+    // The squared terms may cancel, leaving a linear equation.
+    return solveCancelledToLinear(relation, variable);
   }
 
   if (degree !== undefined && degree > 2) {
@@ -319,16 +378,7 @@ const solveRelation = (
   }
 
   // Degree 0 or 1, or not a polynomial in the variable.
-  const linear = Solver.solveProblem({
-    type: 'SolveLinearRelation',
-    relation,
-    variable,
-  });
-  // The linear solver sometimes returns a relation it couldn't solve, such
-  // as `-x > 2` (#704), so check that the variable is isolated.
-  return linear && isSolvedFor(linear.answer, variable)
-    ? linear.answer
-    : undefined;
+  return solveLinear(relation, variable);
 };
 
 const solve = (
