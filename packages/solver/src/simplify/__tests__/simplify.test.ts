@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { applyStep, applySteps } from '../../apply';
 import type { Step } from '../../types';
-import { parse, print } from '../../test-util';
+import { parse, print, printSteps } from '../../test-util';
 
 import { simplify as _simplify } from '../simplify';
 
@@ -121,16 +121,13 @@ describe('simplify', () => {
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
-      expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'simplify multiplication',
-        'collect like terms',
-      ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"5x"`);
-
-      const first = applyStep(ast, step.substeps[0]);
-      const second = applyStep(first, step.substeps[1]);
-      expect(print(first)).toMatchInlineSnapshot(`"2x--3x"`);
-      expect(print(second)).toMatchInlineSnapshot(`"5x"`);
+      expect(printSteps(ast, step.substeps)).toMatchInlineSnapshot(`
+        [
+          "2x--3x",
+          "2x--3x - simplify multiplication",
+          "5x - collect like terms",
+        ]
+      `);
     });
 
     test('2x - -3x -> 5x', () => {
@@ -494,11 +491,17 @@ describe('simplify', () => {
         `"-x"`,
       );
 
-      const first = applyStep(ast, step.substeps[0].substeps[0]);
-      const second = applyStep(first, step.substeps[0].substeps[1]);
-      expect(print(first)).toMatchInlineSnapshot(`"3+-1(x+1)"`);
-      expect(print(second)).toMatchInlineSnapshot(`"3+-1x+(-1)(1)"`);
-      // ... and so on.
+      expect(printSteps(ast, step.substeps[0].substeps)).toMatchInlineSnapshot(`
+        [
+          "3-(x+1)",
+          "3+-1(x+1) - negation is the same as multiplying by negative one",
+          "3+-1x+(-1)(1) - multiply each term",
+          "3+-x+(-1)(1) - multiplying a negative by a positive is negative",
+          "3+-x+-1 - multiplying a negative by a positive is negative",
+          "3-x+-1 - adding the inverse is the same as subtraction",
+          "3-x-1 - adding the inverse is the same as subtraction",
+        ]
+      `);
     });
 
     test('3(x + 2(x - 1)) -> 3(3x - 2) -> 9x - 6', () => {
@@ -656,25 +659,17 @@ describe('simplify', () => {
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
-      expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'distribute',
-        'distribute',
-        'distribute',
-        'collect like terms',
-        'repeated multiplication can be written as a power',
-      ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}+4x+3"`);
-
-      const first = applyStep(ast, step.substeps[0]);
-      expect(print(first)).toMatchInlineSnapshot(`"(x+1)x+3(x+1)"`); // is the 3 at the front?
-      const second = applyStep(first, step.substeps[1]);
-      expect(print(second)).toMatchInlineSnapshot(`"xx+x+3(x+1)"`);
-      const third = applyStep(second, step.substeps[2]);
-      expect(print(third)).toMatchInlineSnapshot(`"xx+x+3x+3"`);
-      const fourth = applyStep(third, step.substeps[3]);
-      expect(print(fourth)).toMatchInlineSnapshot(`"xx+4x+3"`);
-      const fifth = applyStep(fourth, step.substeps[4]);
-      expect(print(fifth)).toMatchInlineSnapshot(`"x^{2}+4x+3"`);
+      // TODO: is the 3 at the front of 3(x+1) after the first step expected?
+      expect(printSteps(ast, step.substeps)).toMatchInlineSnapshot(`
+        [
+          "(x+1)(x+3)",
+          "(x+1)x+3(x+1) - distribute",
+          "xx+x+3(x+1) - distribute",
+          "xx+x+3x+3 - distribute",
+          "xx+4x+3 - collect like terms",
+          "x^{2}+4x+3 - repeated multiplication can be written as a power",
+        ]
+      `);
     });
 
     test('(x + 1)^2 -> x^2 + 2x + 1', () => {
@@ -683,29 +678,23 @@ describe('simplify', () => {
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
-      expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'expand power',
-        'distribute',
-        'drop parentheses',
-        'collect like terms',
-        'repeated multiplication can be written as a power',
-      ]);
-      expect(print(step.after)).toMatchInlineSnapshot(`"x^{2}+2x+1"`);
-
-      expect(
-        step.substeps[0].substeps.map((substep) => substep.message),
-      ).toEqual(['a power is repeated multiplication', 'distribute']);
-
-      const first = applyStep(ast, step.substeps[0]);
-      expect(print(first)).toMatchInlineSnapshot(`"(x+1)x+(x+1)"`);
-      const second = applyStep(first, step.substeps[1]);
-      expect(print(second)).toMatchInlineSnapshot(`"xx+x+(x+1)"`);
-      const third = applyStep(second, step.substeps[2]);
-      expect(print(third)).toMatchInlineSnapshot(`"xx+x+x+1"`);
-      const fourth = applyStep(third, step.substeps[3]);
-      expect(print(fourth)).toMatchInlineSnapshot(`"xx+2x+1"`);
-      const fifth = applyStep(fourth, step.substeps[4]);
-      expect(print(fifth)).toMatchInlineSnapshot(`"x^{2}+2x+1"`);
+      expect(printSteps(ast, step.substeps)).toMatchInlineSnapshot(`
+        [
+          "(x+1)^{2}",
+          "(x+1)x+(x+1) - expand power",
+          "xx+x+(x+1) - distribute",
+          "xx+x+x+1 - drop parentheses",
+          "xx+2x+1 - collect like terms",
+          "x^{2}+2x+1 - repeated multiplication can be written as a power",
+        ]
+      `);
+      expect(printSteps(ast, step.substeps[0].substeps)).toMatchInlineSnapshot(`
+        [
+          "(x+1)^{2}",
+          "(x+1)(x+1) - a power is repeated multiplication",
+          "(x+1)x+(x+1) - distribute",
+        ]
+      `);
     });
 
     test('1 + (x - 1)^2 -> x^2 - 2x + 2', () => {
