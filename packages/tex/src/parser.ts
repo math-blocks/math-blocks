@@ -82,6 +82,12 @@ class Parser {
         this.consume(); // ' '
         return this.parseNode();
       }
+      case '-': {
+        this.consume(); // '-'
+        // TeX uses the ASCII hyphen-minus for subtraction and negation, but the
+        // editor represents them with the minus sign (U+2212).
+        return builders.char('\u2212');
+      }
       default: {
         this.consume();
         return builders.char(char);

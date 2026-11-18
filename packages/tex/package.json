@@ -12,5 +12,8 @@
     "dependencies": {
         "@math-blocks/core": "^0.0.12",
         "@math-blocks/editor": "^0.0.14"
+    },
+    "devDependencies": {
+        "@math-blocks/semantic": "^0.1.1"
     }
 }

@@ -3,6 +3,21 @@ import { builders, util, AccentType } from '@math-blocks/editor';
 import { parse } from '../parser';
 
 describe('Parser', () => {
+  test('ASCII hyphen-minus becomes a minus sign', () => {
+    const row = parse('a-b');
+
+    expect(
+      util.isEqual(
+        row,
+        builders.row([
+          builders.char('a'),
+          builders.char('\u2212'),
+          builders.char('b'),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
   test('subsup', () => {
     const row = parse('\\int_0^1');
 
@@ -117,11 +132,11 @@ describe('Parser', () => {
           builders.char('a'),
           builders.char('+'),
           builders.delimited(
-            [builders.char('x'), builders.char('-'), builders.char('1')],
+            [builders.char('x'), builders.char('\u2212'), builders.char('1')],
             builders.char('('),
             builders.char(')'),
           ),
-          builders.char('-'),
+          builders.char('\u2212'),
           builders.char('b'),
         ]),
       ),
@@ -136,7 +151,7 @@ describe('Parser', () => {
         row,
         builders.row([
           builders.delimited(
-            [builders.char('x'), builders.char('-'), builders.char('1')],
+            [builders.char('x'), builders.char('\u2212'), builders.char('1')],
             builders.char('['),
             builders.char(']'),
           ),
@@ -180,7 +195,7 @@ describe('Parser', () => {
         builders.row([
           builders.frac(
             [builders.char('x'), builders.char('+'), builders.char('1')],
-            [builders.char('x'), builders.char('-'), builders.char('1')],
+            [builders.char('x'), builders.char('\u2212'), builders.char('1')],
           ),
         ]),
       ),
@@ -236,7 +251,7 @@ describe('Parser', () => {
         row,
         builders.row([
           builders.root(
-            [builders.char('n'), builders.char('-'), builders.char('1')],
+            [builders.char('n'), builders.char('\u2212'), builders.char('1')],
             [builders.char('x'), builders.char('+'), builders.char('1')],
           ),
         ]),
