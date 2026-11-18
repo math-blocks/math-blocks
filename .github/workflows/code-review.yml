@@ -3,8 +3,12 @@ name: Code review
 # Runs only on PR comments by k4b7 that start with /code-review. Pushes to a
 # PR branch do not start a run.
 on:
-  issue_comment:
+  # zizmor flags issue_comment because any commenter can start a run. The job
+  # below only runs for comments by k4b7.
+  issue_comment: # zizmor: ignore[dangerous-triggers]
     types: [created]
+
+permissions: {}
 
 jobs:
   # Runs the pr-review skill when k4b7 comments `/code-review [low|medium|high]`
@@ -30,9 +34,10 @@ jobs:
     steps:
       # The 👀 reaction tells the commenter the review has started.
       - name: React to the command
-        run: gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -f content=eyes --silent
+        run: gh api "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID/reactions" -f content=eyes --silent
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
 
       # `verdict` skips the review. Any other word is a level for the skill.
       - name: Read the command
@@ -49,8 +54,9 @@ jobs:
           COMMAND: ${{ github.event.comment.body }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # The skill comes from the default branch, so a PR branched before the
@@ -58,16 +64,17 @@ jobs:
       - name: Check out the PR branch
         run: |
           cp .claude/skills/pr-review/SKILL.md "$RUNNER_TEMP/pr-review.md"
-          gh pr checkout ${{ github.event.issue.number }}
+          gh pr checkout "$PR_NUMBER"
           mkdir -p .claude/skills/pr-review
           cp "$RUNNER_TEMP/pr-review.md" .claude/skills/pr-review/SKILL.md
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
 
       - name: Run Claude
         id: claude
         if: steps.mode.outputs.mode == 'review'
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@469588f42e6b1e94cd14ad09dccfeaec772ce0fd # v1.0.280
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |

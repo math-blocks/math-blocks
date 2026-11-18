@@ -9,7 +9,22 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Wait a week after a release before proposing it.
+    cooldown:
+      default-days: 7
     # Disable rebasing for npm pull requests
     rebase-strategy: "disabled"
     allow:
       - dependency-type: "production"
+
+  # Keeps the SHA-pinned actions in .github/workflows up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
