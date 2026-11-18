@@ -1,7 +1,7 @@
 import * as Semantic from '@math-blocks/semantic';
 
 import { simplify } from '../../simplify/simplify';
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export function simplifyBothSides(
   before: Semantic.types.NumericRelation,
@@ -17,16 +17,19 @@ export function simplifyBothSides(
       before.type,
     );
     return {
+      kind: StepKind.SimplifyBothSides,
       message: 'simplify both sides',
       before,
       after,
       substeps: [
         {
           ...left,
+          kind: StepKind.SimplifyLeftHandSide,
           message: 'simplify the left hand side',
         },
         {
           ...right,
+          kind: StepKind.SimplifyRightHandSide,
           message: 'simplify the right hand side',
         },
       ],
@@ -39,6 +42,7 @@ export function simplifyBothSides(
       before.type,
     );
     return {
+      kind: StepKind.SimplifyLeftHandSide,
       message: 'simplify the left hand side',
       before,
       after,
@@ -52,6 +56,7 @@ export function simplifyBothSides(
       before.type,
     );
     return {
+      kind: StepKind.SimplifyRightHandSide,
       message: 'simplify the right hand side',
       before,
       after,

@@ -3,7 +3,7 @@ import Fraction from 'fraction.js';
 import type { OneOrMore } from '@math-blocks/core';
 import { types, builders, util } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 function getBaseAndExp(node: types.Node): [types.Node, types.Node] {
   if (node.type === 'Power') {
@@ -165,6 +165,7 @@ export function factorQuadratic(node: types.Add): Step | void {
     constTerm,
   ]);
   substeps.push({
+    kind: StepKind.SplitLinearTerm,
     message: 'split linear term',
     before: node,
     after: step1,
@@ -180,6 +181,7 @@ export function factorQuadratic(node: types.Add): Step | void {
     constTerm,
   ]);
   substeps.push({
+    kind: StepKind.Factor,
     message: 'factor', // factor x out of x^2 + 2x
     before: step1,
     after: step2,
@@ -197,6 +199,7 @@ export function factorQuadratic(node: types.Add): Step | void {
     ),
   ]);
   substeps.push({
+    kind: StepKind.Factor,
     message: 'factor', // factor 3 out of 3x + 6
     before: step2,
     after: step3,
@@ -214,6 +217,7 @@ export function factorQuadratic(node: types.Add): Step | void {
     true,
   );
   substeps.push({
+    kind: StepKind.Factor,
     message: 'factor', // factor (x + 3) out of x(x + 2) + 3(x + 2)
     before: step3,
     after: step4,
@@ -221,6 +225,7 @@ export function factorQuadratic(node: types.Add): Step | void {
   });
 
   return {
+    kind: StepKind.FactorQuadratic,
     message: 'factor quadratic', // TODO: include variable in message
     before: node,
     after: step4,

@@ -3,7 +3,7 @@ import * as Semantic from '@math-blocks/semantic';
 import { moveMatchingVariableTermsToOneSide } from './move-matching-variable-terms-to-one-side';
 import { moveOtherTermsToOneSide } from './move-other-terms-to-the-other-side';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 /**
  * Moves all terms matching `ident` to one side and those that don't to the
@@ -32,6 +32,7 @@ export function moveTermsToOneSide(
   }
 
   return {
+    kind: StepKind.MoveTermsToOneSide,
     message: 'move terms to one side',
     before: originalBefore,
     after: substeps[substeps.length - 1].after,

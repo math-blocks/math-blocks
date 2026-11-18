@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -47,6 +47,7 @@ export function distributeDiv(node: Semantic.types.Node): Step | void {
   );
 
   return {
+    kind: StepKind.DistributeDivision,
     message: 'distribute division',
     before: node,
     after,

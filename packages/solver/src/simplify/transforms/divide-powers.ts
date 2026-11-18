@@ -1,6 +1,6 @@
 import { util, types, builders, NodeType } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const isPower = (node: types.Node): node is types.Pow =>
   node.type === NodeType.Power;
@@ -109,6 +109,7 @@ export function dividePowers(node: types.Node): Step | void {
   const implicit = isMul(node.args[0]) ? node.args[0].implicit : true;
 
   return {
+    kind: StepKind.DividePowers,
     message: 'divide powers',
     before: node,
     after: builders.mul(newFactors, implicit),

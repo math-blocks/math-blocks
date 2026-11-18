@@ -1,6 +1,6 @@
 import { builders, types, util } from '@math-blocks/semantic';
 
-import type { Step } from '../types';
+import { StepKind, type Step } from '../types';
 
 import { powerRule } from './transforms/power';
 import { productRule } from './transforms/product';
@@ -23,6 +23,7 @@ export function differentiate(node: types.Node): Step | void {
       );
 
       substeps.push({
+        kind: StepKind.Differentiate,
         message: 'differentiate',
         before: node,
         after,
@@ -54,6 +55,7 @@ export function differentiate(node: types.Node): Step | void {
     case 'Identifier': {
       if (node.name === 'x') {
         return {
+          kind: StepKind.Differentiate,
           message: 'differentiate',
           before: node,
           after: builders.number('1'),
@@ -68,6 +70,7 @@ export function differentiate(node: types.Node): Step | void {
         return;
       }
       substeps.push({
+        kind: StepKind.Differentiate,
         message: 'differentiate',
         before: node,
         after: builders.neg(argStep.after),
@@ -78,6 +81,7 @@ export function differentiate(node: types.Node): Step | void {
     default: {
       if (util.isNumber(node)) {
         return {
+          kind: StepKind.Differentiate,
           message: 'differentiate',
           before: node,
           after: builders.number('0'),
@@ -97,6 +101,7 @@ export function differentiate(node: types.Node): Step | void {
 
   if (substeps.length > 0) {
     return {
+      kind: StepKind.Differentiate,
       message: 'differentiate',
       before: node,
       after: sol,
