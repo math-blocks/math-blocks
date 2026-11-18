@@ -1,5 +1,11 @@
 # @math-blocks/tex
 
+## 0.1.1
+
+### Patch Changes
+
+- @math-blocks/editor@0.0.14
+
 ## 0.1.0
 
 ### Minor Changes
