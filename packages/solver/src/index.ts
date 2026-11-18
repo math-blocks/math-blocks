@@ -1,5 +1,6 @@
 export { solveLinear } from './solve-linear/solve-linear';
 export { solveQuadratic } from './solve-quadratic/solve-quadratic';
+export { moveAllTermsToLeft } from './solve-quadratic/move-all-terms-to-left';
 export { simplify } from './simplify/simplify';
 export { solveProblem } from './solve-problem';
 

@@ -5,6 +5,8 @@ import { factor } from '../factor/factor';
 import { simplify } from '../simplify/simplify';
 import { solveLinear } from '../solve-linear/solve-linear';
 
+import { moveAllTermsToLeft } from './move-all-terms-to-left';
+
 const isZero = (node: types.Node): boolean =>
   node.type === 'Number' && node.value === '0';
 
@@ -47,25 +49,13 @@ export function solveQuadratic(
   // Get the equation into the form `... = 0`. This is only needed when the
   // right side isn't already zero, e.g. `x^2 + 5x = -6`.
   if (!isZero(right)) {
-    // Subtract each term on the right from the left, so `x^2 + 5x = -6`
-    // becomes `x^2 + 5x + 6 = 0` rather than `(x^2 + 5x) - -6 = 0`.
-    // A negative term, whether written as `-6` or as `- 6`, becomes its
-    // positive argument. Any other term is subtracted.
-    const negatedRight = util
-      .getTerms(right)
-      .map((term) =>
-        term.type === 'Neg' ? term.arg : builders.neg(term, true),
-      );
-    const moved = builders.numRel(
-      [
-        builders.add([...util.getTerms(left), ...negatedRight]),
-        builders.number('0'),
-      ],
-      relType,
-    );
+    const moved = moveAllTermsToLeft(before);
+    if (!moved) {
+      return;
+    }
     substeps.push({
       message: 'move all terms to one side',
-      before: builders.numRel([left, right], relType),
+      before,
       after: moved,
       substeps: [],
       section: true,

@@ -302,18 +302,11 @@ const solveCancelledToLinear = (
   relation: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
 ): Semantic.types.Node | undefined => {
-  const [left, right] = relation.args;
-  // Negate each term on the right, so `-6` becomes `6` rather than `- -6`,
-  // which simplify can't handle.
-  const negatedRight = Semantic.util
-    .getTerms(right)
-    .map((term) =>
-      term.type === NodeType.Neg ? term.arg : Semantic.builders.neg(term, true),
-    );
-  const difference = Semantic.builders.add([
-    ...Semantic.util.getTerms(left),
-    ...negatedRight,
-  ]);
+  const moved = Solver.moveAllTermsToLeft(relation);
+  if (!moved) {
+    return undefined;
+  }
+  const difference = moved.args[0];
   const simplified = Solver.solveProblem({
     type: 'SimplifyExpression',
     expression: difference,
