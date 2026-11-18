@@ -187,14 +187,14 @@ const distMulLeft = (
   return undefined;
 };
 
-// a(b + c) -> ab + ac, or (a + b)c -> ac + bc when c isn't a sum
+// (a + b)c -> ac + bc, or a(b + c) -> ab + ac when a isn't a sum.  Trying
+// the left sum first means (a + b)(c + d) -> a(c + d) + b(c + d), which is
+// how a student would usually write it.
 const distMul = (
   node: Semantic.types.Mul,
   substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.Node[] | undefined =>
-  distMulRight(node, substeps) ?? distMulLeft(node, substeps);
-
-type DistMul = typeof distMul;
+  distMulLeft(node, substeps) ?? distMulRight(node, substeps);
 
 /**
  * If node is of the form a(b + c + ...) perform distribution on the node to
@@ -235,26 +235,6 @@ export function distribute(
     return undefined;
   }
 
-  return applyDistribution(node, distMul);
-}
-
-/**
- * Distributes each term of the left sum over the right factor, e.g.
- * (a + b)(c + d) -> a(c + d) + b(c + d).  `distribute` instead multiplies the
- * left factor into each term of a right sum, giving (a + b)c + (a + b)d.
- *
- * TODO: make this the default for `distribute` (#716).
- */
-export function distributeLeftSum(
-  node: Semantic.types.Mul,
-): Step<Semantic.types.Node> | void {
-  return applyDistribution(node, distMulLeft);
-}
-
-function applyDistribution(
-  node: Semantic.types.Node,
-  distMulImpl: DistMul,
-): Step<Semantic.types.Node> | void {
   const substeps: Step<Semantic.types.Node>[] = [];
   const nodes = Semantic.util.getTerms(node);
   let changed = false;
@@ -268,7 +248,7 @@ function applyDistribution(
     if (node.type === NodeType.Neg) {
       newTerms = distSub(node, substeps);
     } else if (node.type === NodeType.Mul) {
-      newTerms = distMulImpl(node, substeps);
+      newTerms = distMul(node, substeps);
     }
 
     if (newTerms) {

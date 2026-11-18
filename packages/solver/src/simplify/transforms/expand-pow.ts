@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-import { distributeLeftSum } from './distribute';
+import { distribute } from './distribute';
 
 const { NodeType } = Semantic;
 
@@ -42,7 +42,7 @@ export function expandPow(
     return;
   }
 
-  const mul = Semantic.builders.mul([base, base], true) as Semantic.types.Mul;
+  const mul = Semantic.builders.mul([base, base], true);
 
   const expandStep: Step<Semantic.types.Node> = {
     message: 'a power is repeated multiplication',
@@ -51,10 +51,11 @@ export function expandPow(
     substeps: [],
   };
 
-  // `distributeLeftSum` always handles a product of two sums.  If that ever
-  // changes, we leave the power alone rather than return (x + 1)(x + 1),
-  // which mulToPow would turn straight back into (x + 1)^2.
-  const distributeStep = distributeLeftSum(mul);
+  // Passing an empty path lets `distribute` act on `mul` even when `node` is
+  // a term in a sum.  `distribute` always handles a product of two sums.  If
+  // that ever changes, we leave the power alone rather than return
+  // (x + 1)(x + 1), which mulToPow would turn straight back into (x + 1)^2.
+  const distributeStep = distribute(mul, []);
   if (!distributeStep) {
     return undefined;
   }

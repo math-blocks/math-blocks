@@ -44,11 +44,11 @@ describe('expandPow', () => {
     expect(expandPow(div.args[1], [div])).toBeUndefined();
   });
 
-  test('does nothing if distributeLeftSum does nothing', () => {
-    // `distributeLeftSum` always handles a product of two sums today, so stub it to
+  test('does nothing if distribute does nothing', () => {
+    // `distribute` always handles a product of two sums today, so stub it to
     // check that we don't return a half-expanded (x + 1)(x + 1).
     const spy = jest
-      .spyOn(Distribute, 'distributeLeftSum')
+      .spyOn(Distribute, 'distribute')
       .mockReturnValueOnce(undefined);
 
     expect(expandPow(parse('(x + 1)^2'), [])).toBeUndefined();

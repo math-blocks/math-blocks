@@ -659,13 +659,12 @@ describe('simplify', () => {
       const step = simplify(ast);
 
       expect(step.message).toEqual('simplify expression');
-      // TODO: is the 3 at the front of 3(x+1) after the first step expected?
       expect(printSteps(ast, step.substeps)).toMatchInlineSnapshot(`
         [
           "(x+1)(x+3)",
-          "(x+1)x+3(x+1) - distribute",
-          "xx+x+3(x+1) - distribute",
-          "xx+x+3x+3 - distribute",
+          "x(x+3)+(x+3) - distribute",
+          "xx+3x+(x+3) - distribute",
+          "xx+3x+x+3 - drop parentheses",
           "xx+4x+3 - collect like terms",
           "x^{2}+4x+3 - repeated multiplication can be written as a power",
         ]
