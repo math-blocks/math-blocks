@@ -304,7 +304,12 @@ export const parseTopDictData = (
       const b1 = data[i++];
       stack.push(-(b0 - 251) * 256 - b1 - 108);
     } else if (b0 === 28) {
-      // int16: shift into the top 16 bits and back so the sign is preserved.
+      // The spec gives this operand as `b1 << 8 | b2` with a range of -32768
+      // to +32767, i.e. a signed int16. JavaScript's bitwise operators work on
+      // 32-bit signed integers, so `(b1 << 8) | b2` puts the int16's sign bit
+      // at bit 15 instead of bit 31 and is never negative (0xF997 gives 63895
+      // instead of -1641). Building the value in the top 16 bits and then
+      // shifting right with `>>` (which keeps the sign) gives the int16.
       const b1 = data[i++];
       const b2 = data[i++];
       stack.push(((b1 << 24) | (b2 << 16)) >> 16);
