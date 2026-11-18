@@ -306,7 +306,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"-x=-1"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=1"`);
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
@@ -325,6 +325,8 @@ describe('solveLinear', () => {
         "-\\frac{x}{6}=-\\frac{1}{6}",
         "-\\frac{x}{6}*6=-\\frac{1}{6}*6",
         "-x=-1",
+        "\\frac{-x}{-1}=\\frac{-1}{-1}",
+        "x=1",
       ]
     `);
   });
@@ -492,6 +494,166 @@ describe('solveLinear', () => {
         "1=1",
       ]
     `);
+  });
+
+  // Regression tests for #704: a coefficient of -1 (a Neg node, not a Mul
+  // with a numeric coefficient) used to be left unsolved.
+  it('-x > 2', () => {
+    const before = parseNumRel('-x > 2');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x\\lt-2"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-x\\gt2",
+        "\\frac{-x}{-1}\\lt\\frac{2}{-1}",
+        "x\\lt-2",
+      ]
+    `);
+  });
+
+  it('-x = 3', () => {
+    const before = parseNumRel('-x = 3');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=-3"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-x=3",
+        "\\frac{-x}{-1}=\\frac{3}{-1}",
+        "x=-3",
+      ]
+    `);
+  });
+
+  it('3 = -x', () => {
+    const before = parseNumRel('3 = -x');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"-3=x"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "3=-x",
+        "\\frac{3}{-1}=\\frac{-x}{-1}",
+        "-3=x",
+      ]
+    `);
+  });
+
+  it('-x + 5 \\le 1', () => {
+    const before = parseNumRel('-x + 5 \\le 1');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x\\geq4"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-x+5\\leq1",
+        "-x+5-5\\leq1-5",
+        "-x\\leq-4",
+        "\\frac{-x}{-1}\\geq\\frac{-4}{-1}",
+        "x\\geq4",
+      ]
+    `);
+  });
+
+  it('-\\frac{x}{2} = 3', () => {
+    const before = parseNumRel('-\\frac{x}{2} = 3');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x=-6"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-\\frac{x}{2}=3",
+        "-\\frac{x}{2}*2=3*2",
+        "-x=6",
+        "\\frac{-x}{-1}=\\frac{6}{-1}",
+        "x=-6",
+      ]
+    `);
+  });
+
+  it('4b + 5 = 1 + 5b', () => {
+    const before = parseNumRel('4b + 5 = 1 + 5b');
+    const ident = builders.identifier('b');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"b=4"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "4b+5=1+5b",
+        "4b+5-5=1-5+5b",
+        "4b=-4+5b",
+        "4b-5b=-4+5b-5b",
+        "-b=-4",
+        "\\frac{-b}{-1}=\\frac{-4}{-1}",
+        "b=4",
+      ]
+    `);
+  });
+
+  it('4b + 5 = 1 + 5b built from semantic builders', () => {
+    const b = builders.identifier('b');
+    const before = builders.eq([
+      builders.add([
+        builders.mul([builders.number('4'), b], true),
+        builders.number('5'),
+      ]),
+      builders.add([
+        builders.number('1'),
+        builders.mul([builders.number('5'), b], true),
+      ]),
+    ]);
+    const result = solveLinear(before, b)!;
+
+    expect(print(result.after)).toEqual('b=4');
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
   });
 
   describe('bail-out cases', () => {});

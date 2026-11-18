@@ -192,11 +192,22 @@ describe('checkStep', () => {
     it('returns unknown for quadratic inequalities', () => {
       expect(statusOf('x^2 > 4', 'x^2 - 4 > 0')).toBe('unknown');
     });
+  });
 
-    it("returns unknown when the solver can't isolate the variable", () => {
-      // The linear solver doesn't divide inequalities by negative numbers yet.
-      expect(statusOf('-x > 2', 'x < -2')).toBe('unknown');
-      expect(statusOf('x < -2', '-x > 2')).toBe('unknown');
+  // These used to be 'unknown', because the linear solver returned relations
+  // with a coefficient of -1 unsolved (#704).
+  describe('relations with a coefficient of -1', () => {
+    it('flips the inequality when dividing by -1', () => {
+      expect(statusOf('-x > 2', 'x < -2')).toBe('equivalent');
+      expect(statusOf('x < -2', '-x > 2')).toBe('equivalent');
+      expect(statusOf('-x > 2', 'x > -2')).toBe('not-equivalent');
+    });
+
+    it('solves equations whose variable term ends up as -x', () => {
+      expect(statusOf('-x = 3', 'x = -3')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', 'b = 4')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', '-b = -4')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', 'b = -4')).toBe('not-equivalent');
     });
   });
 
