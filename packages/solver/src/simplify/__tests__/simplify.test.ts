@@ -1099,7 +1099,7 @@ describe('simplify', () => {
     test('(2)(x)(3/2)', () => {
       // const ast = parse('(3/2)(x)*2');
       // const ast = parse('2*(3/2)(x)');
-      const ast = parse('(2)((3/2)(x)+(1/2))');
+      const ast = parse('(2)((\\frac{3}{2})(x)+(\\frac{1}{2}))');
 
       const step = simplify(ast);
 
@@ -1107,7 +1107,7 @@ describe('simplify', () => {
     });
 
     test('(-(5 / 2)(n))(-2)', () => {
-      const ast = parse('(-(5 / 2)(n))(-2)');
+      const ast = parse('(-(\\frac{5}{2})(n))(-2)');
       const step = simplify(ast);
       print(step.after); // ?
     });
