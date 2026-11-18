@@ -30,7 +30,17 @@ export const print = (node: types.CharNode, options: Options = {}): string => {
         return node.value;
       }
       case NodeType.Row: {
-        return node.children.map(_print).join('');
+        let result = '';
+        for (const child of node.children) {
+          const str = _print(child);
+          // A letter right after a command name would become part of the
+          // name, e.g. `\gt` followed by `y` would be read as `\gty`.
+          if (/\\[a-zA-Z]+$/.test(result) && /^[a-zA-Z]/.test(str)) {
+            result += ' ';
+          }
+          result += str;
+        }
+        return result;
       }
       case NodeType.Delimited: {
         const left = options.simpleDelimiters
@@ -46,7 +56,9 @@ export const print = (node: types.CharNode, options: Options = {}): string => {
         return `\\${node.accent}{${_print(node.children[0])}}`;
       }
       case NodeType.Macro: {
-        return _print(node.children[0]);
+        // A macro holds the chars of a command as it's being typed, e.g.
+        // '\\', 's', 'i', 'n', so we join them without separators.
+        return node.children[0].children.map(_print).join('');
       }
       case NodeType.Table: {
         return '';

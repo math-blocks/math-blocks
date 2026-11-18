@@ -9,6 +9,7 @@ import * as builders from '../char/builders';
 
 const separators = {
   [Semantic.NodeType.Equals]: '=',
+  [Semantic.NodeType.NotEquals]: '\u2260',
   [Semantic.NodeType.LessThan]: '<',
   [Semantic.NodeType.GreaterThan]: '>',
   [Semantic.NodeType.LessThanOrEquals]: '\u2264',
@@ -204,6 +205,7 @@ export const print = (
       case Semantic.NodeType.GreaterThan:
       case Semantic.NodeType.GreaterThanOrEquals:
       case Semantic.NodeType.Equals:
+      case Semantic.NodeType.NotEquals:
       case 'Sequence': {
         const children: types.CharNode[] = [];
         const separator = separators[expr.type];
@@ -239,6 +241,24 @@ export const print = (
             builders.subsup(undefined, _getChildren(style, exp)),
           ]);
         }
+        break;
+      }
+      case Semantic.NodeType.Pi: {
+        result = makeChar('\u03C0');
+        break;
+      }
+      case Semantic.NodeType.Root: {
+        // Semantic.builders.sqrt() creates a root with index 2 and `sqrt` set.
+        const index = expr.sqrt ? null : _getChildren(style, expr.index);
+        result = builders.root(index, _getChildren(style, expr.radicand));
+        break;
+      }
+      case Semantic.NodeType.AbsoluteValue: {
+        result = builders.delimited(
+          _getChildren(style, expr.arg),
+          makeChar('|'),
+          makeChar('|'),
+        );
         break;
       }
       case Semantic.NodeType.Parens: {
