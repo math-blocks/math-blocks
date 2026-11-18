@@ -92,8 +92,9 @@ const TOKEN_REGEX =
   /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\*|\u00B7|\u00D7|\u22C5|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 /**
- * Throws if `skipped`, the text between two token matches (or before the first
- * or after the last one), contains anything other than whitespace.  Without
+ * Throws if `str.slice(start, end)`, the text between two token matches (or
+ * before the first or after the last one), contains anything other than
+ * whitespace.  Without
  * this check the lexer would silently drop chars it doesn't recognize, e.g.
  * parsing "a?b" as "ab".
  */
