@@ -86,10 +86,30 @@ export const gte = (loc: SourceLocation): TokenAtom =>
 export const comma = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.Comma }, loc);
 
+export const divide = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Divide }, loc);
+
+export const neq = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.NotEqual }, loc);
+
+export const verticalbar = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.VerticalBar }, loc);
+
 // TODO: allow different decimal and list separators
 // Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as minus.
+// Identifiers are single latin or greek letters, or the names of
+// some functions spelled out one char at a time.
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\*|\u00B7|\u00D7|\u22C5|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\u2260|\*|\u00B7|\u00D7|\u22C5|\u00F7|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z]|[\u03B1-\u03C9])/gi;
+
+/**
+ * Throws an error naming `char`, a character the lexer doesn't recognize.
+ */
+const unexpectedChar = (char: string): never => {
+  const codePoint = char.codePointAt(0) ?? 0;
+  const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
+  throw new Error(`Unexpected character '${char}' (U+${hex})`);
+};
 
 /**
  * Throws if `str.slice(start, end)`, the text between two token matches (or
@@ -107,16 +127,49 @@ const assertOnlyWhitespace = (
   // so a char outside the BMP such as U+1D465 isn't split into surrogates.
   for (const char of str.slice(start, end)) {
     if (!/\s/.test(char)) {
-      const codePoint = char.codePointAt(0) ?? 0;
-      const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
-      throw new Error(`Unexpected character '${char}' (U+${hex})`);
+      unexpectedChar(char);
     }
   }
 };
 
 // TODO: include ids of source chars in parsed tokens
 
+/**
+ * Converts a run of chars to tokens.
+ *
+ * Most chars hold a single character, but `Tex.parse` creates a single char
+ * for each named function, e.g. "\\sin" becomes a char with the value "sin".
+ * Those become a single identifier token.  The parser decides whether the
+ * identifier is a function it knows about.
+ */
 const tokenizeChars = (
+  chars: readonly types.Char[],
+  path: readonly number[],
+  offset: number,
+): readonly TokenAtom[] => {
+  const tokens: TokenAtom[] = [];
+  let runStart = 0;
+  chars.forEach((char, index) => {
+    if (char.value.length > 1) {
+      tokens.push(
+        ...tokenizeRun(chars.slice(runStart, index), path, offset + runStart),
+      );
+      if (!/^[a-z]+$/i.test(char.value)) {
+        throw new Error(`Unexpected symbol '${char.value}'`);
+      }
+      const loc = location(path, offset + index, offset + index + 1);
+      tokens.push(identifier(char.value, loc));
+      runStart = index + 1;
+    }
+  });
+  tokens.push(...tokenizeRun(chars.slice(runStart), path, offset + runStart));
+  return tokens;
+};
+
+/**
+ * Converts a run of chars that each hold a single character to tokens.
+ */
+const tokenizeRun = (
   chars: readonly types.Char[],
   path: readonly number[],
   offset: number,
@@ -176,6 +229,12 @@ const tokenizeChars = (
           case '\u2212':
           case '-':
             tokens.push(minus(loc));
+            break;
+          case '\u00F7':
+            tokens.push(divide(loc));
+            break;
+          case '\u2260':
+            tokens.push(neq(loc));
             break;
           case '\u00B1':
             tokens.push(plusminus(loc));
@@ -332,8 +391,15 @@ const lex = (
       };
     }
     case NodeType.Delimited: {
-      const leftDelim = lparens(location(path, offset, offset));
-      const rightDelim = rparens(location(path, offset, offset));
+      const delimLoc = location(path, offset, offset);
+      const leftDelim =
+        node.leftDelim.value === '|'
+          ? verticalbar(delimLoc)
+          : lparens(delimLoc);
+      const rightDelim =
+        node.rightDelim.value === '|'
+          ? verticalbar(delimLoc)
+          : rparens(delimLoc);
       return {
         type: node.type,
         children: [lexRow(node.children[0], [...path, offset, 0])],

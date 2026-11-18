@@ -23,6 +23,9 @@ const expectParse = (tex: string, expected: Semantic.types.Node): void => {
 
 const a = b.identifier('a');
 const x = b.identifier('x');
+const y = b.identifier('y');
+const z = b.identifier('z');
+const num = (value: string): Semantic.types.Node => b.number(value);
 
 describe('Editor.parse(Tex.parse(...))', () => {
   describe('subtraction and negation', () => {
@@ -73,6 +76,269 @@ describe('Editor.parse(Tex.parse(...))', () => {
   describe('unrecognized chars', () => {
     test('throws instead of dropping them', () => {
       expect(() => parse('a?b')).toThrow("Unexpected character '?'");
+    });
+  });
+
+  // https://github.com/math-blocks/math-blocks/issues/730
+  describe('TeX from math input fields', () => {
+    describe('\\div', () => {
+      test('x\\div2=3', () => {
+        expectParse('x\\div2=3', b.eq([b.div(x, num('2')), num('3')]));
+      });
+
+      test('is left associative', () => {
+        expectParse('a\\div x\\div y', b.div(b.div(a, x), y));
+      });
+
+      test('has the same precedence as \\times', () => {
+        expectParse('a\\times x\\div y', b.div(b.mul([a, x], false), y));
+        expectParse('a\\div x\\times y', b.mul([b.div(a, x), y], false));
+      });
+
+      test('binds less tightly than implicit multiplication', () => {
+        expectParse('6\\div 2x', b.div(num('6'), b.mul([num('2'), x], true)));
+      });
+
+      test('binds more tightly than addition', () => {
+        expectParse('1+x\\div2', b.add([num('1'), b.div(x, num('2'))]));
+      });
+    });
+
+    describe('\\ne', () => {
+      test('x\\ne 5', () => {
+        expectParse('x\\ne 5', b.neq([x, num('5')]));
+      });
+
+      test('x\\neq 5', () => {
+        expectParse('x\\neq 5', b.neq([x, num('5')]));
+      });
+    });
+
+    describe('\\pi', () => {
+      test('2\\pi r', () => {
+        expectParse(
+          '2\\pi r',
+          b.mul([num('2'), b.pi(), b.identifier('r')], true),
+        );
+      });
+
+      test('\\pi alone', () => {
+        expectParse('\\pi', b.pi());
+      });
+    });
+
+    describe('other greek letters are identifiers', () => {
+      test('2\\theta', () => {
+        expectParse('2\\theta', b.mul([num('2'), b.identifier('θ')], true));
+      });
+    });
+
+    describe('named functions', () => {
+      test('\\log x', () => {
+        expectParse('\\log x', b.log(num('10'), x));
+      });
+
+      test('\\log_2 x', () => {
+        expectParse('\\log_2 x', b.log(num('2'), x));
+      });
+
+      test('\\ln x', () => {
+        expectParse('\\ln x', b.ln(x));
+      });
+
+      test('\\sin x', () => {
+        expectParse('\\sin x', b.sin(x));
+      });
+
+      test('\\cos x, \\tan x, \\cot x, \\sec x, \\csc x', () => {
+        expectParse('\\cos x', b.cos(x));
+        expectParse('\\tan x', b.tan(x));
+        expectParse('\\cot x', b.cot(x));
+        expectParse('\\sec x', b.sec(x));
+        expectParse('\\csc x', b.csc(x));
+      });
+
+      test('\\arcsin x', () => {
+        expectParse('\\arcsin x', b.arcsin(x));
+      });
+
+      test('\\sin(x)', () => {
+        expectParse('\\sin(x)', b.sin(x));
+        expectParse('\\sin\\left(x\\right)', b.sin(x));
+      });
+
+      test('\\sin 2x applies sin to 2x', () => {
+        expectParse('\\sin 2x', b.sin(b.mul([num('2'), x], true)));
+      });
+
+      test('\\sin x^2 applies sin to x^2', () => {
+        expectParse('\\sin x^2', b.sin(b.pow(x, num('2'))));
+      });
+
+      test('\\sin x + 1', () => {
+        expectParse('\\sin x + 1', b.add([b.sin(x), num('1')]));
+      });
+
+      test('\\sin x \\cos x', () => {
+        expectParse('\\sin x \\cos x', b.mul([b.sin(x), b.cos(x)], true));
+      });
+
+      test('2x\\sin x', () => {
+        expectParse('2x\\sin x', b.mul([num('2'), x, b.sin(x)], true));
+      });
+
+      test('\\sin^2 x', () => {
+        expectParse('\\sin^2 x', b.pow(b.sin(x), num('2')));
+      });
+
+      test('2\\sin x=1', () => {
+        expectParse(
+          '2\\sin x=1',
+          b.eq([b.mul([num('2'), b.sin(x)], true), num('1')]),
+        );
+      });
+
+      test('a function with no argument throws', () => {
+        expect(() => parse('\\sin')).toThrow('Missing argument for sin');
+        expect(() => parse('\\sin+1')).toThrow('Missing argument for sin');
+      });
+
+      test('an unsupported function throws', () => {
+        expect(() => parse('\\max x')).toThrow("Unsupported function 'max'");
+      });
+
+      test('a subscript on a function other than log throws', () => {
+        expect(() => parse('\\sin_2 x')).toThrow(
+          'Only log can have a subscript, not sin',
+        );
+      });
+    });
+
+    describe('inverse trig functions', () => {
+      test('\\sin^{-1} x', () => {
+        expectParse('\\sin^{-1} x', b.arcsin(x));
+      });
+
+      test('\\cos^{-1}x and \\tan^-1 x', () => {
+        expectParse('\\cos^{-1}x', b.arccos(x));
+        expectParse('\\tan^-1 x', b.arctan(x));
+      });
+    });
+
+    describe('bare parentheses', () => {
+      test('(a)', () => {
+        expectParse('(a)', b.parens(a));
+      });
+
+      test('2*(x-1)', () => {
+        expectParse(
+          '2*(x-1)',
+          b.mul([num('2'), b.add([x, b.neg(num('1'), true)])], false),
+        );
+      });
+
+      test('2(x+1)', () => {
+        expectParse('2(x+1)', b.mul([num('2'), b.add([x, num('1')])], true));
+      });
+
+      test('nested parens', () => {
+        expectParse(
+          '((x+1)(x-1))',
+          b.parens(
+            b.mul(
+              [b.add([x, num('1')]), b.add([x, b.neg(num('1'), true)])],
+              true,
+            ),
+          ),
+        );
+      });
+
+      test('an unmatched paren throws', () => {
+        expect(() => parse('(x+1')).toThrow();
+        expect(() => parse('x+1)')).toThrow();
+      });
+    });
+
+    describe('empty input', () => {
+      test('throws a clear error', () => {
+        expect(() => parse('')).toThrow('Empty input');
+        expect(() => parse('   ')).toThrow('Empty input');
+      });
+    });
+
+    describe('negative exponents without braces', () => {
+      test('x^-2', () => {
+        expectParse('x^-2', b.pow(x, b.neg(num('2'))));
+      });
+
+      test('x^{-2}', () => {
+        expectParse('x^{-2}', b.pow(x, b.neg(num('2'))));
+      });
+    });
+
+    describe('exponents are right associative', () => {
+      test('x^y^z', () => {
+        expectParse('x^y^z', b.pow(x, b.pow(y, z)));
+      });
+
+      test('2^3^4^5', () => {
+        expectParse(
+          '2^3^4^5',
+          b.pow(num('2'), b.pow(num('3'), b.pow(num('4'), num('5')))),
+        );
+      });
+
+      test('x^{y^z}', () => {
+        expectParse('x^{y^z}', b.pow(x, b.pow(y, z)));
+      });
+    });
+
+    describe('chained equations', () => {
+      test('2x=5=100 is a single Equals node with three args', () => {
+        expectParse(
+          '2x=5=100',
+          b.eq([b.mul([num('2'), x], true), num('5'), num('100')]),
+        );
+      });
+    });
+
+    describe('absolute value', () => {
+      test('|x|', () => {
+        expectParse('|x|', b.abs(x));
+      });
+
+      test('\\left|x\\right|', () => {
+        expectParse('\\left|x\\right|', b.abs(x));
+      });
+
+      test('|x-1|+2', () => {
+        expectParse(
+          '|x-1|+2',
+          b.add([b.abs(b.add([x, b.neg(num('1'), true)])), num('2')]),
+        );
+      });
+
+      test('2|x|', () => {
+        expectParse('2|x|', b.mul([num('2'), b.abs(x)], true));
+      });
+
+      test('|a|-|x|', () => {
+        expectParse('|a|-|x|', b.add([b.abs(a), b.neg(b.abs(x), true)]));
+      });
+
+      test('||x|-1|', () => {
+        expectParse('||x|-1|', b.abs(b.add([b.abs(x), b.neg(num('1'), true)])));
+      });
+
+      test('an unmatched bar throws', () => {
+        expect(() => parse('|x')).toThrow("Unexpected character '|'");
+      });
+
+      test('mismatched delimiters throw', () => {
+        expect(() => parse('\\left(x\\right|')).toThrow(
+          'Mismatched delimiters',
+        );
+      });
     });
   });
 });
