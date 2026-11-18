@@ -188,3 +188,23 @@ describe('parse', () => {
     });
   });
 });
+
+describe('parse latinmodern-math.otf', () => {
+  let font: Font;
+
+  beforeAll(async () => {
+    const fontPath = path.join(
+      __dirname,
+      '../../../../assets/latinmodern-math.otf',
+    );
+    const buffer = fs.readFileSync(fontPath);
+    const blob = new Blob([buffer]);
+
+    font = await parse(blob);
+  });
+
+  test('FontBBox with a negative int16 operand', () => {
+    // Latin Modern encodes the FontBBox yMin, -3060, as an int16 (operand 28).
+    expect(font.cff.topDict.FontBBox).toEqual([-1042, -3060, 4082, 3560]);
+  });
+});
