@@ -387,8 +387,16 @@ type Value = ReturnType<typeof Semantic.util.evalNode>;
 
 /** A solved relation with the variable on the left, e.g. `x < 5/2`. */
 type NumericAnswer = {
+  /**
+   * The relation's node type with the variable on the left, e.g.
+   * `NodeType.GreaterThan` for both `x > 3` and `3 < x`. Two answers only
+   * match if their types match, so `x > 3` doesn't match `x < 3` or
+   * `x ≥ 3`.
+   */
   readonly type: string;
+  /** The name of the variable, e.g. `x`. */
   readonly variable: string;
+  /** The exact value the variable is compared with, e.g. 3. */
   readonly value: Value;
   /** The side of the relation that gives the value, as written. */
   readonly node: Semantic.types.Node;
