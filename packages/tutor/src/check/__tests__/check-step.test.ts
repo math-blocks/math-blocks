@@ -209,10 +209,10 @@ describe('checkStep', () => {
       checkStep(Testing.parse(prev), Testing.parse(next), { answers }).status;
 
     // Valid steps whose answers aren't written the way the solver writes
-    // them. 'value' accepts all of them. 'form' accepts only answers in
+    // them. 'value' accepts all of them. 'simplified' accepts only answers in
     // simplest form: an integer, a decimal, or a reduced fraction.
     test.each`
-      prev             | next             | value           | form
+      prev             | next             | value           | simplified
       ${'x + 3 = 5'}   | ${'x = 4/2'}     | ${'equivalent'} | ${'not-equivalent'}
       ${'2x + 5 = 10'} | ${'x = 2.5'}     | ${'equivalent'} | ${'equivalent'}
       ${'2x + 5 = 10'} | ${'x = 5/2'}     | ${'equivalent'} | ${'equivalent'}
@@ -228,12 +228,12 @@ describe('checkStep', () => {
       ${'2x + 1 > 6'}  | ${'x > 10/4'}    | ${'equivalent'} | ${'not-equivalent'}
       ${'1/2 + 1/4'}   | ${'0.75'}        | ${'equivalent'} | ${'equivalent'}
     `(
-      '$prev -> $next is $value by value and $form by form',
-      ({ prev, next, value, form }) => {
+      '$prev -> $next is $value by value and $simplified when simplified',
+      ({ prev, next, value, simplified }) => {
         expect(statusWith(prev, next, 'value')).toBe(value);
-        expect(statusWith(prev, next, 'form')).toBe(form);
-        // 'form' is the default.
-        expect(statusOf(prev, next)).toBe(form);
+        expect(statusWith(prev, next, 'simplified')).toBe(simplified);
+        // 'simplified' is the default.
+        expect(statusOf(prev, next)).toBe(simplified);
       },
     );
 
@@ -291,7 +291,7 @@ describe('checkStep', () => {
         );
       });
 
-      it('falls back to comparing by form when an answer is not numeric', () => {
+      it('falls back to comparing as written when an answer is not numeric', () => {
         expect(statusWith('2x + 3x', '5x', 'value')).toBe('equivalent');
         expect(statusWith('2x + 3x', '6x', 'value')).toBe('not-equivalent');
         expect(statusWith('x - 2', '2 - x', 'value')).toBe('not-equivalent');
@@ -324,19 +324,21 @@ describe('checkStep', () => {
       });
     });
 
-    describe("answers: 'form'", () => {
+    describe("answers: 'simplified'", () => {
       it('still requires values to match', () => {
-        expect(statusWith('2x + 5 = 10', 'x = 2.4', 'form')).toBe(
+        expect(statusWith('2x + 5 = 10', 'x = 2.4', 'simplified')).toBe(
           'not-equivalent',
         );
-        expect(statusWith('2x + 1 > 6', 'x ≥ 5/2', 'form')).toBe(
+        expect(statusWith('2x + 1 > 6', 'x ≥ 5/2', 'simplified')).toBe(
           'not-equivalent',
         );
       });
 
       it('compares answers that are not numeric as written', () => {
-        expect(statusWith('2x + 3x', '5x', 'form')).toBe('equivalent');
-        expect(statusWith('2x + 3x', '6x', 'form')).toBe('not-equivalent');
+        expect(statusWith('2x + 3x', '5x', 'simplified')).toBe('equivalent');
+        expect(statusWith('2x + 3x', '6x', 'simplified')).toBe(
+          'not-equivalent',
+        );
       });
     });
   });

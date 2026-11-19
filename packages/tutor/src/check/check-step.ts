@@ -6,21 +6,21 @@ const { NodeType } = Semantic;
 /**
  * How `checkStep` compares the two steps' solved answers.
  *
- * - `'form'` (the default): an answer that gives the variable a number, such
- *   as `x = 5/2` or `2.5 < x`, matches another that uses the same variable
- *   and relation and gives it the same number, as long as the number is in
- *   simplest form (see `Semantic.util.isSimplifiedNumber`). So `x = 5/2` and
- *   `x = 2.5` match, while `x = 5 * 1/2` and `x = 10/4` don't. Answers that
- *   aren't numeric must be written the same way, up to term order, which
- *   side of a relation the variable is on, and the like.
- * - `'value'`: like `'form'`, but a numeric answer can be written any way,
- *   e.g. `x = 5 * 1/2`. Use this to accept a correct step whose answer isn't
- *   simplified yet.
+ * - `'simplified'` (the default): an answer that gives the variable a
+ *   number, such as `x = 5/2` or `2.5 < x`, matches another that uses the
+ *   same variable and relation and gives it the same number, as long as the
+ *   number is in simplest form (see `Semantic.util.isSimplifiedNumber`). So
+ *   `x = 5/2` and `x = 2.5` match, while `x = 5 * 1/2` and `x = 10/4` don't.
+ *   Answers that aren't numeric must be written the same way, up to term
+ *   order, which side of a relation the variable is on, and the like.
+ * - `'value'`: like `'simplified'`, but a numeric answer can be written any
+ *   way, e.g. `x = 5 * 1/2`. Use this to accept a correct step whose answer
+ *   isn't simplified yet.
  */
-export type AnswerComparison = 'value' | 'form';
+export type AnswerComparison = 'simplified' | 'value';
 
 export type CheckStepOptions = {
-  /** How to compare the solved answers. Defaults to `'form'`. */
+  /** How to compare the solved answers. Defaults to `'simplified'`. */
   readonly answers?: AnswerComparison;
 };
 
@@ -504,7 +504,7 @@ const sameNumericAnswers = (
 /**
  * Compares two solved answers by their numeric values. Returns `undefined`
  * when either answer isn't numeric, so the caller can fall back to comparing
- * them by form.
+ * them as written.
  *
  * `evalNode` works with exact fractions, and decimals such as `2.5` are
  * read exactly too, so equal values compare equal without a tolerance.
@@ -535,17 +535,17 @@ const compareValues = (prev: Solved, next: Solved): boolean | undefined => {
  * `'not-equivalent'`.
  *
  * `options.answers` sets how the solutions are compared; see
- * `AnswerComparison`. With `'form'`, the default, `2x + 5 = 10 -> x = 2.5`
- * is equivalent, because `2.5` has the same value as the solver's `5/2` and
- * is in simplest form, but `x + 3 = 5 -> x = 4/2` isn't, because `4/2`
- * isn't simplified. With `'value'`, both are equivalent.
+ * `AnswerComparison`. With `'simplified'`, the default,
+ * `2x + 5 = 10 -> x = 2.5` is equivalent, because `2.5` has the same value as
+ * the solver's `5/2` and is in simplest form, but `x + 3 = 5 -> x = 4/2`
+ * isn't, because `4/2` isn't simplified. With `'value'`, both are equivalent.
  */
 export const checkStep = (
   prev: Semantic.types.Node,
   next: Semantic.types.Node,
   options: CheckStepOptions = {},
 ): CheckStepResult => {
-  const { answers = 'form' } = options;
+  const { answers = 'simplified' } = options;
 
   const prevVars = getVariableNames(prev);
   const nextVars = getVariableNames(next);
@@ -579,7 +579,7 @@ export const checkStep = (
   } else if (answers === 'value') {
     equivalent = sameValue;
   } else {
-    // With 'form', the values must match and `next` must be simplified.
+    // With 'simplified', the values must match and `next` must be simplified.
     equivalent =
       sameValue &&
       (numericAnswerNodes(nextSolved) ?? []).every(
