@@ -31,14 +31,18 @@ export const print = (node: types.CharNode, options: Options = {}): string => {
       }
       case NodeType.Row: {
         let result = '';
+        let prev = '';
         for (const child of node.children) {
           const str = _print(child);
           // A letter right after a command name would become part of the
-          // name, e.g. `\gt` followed by `y` would be read as `\gty`.
-          if (/\\[a-zA-Z]+$/.test(result) && /^[a-zA-Z]/.test(str)) {
+          // name, e.g. `\gt` followed by `y` would be read as `\gty`.  Only
+          // the previous child's output is checked, so that this stays
+          // linear in the length of the row.
+          if (/\\[a-zA-Z]+$/.test(prev) && /^[a-zA-Z]/.test(str)) {
             result += ' ';
           }
           result += str;
+          prev = str;
         }
         return result;
       }
