@@ -11,6 +11,19 @@ import { simplifyBothSides } from './transforms/simplify-both-sides';
 /**
  * Solve a linear equation for a given variable.
  *
+ * The returned step's substeps are strategy steps, in this order (each one
+ * only appears if it's needed):
+ * - `StepKind.SimplifyBothSides`, `StepKind.SimplifyLeftHandSide` or
+ *   `StepKind.SimplifyRightHandSide`: simplify the relation before solving it.
+ * - `StepKind.MoveTermsToOneSide`: move the terms with the variable to one
+ *   side and all other terms to the other side.  Its substeps alternate
+ *   between `StepKind.DoSameOperationToBothSides` (adding or subtracting a
+ *   term) and a step that simplifies the result.
+ * - `StepKind.IsolateVariable`: multiply and/or divide both sides to remove
+ *   the variable's coefficient.  Its substeps alternate between
+ *   `StepKind.DoSameOperationToBothSides` (multiplying or dividing) and a step
+ *   that simplifies the result.
+ *
  * @param node the equation (or system of equations) being solved
  * @param ident the variable being solved for
  */
@@ -94,6 +107,10 @@ export function solveLinear(
 
   termsToMove.reverse();
 
+  // The concrete steps that move terms from one side to the other.  These are
+  // wrapped in a 'move terms to one side' strategy step below.
+  const moveSteps: Step[] = [];
+
   // eslint-disable-next-line no-constant-condition
   for (const termToMove of termsToMove) {
     // Move each term that doesn't contain the variable we're solving
@@ -102,7 +119,7 @@ export function solveLinear(
     if (!step) {
       break;
     }
-    substeps.push(step);
+    moveSteps.push(step);
 
     // Simplify the relation after moving the term.  We do this as a
     // separate step so that it's easier to see what's happening.
@@ -111,7 +128,7 @@ export function solveLinear(
     if (!step) {
       return;
     }
-    substeps.push(step);
+    moveSteps.push(step);
     rel = step.after as types.NumericRelation;
   }
 
@@ -136,14 +153,24 @@ export function solveLinear(
     if (!step) {
       return;
     }
-    substeps.push(step);
+    moveSteps.push(step);
 
     step = simplifyBothSides(step.after as types.NumericRelation);
     if (!step) {
       return;
     }
-    substeps.push(step);
+    moveSteps.push(step);
     rel = step.after as types.NumericRelation;
+  }
+
+  if (moveSteps.length > 0) {
+    substeps.push({
+      kind: StepKind.MoveTermsToOneSide,
+      message: 'move terms to one side',
+      before: moveSteps[0].before,
+      after: rel,
+      substeps: moveSteps,
+    });
   }
 
   const [left, right] = rel.args;
@@ -170,17 +197,23 @@ export function solveLinear(
   }
 
   if (!coeff.equals(1)) {
+    // The concrete steps that multiply and/or divide both sides to remove the
+    // variable's coefficient.  These are wrapped in an 'isolate the variable'
+    // strategy step below.
+    const isolateSteps: Step[] = [];
+    const isolateBefore = rel;
+
     if (coeff.d !== 1) {
       const step = mulByNumber(rel, builders.number(coeff.d.toString()));
       if (!step) {
         return;
       }
-      substeps.push(step);
+      isolateSteps.push(step);
       rel = step.after as types.NumericRelation;
 
       const simpStep = simplifyBothSides(rel);
       if (simpStep) {
-        substeps.push(simpStep);
+        isolateSteps.push(simpStep);
         rel = simpStep.after as types.NumericRelation;
       }
     }
@@ -204,14 +237,24 @@ export function solveLinear(
       if (!step) {
         return;
       }
-      substeps.push(step);
+      isolateSteps.push(step);
       rel = step.after as types.NumericRelation;
 
       const simpStep = simplifyBothSides(rel);
       if (simpStep) {
-        substeps.push(simpStep);
+        isolateSteps.push(simpStep);
         rel = simpStep.after as types.NumericRelation;
       }
+    }
+
+    if (isolateSteps.length > 0) {
+      substeps.push({
+        kind: StepKind.IsolateVariable,
+        message: 'isolate the variable',
+        before: isolateBefore,
+        after: rel,
+        substeps: isolateSteps,
+      });
     }
   }
 
@@ -336,7 +379,6 @@ const moveTerm = (
 
   const rel2 = builders.numRel([newLeft, newRight], node.type);
 
-  // TODO: replace this with 'do the same operation to both sides'
   return {
     kind: StepKind.DoSameOperationToBothSides,
     message: 'do the same operation to both sides',

@@ -2,6 +2,7 @@ export { checkStep } from './check/check-step';
 export type { CheckStepResult } from './check/check-step';
 
 export { getHint } from './help/get-hint';
+export type { Hint } from './help/get-hint';
 export { showMeHow } from './help/show-me-how';
 
 // `getHint` returns `Step`s, so callers need `StepKind` to tell them apart.

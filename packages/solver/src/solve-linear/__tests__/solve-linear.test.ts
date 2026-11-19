@@ -2,11 +2,23 @@ import { types, builders } from '@math-blocks/semantic';
 
 import { parse, print } from '../../test-util';
 import { isSolvedFor, solveLinear } from '../solve-linear';
-import { NumberOfSolutions } from '../../types';
+import { NumberOfSolutions, StepKind } from '../../types';
+import type { Step } from '../../types';
 
 const parseNumRel = (input: string): types.NumericRelation => {
   return parse(input) as types.NumericRelation;
 };
+
+// Replaces each 'move terms to one side' and 'isolate the variable' strategy
+// step with its substeps, so that the snapshots below list every concrete
+// step.  The 'strategies' tests check the strategy steps themselves.
+const concreteSteps = (step: Step): readonly Step[] =>
+  step.substeps.flatMap((substep) =>
+    substep.kind === StepKind.MoveTermsToOneSide ||
+    substep.kind === StepKind.IsolateVariable
+      ? substep.substeps
+      : [substep],
+  );
 
 // TODO: copy the test cases from solve.test.ts
 describe('solveLinear', () => {
@@ -20,7 +32,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -48,7 +60,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -76,7 +88,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -104,7 +116,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -132,7 +144,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -158,7 +170,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -183,7 +195,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -208,7 +220,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -231,7 +243,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -257,7 +269,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -283,7 +295,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -311,7 +323,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -341,7 +353,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -365,7 +377,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -391,7 +403,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -426,7 +438,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -457,7 +469,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -483,7 +495,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => {
+      ...concreteSteps(result).map((step) => {
         return print(step.after);
       }),
     ];
@@ -508,7 +520,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -530,7 +542,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -552,7 +564,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -574,7 +586,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -598,7 +610,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -622,7 +634,7 @@ describe('solveLinear', () => {
 
     const steps = [
       print(result.before),
-      ...result.substeps.map((step) => print(step.after)),
+      ...concreteSteps(result).map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -689,5 +701,130 @@ describe('isSolvedFor', () => {
     ${'y = 3'}      | ${false}
   `('isSolvedFor($input) -> $expected', ({ input, expected }) => {
     expect(isSolvedFor(parseNumRel(input), x)).toBe(expected);
+  });
+});
+
+// Summarizes the strategy layer of a 'solve for variable' step: one line per
+// strategy step, listing the concrete operations it's made of.
+const describeStrategies = (step: Step): string[] =>
+  step.substeps.map((strategy) => {
+    const ops = strategy.substeps.map((substep) =>
+      substep.kind === StepKind.DoSameOperationToBothSides
+        ? `${substep.operation} ${print(substep.value)}`
+        : substep.kind,
+    );
+    return `${strategy.kind}: ${ops.join(', ')}`;
+  });
+
+describe('solveLinear strategies', () => {
+  const solve = (input: string): Step => {
+    const result = solveLinear(parseNumRel(input), builders.identifier('x'));
+    if (!result) {
+      throw new Error(`couldn't solve ${input}`);
+    }
+    return result;
+  };
+
+  it('wraps subtracting a constant in a "move terms to one side" step', () => {
+    const result = solve('2x + 5 = 10');
+
+    expect(describeStrategies(result)).toMatchInlineSnapshot(`
+      [
+        "move-terms-to-one-side: sub 5, simplify-both-sides",
+        "isolate-variable: div 2, simplify-left-hand-side",
+      ]
+    `);
+
+    const [move] = result.substeps;
+    expect(move.kind).toEqual(StepKind.MoveTermsToOneSide);
+    expect(move.substeps[0]).toMatchObject({
+      kind: StepKind.DoSameOperationToBothSides,
+      operation: 'sub',
+    });
+  });
+
+  it('wraps adding a constant in a "move terms to one side" step', () => {
+    expect(describeStrategies(solve('x - 5 = 10'))).toMatchInlineSnapshot(`
+      [
+        "move-terms-to-one-side: add 5, simplify-both-sides",
+      ]
+    `);
+  });
+
+  it('moves variable terms and constants in one "move terms to one side" step', () => {
+    expect(describeStrategies(solve('4x + 2 = 3x - 7'))).toMatchInlineSnapshot(`
+      [
+        "move-terms-to-one-side: sub 2, simplify-both-sides, sub 3x, simplify-both-sides",
+      ]
+    `);
+  });
+
+  it('wraps dividing by the coefficient in an "isolate the variable" step', () => {
+    expect(describeStrategies(solve('2x = 10'))).toMatchInlineSnapshot(`
+      [
+        "isolate-variable: div 2, simplify-both-sides",
+      ]
+    `);
+  });
+
+  it('wraps multiplying by the denominator in an "isolate the variable" step', () => {
+    expect(describeStrategies(solve('\\frac{x}{2} = 5')))
+      .toMatchInlineSnapshot(`
+      [
+        "isolate-variable: mul 2, simplify-both-sides",
+      ]
+    `);
+  });
+
+  it('wraps multiplying and dividing in a single "isolate the variable" step', () => {
+    expect(describeStrategies(solve('\\frac{2x}{3} = 5')))
+      .toMatchInlineSnapshot(`
+      [
+        "isolate-variable: mul 3, simplify-both-sides, div 2, simplify-left-hand-side",
+      ]
+    `);
+  });
+
+  it('simplifies before moving terms', () => {
+    expect(describeStrategies(solve('2x + 3x + 1 = 7 - 4')))
+      .toMatchInlineSnapshot(`
+      [
+        "simplify-both-sides: simplify-left-hand-side, simplify-right-hand-side",
+        "move-terms-to-one-side: sub 1, simplify-both-sides",
+        "isolate-variable: div 5, simplify-left-hand-side",
+      ]
+    `);
+  });
+
+  it('has no strategy steps when the relation is already solved', () => {
+    expect(describeStrategies(solve('x = 5'))).toEqual([]);
+  });
+
+  test.each([
+    '2x + 5 = 10',
+    '4x + 2 = 3x - 7',
+    '2x - 3y - 5 = -y + 10',
+    '\\frac{x}{2}+\\frac{1}{2}=\\frac{2x}{3}+\\frac{1}{3}',
+    '2x + 3x + 1 = 7 - 4',
+  ])('strategy steps of %s chain from before to after', (input) => {
+    const result = solve(input);
+    let current = print(result.before);
+    for (const strategy of result.substeps) {
+      expect(print(strategy.before)).toEqual(current);
+      // A strategy's concrete steps also chain from its before to its after.
+      if (
+        strategy.kind === StepKind.MoveTermsToOneSide ||
+        strategy.kind === StepKind.IsolateVariable
+      ) {
+        let inner = current;
+        for (const substep of strategy.substeps) {
+          expect(print(substep.before)).toEqual(inner);
+          inner = print(substep.after);
+        }
+        expect(print(strategy.after)).toEqual(inner);
+      }
+      current = print(strategy.after);
+    }
+    expect(print(result.after)).toEqual(current);
   });
 });

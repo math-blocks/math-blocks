@@ -20,9 +20,10 @@ const getProblemNode = (problem: Solver.Problem): Semantic.types.Node => {
 };
 
 /**
- * Applies the first step of the problem's solution and returns the result.
+ * Applies the first concrete step of the problem's solution (`getHint`'s
+ * `step`) and returns the result.
  */
 export const showMeHow = (problem: Solver.Problem): Semantic.types.Node => {
-  const hint = getHint(problem);
-  return Solver.applyStep(getProblemNode(problem), hint);
+  const { step } = getHint(problem);
+  return Solver.applyStep(getProblemNode(problem), step);
 };

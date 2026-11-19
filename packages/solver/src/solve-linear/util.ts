@@ -42,14 +42,6 @@ export const isTermOfIdent = (
   return false;
 };
 
-export const flipSign = (node: Semantic.types.Node): Semantic.types.Node => {
-  if (node.type === NodeType.Neg) {
-    return node.arg;
-  } else {
-    return Semantic.builders.neg(node, true);
-  }
-};
-
 export const convertSubTermToNeg = (
   node: Semantic.types.Node,
 ): Semantic.types.Node => {
