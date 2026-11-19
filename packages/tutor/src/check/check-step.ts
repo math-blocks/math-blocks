@@ -3,32 +3,23 @@ import * as Solver from '@math-blocks/solver';
 
 const { NodeType } = Semantic;
 
-/**
- * How `checkStep` compares the two steps' solved answers.
- *
- * - `'simplified'` (the default): an answer that gives the variable a
- *   number, such as `x = 5/2` or `2.5 < x`, matches another that uses the
- *   same variable and relation and gives it the same number, as long as the
- *   number is in simplest form (see `Semantic.util.isSimplifiedNumber`). So
- *   `x = 5/2` and `x = 2.5` match, while `x = 5 * 1/2` and `x = 10/4` don't.
- *   Answers that aren't numeric must be written the same way, up to term
- *   order, which side of a relation the variable is on, and the like.
- * - `'value'`: like `'simplified'`, but a numeric answer can be written any
- *   way, e.g. `x = 5 * 1/2`. Use this to accept a correct step whose answer
- *   isn't simplified yet.
- */
-export type AnswerComparison = 'simplified' | 'value';
-
-export type CheckStepOptions = {
-  /** How to compare the solved answers. Defaults to `'simplified'`. */
-  readonly answers?: AnswerComparison;
-};
-
 export type CheckStepResult =
   | {
       /** Both steps have the same solution. */
       readonly status: 'equivalent';
       readonly answer: Semantic.types.Node;
+      /**
+       * Whether `next` is a finished answer in simplest form: the variable
+       * alone on one side and a simplified number on the other, such as
+       * `x = 5/2` or `x = 2.5`, or for an expression, a simplified number
+       * such as `0.75`. It's false for a correct step that still has work
+       * left, such as `x = 5 * 1/2`, `x = 10/4` or `2x = 5`. See
+       * `Semantic.util.isSimplifiedNumber`.
+       *
+       * TODO(#743): answers that aren't numbers, such as `5x`, are never
+       * considered simplified yet.
+       */
+      readonly simplified: boolean;
     }
   | {
       /** The steps have different solutions. */
@@ -459,19 +450,24 @@ const toNumericAnswers = (
 };
 
 /**
- * The numeric values in a solved answer as written, e.g. the `5/2` in
- * `x = 5/2`, or `undefined` if the answer isn't numeric.
+ * Whether `next`, as written, is a finished answer in simplest form. For a
+ * relation, every solution must have the variable alone on one side and a
+ * simplified number on the other, e.g. `x = 5/2`, `2.5 = x` or a quadratic's
+ * `x = 2, x = 3`. For an expression, `next` must itself be a simplified
+ * number.
  */
-const numericAnswerNodes = (
-  solved: Solved,
-): readonly Semantic.types.Node[] | undefined => {
-  if (solved.kind === 'unsolved') {
-    return undefined;
+const isSimplifiedAnswer = (
+  next: Semantic.types.Node,
+  kind: 'expression' | 'relation',
+): boolean => {
+  if (kind === 'expression') {
+    return Semantic.util.isSimplifiedNumber(next);
   }
-  if (solved.kind === 'expression') {
-    return evalNumber(solved.answer) ? [solved.answer] : undefined;
-  }
-  return toNumericAnswers(solved.answer)?.map((answer) => answer.node);
+  const answers = toNumericAnswers(next);
+  return (
+    answers?.every((answer) => Semantic.util.isSimplifiedNumber(answer.node)) ??
+    false
+  );
 };
 
 /**
@@ -534,19 +530,18 @@ const compareValues = (prev: Solved, next: Solved): boolean | undefined => {
  * that the solver can't handle come back as `'unknown'` rather than
  * `'not-equivalent'`.
  *
- * `options.answers` sets how the solutions are compared; see
- * `AnswerComparison`. With `'simplified'`, the default,
- * `2x + 5 = 10 -> x = 2.5` is equivalent, because `2.5` has the same value as
- * the solver's `5/2` and is in simplest form, but `x + 3 = 5 -> x = 4/2`
- * isn't, because `4/2` isn't simplified. With `'value'`, both are equivalent.
+ * Numeric answers are compared by their exact values, however they're
+ * written, so `x + 3 = 5 -> x = 4/2` and `2x + 5 = 10 -> x = 2.5` are
+ * equivalent. Answers that aren't numeric are compared as written. An
+ * equivalent result also says whether `next` is a finished, simplified
+ * answer, so a caller can accept a correct step but still ask for the
+ * answer to be simplified: `x = 2.5` is simplified, while `x = 4/2` and
+ * `2x = 5` aren't.
  */
 export const checkStep = (
   prev: Semantic.types.Node,
   next: Semantic.types.Node,
-  options: CheckStepOptions = {},
 ): CheckStepResult => {
-  const { answers = 'simplified' } = options;
-
   const prevVars = getVariableNames(prev);
   const nextVars = getVariableNames(next);
 
@@ -569,25 +564,18 @@ export const checkStep = (
     return { status: 'unknown', reason: nextSolved.reason };
   }
 
-  const sameValue = compareValues(prevSolved, nextSolved);
-  let equivalent: boolean;
-  if (sameValue === undefined) {
-    // At least one answer isn't numeric, so compare how they're written.
-    equivalent =
-      prevSolved.kind === nextSolved.kind &&
-      canonicalString(prevSolved.answer) === canonicalString(nextSolved.answer);
-  } else if (answers === 'value') {
-    equivalent = sameValue;
-  } else {
-    // With 'simplified', the values must match and `next` must be simplified.
-    equivalent =
-      sameValue &&
-      (numericAnswerNodes(nextSolved) ?? []).every(
-        Semantic.util.isSimplifiedNumber,
-      );
-  }
+  // If either answer isn't numeric, compare how they're written instead.
+  const equivalent =
+    compareValues(prevSolved, nextSolved) ??
+    (prevSolved.kind === nextSolved.kind &&
+      canonicalString(prevSolved.answer) ===
+        canonicalString(nextSolved.answer));
   if (equivalent) {
-    return { status: 'equivalent', answer: prevSolved.answer };
+    return {
+      status: 'equivalent',
+      answer: prevSolved.answer,
+      simplified: isSimplifiedAnswer(next, nextSolved.kind),
+    };
   }
 
   return {
