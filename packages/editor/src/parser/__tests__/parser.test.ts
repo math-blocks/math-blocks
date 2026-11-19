@@ -1000,4 +1000,94 @@ describe('EditorParser', () => {
       );
     });
   });
+
+  describe('division with ÷', () => {
+    test('a÷b÷c is left associative', () => {
+      expect(parser.parse(util.row('a÷b÷c'))).toMatchInlineSnapshot(`
+        (Div
+          (Div a b)
+          c)
+      `);
+    });
+  });
+
+  describe('not equals', () => {
+    test('x≠5', () => {
+      expect(parser.parse(util.row('x≠5'))).toMatchInlineSnapshot(
+        `(NotEquals x 5)`,
+      );
+    });
+  });
+
+  describe('pi and greek letters', () => {
+    test('2πr', () => {
+      expect(parser.parse(util.row('2πr'))).toMatchInlineSnapshot(`
+        (mul.imp
+          2
+          π
+          r)
+      `);
+    });
+
+    test('θ is an identifier', () => {
+      expect(parser.parse(util.row('θ'))).toMatchInlineSnapshot(`θ`);
+    });
+  });
+
+  describe('functions', () => {
+    test('a function typed one letter at a time', () => {
+      expect(parser.parse(util.row('sinx'))).toMatchInlineSnapshot(`(Sin x)`);
+    });
+
+    test('a function stored in a single char', () => {
+      const input = row([char('ln'), char('x')]);
+      const ast = parser.parse(input);
+      expect(ast).toMatchInlineSnapshot(`(Ln x)`);
+      expect(ast.loc).toEqual({ path: [], start: 0, end: 2 });
+    });
+
+    test('an unknown multi-letter char throws', () => {
+      const input = row([char('gcd'), char('x')]);
+      expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
+        `"Unsupported function 'gcd'"`,
+      );
+    });
+  });
+
+  describe('absolute value', () => {
+    test('|x|', () => {
+      const input = row([
+        builders.delimited([char('x')], char('|'), char('|')),
+      ]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(AbsoluteValue x)`);
+    });
+  });
+
+  describe('exponents', () => {
+    test('consecutive superscripts are right associative', () => {
+      const input = row([
+        char('x'),
+        subsup(undefined, [char('y')]),
+        subsup(undefined, [char('z')]),
+      ]);
+      const ast = parser.parse(input);
+      expect(ast).toMatchInlineSnapshot(`
+        (Power
+          :base x
+          :exp (Power :base y :exp z))
+      `);
+      expect(ast.loc).toEqual({ path: [], start: 0, end: 3 });
+    });
+  });
+
+  describe('empty input', () => {
+    test('throws "Empty input"', () => {
+      expect(() => parser.parse(row([]))).toThrowErrorMatchingInlineSnapshot(
+        `"Empty input"`,
+      );
+      expect(() =>
+        parser.parse(util.row('  ')),
+      ).toThrowErrorMatchingInlineSnapshot(`"Empty input"`);
+    });
+  });
 });

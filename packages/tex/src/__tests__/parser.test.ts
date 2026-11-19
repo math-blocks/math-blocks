@@ -375,4 +375,134 @@ describe('Parser', () => {
       `"unexpected right delimiter"`,
     );
   });
+
+  describe('bare delimiters', () => {
+    const { row, char, delimited } = builders;
+
+    test('(a) becomes a delimited node', () => {
+      expect(
+        util.isEqual(
+          parse('(a)'),
+          row([delimited([char('a')], char('('), char(')'))]),
+        ),
+      ).toBe(true);
+    });
+
+    test('nested parens', () => {
+      expect(
+        util.isEqual(
+          parse('((a)b)'),
+          row([
+            delimited(
+              [delimited([char('a')], char('('), char(')')), char('b')],
+              char('('),
+              char(')'),
+            ),
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    test('an unmatched paren stays a plain char', () => {
+      expect(
+        util.isEqual(
+          parse('[0,1)'),
+          row([char('['), char('0'), char(','), char('1'), char(')')]),
+        ),
+      ).toBe(true);
+      expect(util.isEqual(parse('(a'), row([char('('), char('a')]))).toBe(true);
+    });
+
+    test('a paren group ends at the end of its enclosing group', () => {
+      expect(
+        util.isEqual(
+          parse('\\frac{(a}{b)}'),
+          row([builders.frac([char('('), char('a')], [char('b'), char(')')])]),
+        ),
+      ).toBe(true);
+    });
+
+    test('|x| becomes a delimited node', () => {
+      expect(
+        util.isEqual(
+          parse('|x|'),
+          row([delimited([char('x')], char('|'), char('|'))]),
+        ),
+      ).toBe(true);
+    });
+
+    test('a bar after an operator opens a new absolute value', () => {
+      expect(
+        util.isEqual(
+          parse('|x|+|y|'),
+          row([
+            delimited([char('x')], char('|'), char('|')),
+            char('+'),
+            delimited([char('y')], char('|'), char('|')),
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    test('many unmatched parens', () => {
+      const input = '('.repeat(1000);
+      expect(parse(input).children).toHaveLength(1000);
+    });
+  });
+
+  describe('superscripts with a leading minus', () => {
+    test('x^-2 is x^{-2}', () => {
+      expect(
+        util.isEqual(
+          parse('x^-2'),
+          builders.row([
+            builders.char('x'),
+            builders.subsup(undefined, [
+              builders.char('−'),
+              builders.char('2'),
+            ]),
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    test('x_-1', () => {
+      expect(
+        util.isEqual(
+          parse('x_-1'),
+          builders.row([
+            builders.char('x'),
+            builders.subsup([builders.char('−'), builders.char('1')]),
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    test('a missing superscript throws', () => {
+      expect(() => parse('x^')).toThrowErrorMatchingInlineSnapshot(
+        `"expected a subscript or superscript"`,
+      );
+    });
+  });
+
+  test('\\div and \\ne', () => {
+    expect(
+      util.isEqual(
+        parse('a\\div b\\ne c'),
+        builders.row([
+          builders.char('a'),
+          builders.char('÷'),
+          builders.char('b'),
+          builders.char('≠'),
+          builders.char('c'),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  test('trailing whitespace is ignored', () => {
+    expect(util.isEqual(parse('x  '), builders.row([builders.char('x')]))).toBe(
+      true,
+    );
+  });
 });

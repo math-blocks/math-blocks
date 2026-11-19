@@ -8,7 +8,12 @@ import { locFromRange } from '../token/util';
 import { TokenKind } from '../token/types';
 
 import type { CharRow } from '../char/types';
-import type { TokenNode, SourceLocation } from '../token/types';
+import type {
+  TokenAtom,
+  TokenDelimited,
+  TokenNode,
+  SourceLocation,
+} from '../token/types';
 import { NodeType } from '../shared-types';
 
 // TODO: fill out this list
@@ -18,9 +23,13 @@ type Operator =
   | 'plusminus'
   | 'mul.exp'
   | 'div'
+  | 'div.exp'
   | 'mul.imp'
+  | 'mul.func'
+  | 'func.arg'
   | 'neg'
   | 'eq'
+  | 'neq'
   | 'lt'
   | 'lte'
   | 'gt'
@@ -36,6 +45,7 @@ type NAryOperator =
   | 'mul.exp'
   | 'mul.imp'
   | 'eq'
+  | 'neq'
   | 'lt'
   | 'lte'
   | 'gt'
@@ -47,17 +57,159 @@ type EditorParser = Parser.IParser<TokenNode, Semantic.types.Node, Operator>;
 const isIdentifier = (node: TokenNode): boolean =>
   node.type === 'token' && node.name === TokenKind.Identifier;
 
+type UnaryBuilder = (
+  arg: Semantic.types.Node,
+  loc?: SourceLocation,
+) => Semantic.types.Node;
+
+// Trig functions and their inverses.  `\sin^{-1} x` is parsed as `arcsin(x)`.
+const trigFunctions: Record<string, readonly [UnaryBuilder, UnaryBuilder]> = {
+  sin: [Semantic.builders.sin, Semantic.builders.arcsin],
+  cos: [Semantic.builders.cos, Semantic.builders.arccos],
+  tan: [Semantic.builders.tan, Semantic.builders.arctan],
+  cot: [Semantic.builders.cot, Semantic.builders.arccot],
+  sec: [Semantic.builders.sec, Semantic.builders.arcsec],
+  csc: [Semantic.builders.csc, Semantic.builders.arccsc],
+};
+
+const unaryFunctions: Record<string, UnaryBuilder> = {
+  arcsin: Semantic.builders.arcsin,
+  arccos: Semantic.builders.arccos,
+  arctan: Semantic.builders.arctan,
+  arccot: Semantic.builders.arccot,
+  arcsec: Semantic.builders.arcsec,
+  arccsc: Semantic.builders.arccsc,
+  ln: Semantic.builders.ln,
+};
+
+const isFunctionName = (name: string): boolean =>
+  name === 'log' || name in trigFunctions || name in unaryFunctions;
+
+const isFunctionToken = (node: TokenNode): boolean =>
+  node.type === 'token' &&
+  node.name === TokenKind.Identifier &&
+  isFunctionName(node.value);
+
+// Tokens that can start a function's argument.
+const ARG_START_TOKENS: readonly TokenKind[] = [
+  TokenKind.Identifier,
+  TokenKind.Number,
+  TokenKind.Minus,
+  TokenKind.PlusMinus,
+];
+
+const isNegativeOne = (node: Semantic.types.Node): boolean =>
+  node.type === Semantic.NodeType.Neg &&
+  !node.subtraction &&
+  node.arg.type === Semantic.NodeType.Number &&
+  node.arg.value === '1';
+
+/**
+ * Parses the application of a named function such as sin, ln, or log to its
+ * argument.  The function's name has already been consumed.
+ *
+ * - `\sin x`, `\sin 2x`, and `\sin x^2` apply sin to everything up to the
+ *   next operator other than implicit multiplication, or up to the next
+ *   function, so `\sin x \cos x` is `sin(x)·cos(x)` and `\sin x + 1` is
+ *   `sin(x) + 1`.
+ * - `\sin^{-1} x` is `arcsin(x)`.  Any other superscript is a power of the
+ *   result, e.g. `\sin^2 x` is `(sin(x))^2`.
+ * - `\log x` is the base 10 logarithm and `\log_b x` the base b logarithm.
+ */
+const parseFunction = (
+  parser: EditorParser,
+  token: TokenAtom,
+  name: string,
+): Semantic.types.Node => {
+  let base: Semantic.types.Node | undefined;
+  let exp: Semantic.types.Node | undefined;
+
+  const next = parser.peek();
+  if (next.type === NodeType.SubSup) {
+    parser.consume();
+    const [sub, sup] = next.children;
+    if (sub) {
+      if (name !== 'log') {
+        throw new Error(`Only log can have a subscript, not ${name}`);
+      }
+      base = editorParser.parse(sub.children);
+    }
+    if (sup) {
+      exp = editorParser.parse(sup.children);
+    }
+  }
+
+  const argStart = parser.peek();
+  if (argStart.type === 'token' && !ARG_START_TOKENS.includes(argStart.name)) {
+    throw new Error(`Missing argument for ${name}`);
+  }
+
+  let arg = parser.parseWithOperator('func.arg');
+  const loc = locFromRange(token.loc, arg.loc);
+  // The parens in `\sin(x)` delimit the argument.
+  if (arg.type === Semantic.NodeType.Parens) {
+    arg = arg.arg;
+  }
+
+  let result: Semantic.types.Node;
+  if (name === 'log') {
+    result = Semantic.builders.log(
+      base ?? Semantic.builders.number('10'),
+      arg,
+      loc,
+    );
+  } else if (name in trigFunctions) {
+    const [func, inverse] = trigFunctions[name];
+    if (exp && isNegativeOne(exp)) {
+      return inverse(arg, loc);
+    }
+    result = func(arg, loc);
+  } else {
+    result = unaryFunctions[name](arg, loc);
+  }
+  return exp ? Semantic.builders.pow(result, exp, loc) : result;
+};
+
+/**
+ * Parses a delimited node: `(…)` becomes Parens and `|…|` AbsoluteValue.
+ */
+const parseDelimited = (node: TokenDelimited): Semantic.types.Node => {
+  const [inner] = node.children;
+  const { leftDelim, rightDelim } = node;
+  const isBar = (delim: TokenAtom): boolean =>
+    delim.name === TokenKind.VerticalBar;
+  if (isBar(leftDelim) !== isBar(rightDelim)) {
+    throw new Error('Mismatched delimiters');
+  }
+  const result = editorParser.parse(inner.children);
+  // TODO: what should `loc` be here?
+  return isBar(leftDelim)
+    ? Semantic.builders.abs(result, node.loc)
+    : Semantic.builders.parens(result);
+};
+
 const getPrefixParselet = (
   node: TokenNode,
 ): Parser.PrefixParselet<TokenNode, Semantic.types.Node, Operator> => {
   switch (node.type) {
     case 'token': {
       switch (node.name) {
-        case TokenKind.Identifier:
+        case TokenKind.Identifier: {
+          const name = node.value;
+          if (name === '\u03C0') {
+            return { parse: () => Semantic.builders.pi(node.loc) };
+          }
+          if (isFunctionName(name)) {
+            return { parse: (parser) => parseFunction(parser, node, name) };
+          }
+          if (name.length > 1) {
+            throw new Error(`Unsupported function '${name}'`);
+          }
           return {
             parse: () =>
-              Semantic.builders.identifier(node.value, undefined, node.loc),
+              Semantic.builders.identifier(name, undefined, node.loc),
           };
+        }
         case TokenKind.Number:
           return {
             parse: () => Semantic.builders.number(node.value, node.loc),
@@ -116,12 +268,7 @@ const getPrefixParselet = (
       };
     case NodeType.Delimited:
       return {
-        parse: () => {
-          const [inner] = node.children;
-          const result = editorParser.parse(inner.children);
-          // TODO: what should `loc` be here?
-          return Semantic.builders.parens(result);
-        },
+        parse: () => parseDelimited(node),
       };
     case NodeType.Table:
       return {
@@ -192,6 +339,8 @@ const parseNaryInfix =
         return Semantic.builders.mul([left, right, ...rest], false, loc);
       case 'eq':
         return Semantic.builders.eq([left, right, ...rest], loc);
+      case 'neq':
+        return Semantic.builders.neq([left, right, ...rest], loc);
       case 'lt':
         return Semantic.builders.lt([left, right, ...rest], loc);
       case 'lte':
@@ -251,9 +400,17 @@ const parseNaryArgs = (
       return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === 'mul.exp' && nextToken.name === TokenKind.Times) {
       return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'mul.imp' && nextToken.name === TokenKind.Identifier) {
+    } else if (
+      op === 'mul.imp' &&
+      nextToken.name === TokenKind.Identifier &&
+      // A function ends the argument of an enclosing function, e.g. in
+      // `\sin 2x \cos x`, so it's handled by its own infix parselet.
+      !isFunctionToken(nextToken)
+    ) {
       return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === 'eq' && nextToken.name === TokenKind.Equal) {
+      return [expr, ...parseNaryArgs(parser, op)];
+    } else if (op === 'neq' && nextToken.name === TokenKind.NotEqual) {
       return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === 'lt' && nextToken.name === TokenKind.LessThan) {
       // How do we deal wiht a mix of lt and lte, e.g. x < y <= z?
@@ -299,10 +456,9 @@ const parseNaryArgs = (
     return [expr];
   } else if (node.type === 'delimited') {
     parser.consume();
-    const [inner] = node.children;
     // TODO: make 'eol' its own token type instead of a co-opting 'atom'
     const nextToken = parser.peek();
-    const expr = Semantic.builders.parens(editorParser.parse(inner.children));
+    const expr = parseDelimited(node);
 
     return nextToken.type === 'delimited'
       ? [expr, ...parseNaryArgs(parser, op)]
@@ -330,8 +486,21 @@ const getInfixParselet = (
           };
         case TokenKind.Times:
           return { op: 'mul.exp', parse: parseNaryInfix('mul.exp') };
+        case TokenKind.Divide:
+          return {
+            op: 'div.exp',
+            parse: (parser, left): Semantic.types.Node => {
+              parser.consume(); // '÷'
+              // Division is left associative: a÷b÷c is (a÷b)÷c.
+              const right = parser.parseWithOperator('div.exp');
+              const loc = locFromRange(left.loc, right.loc);
+              return Semantic.builders.div(left, right, loc);
+            },
+          };
         case TokenKind.Equal:
           return { op: 'eq', parse: parseNaryInfix('eq') };
+        case TokenKind.NotEqual:
+          return { op: 'neq', parse: parseNaryInfix('neq') };
         case TokenKind.LessThan:
           return { op: 'lt', parse: parseNaryInfix('lt') };
         case TokenKind.LessThanOrEqual:
@@ -341,6 +510,28 @@ const getInfixParselet = (
         case TokenKind.GreaterThanOrEqual:
           return { op: 'gte', parse: parseNaryInfix('gte') };
         case TokenKind.Identifier:
+          if (isFunctionName(node.value)) {
+            return {
+              op: 'mul.func',
+              parse: (parser, left): Semantic.types.Node => {
+                const result = parseNaryInfix('mul.imp')(parser, left);
+                // Flatten 2x\sin x to mul(2, x, sin(x)).
+                if (
+                  result.type === Semantic.NodeType.Mul &&
+                  left.type === Semantic.NodeType.Mul &&
+                  left.implicit &&
+                  result.args[0] === left
+                ) {
+                  return Semantic.builders.mul(
+                    [...left.args, ...result.args.slice(1)],
+                    true,
+                    result.loc,
+                  );
+                }
+                return result;
+              },
+            };
+          }
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
         case TokenKind.Number:
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
@@ -386,11 +577,28 @@ const getInfixParselet = (
               loc.end += 1;
             }
 
-            return Semantic.builders.pow(
-              left,
-              editorParser.parse(sup.children),
-              loc,
+            // Exponents are right associative: x^y^z is x^(y^z).
+            const exps = [editorParser.parse(sup.children)];
+            for (;;) {
+              const next = parser.peek();
+              if (
+                next.type !== NodeType.SubSup ||
+                next.children[0] ||
+                !next.children[1]
+              ) {
+                break;
+              }
+              parser.consume();
+              exps.push(editorParser.parse(next.children[1].children));
+              if (loc) {
+                loc.end += 1;
+              }
+            }
+            const exp = exps.reduceRight((acc, base) =>
+              Semantic.builders.pow(base, acc),
             );
+
+            return Semantic.builders.pow(left, exp, loc);
           }
 
           return left;
@@ -444,6 +652,7 @@ const getOpPrecedence = (op: Operator): number => {
     case 'comma':
       return 1;
     case 'eq':
+    case 'neq':
     case 'lt':
     case 'lte':
     case 'gt':
@@ -454,13 +663,23 @@ const getOpPrecedence = (op: Operator): number => {
     case 'plusminus':
       return 3;
     case 'mul.exp':
+    case 'div.exp':
       return 5;
     case 'div': // this is to encourage wrapping fractions in parens before a negative
       return 6;
     case 'neg':
       return 7;
-    case 'mul.imp':
+    // 'mul.func' is implicit multiplication by a function, e.g. the `\cos` in
+    // `\sin x \cos x`, and 'func.arg' is the precedence a function's argument
+    // is parsed with.  They're equal, so a function ends the previous
+    // function's argument.  They're above 'neg', so `-x\sin x` is
+    // `-(x sin x)` like `-xy` is `-(xy)`, and below 'mul.imp', so `\sin 2x`
+    // is `sin(2x)`.
+    case 'mul.func':
+    case 'func.arg':
       return 8;
+    case 'mul.imp':
+      return 9;
     case 'supsub':
       return 10;
   }
@@ -526,8 +745,22 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
   });
 };
 
+/**
+ * Parses an editor tree into a semantic tree.
+ *
+ * Throws an error if `input` is empty, contains a char it doesn't recognize,
+ * or isn't a valid expression.
+ *
+ * Relations are n-ary.  A chain of the same relation is parsed as a single
+ * node with one arg per side, e.g. `2x=5=100` becomes an `Equals` node with
+ * three args: `2x`, `5`, and `100`.  Callers that expect exactly two sides
+ * should check `args.length`.
+ */
 export const parse = (input: CharRow): Semantic.types.Node => {
   const tokenRow = Lexer.lexRow(input);
+  if (tokenRow.children.length === 0) {
+    throw new Error('Empty input');
+  }
   // The Semantic types have more restrictions on where certain node types can appear.
   // We cast for now, but really we should have function that checks that the result of
   // editorParser.parse() follows those restrictions.
