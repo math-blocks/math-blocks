@@ -2,6 +2,7 @@ import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
 
 import { parse as texParse } from '../parser';
+import { print as texPrint } from '../printer';
 
 const { builders: b } = Semantic;
 
@@ -16,6 +17,10 @@ const strip = (node: Semantic.types.Node): unknown =>
       key === 'id' || key === 'loc' ? undefined : value,
     ),
   );
+
+// Prints a semantic tree as TeX: semantic tree -> editor tree -> TeX.
+const print = (node: Semantic.types.Node): string =>
+  texPrint(Editor.print(node));
 
 const expectParse = (tex: string, expected: Semantic.types.Node): void => {
   expect(strip(parse(tex))).toEqual(strip(expected));
@@ -365,6 +370,31 @@ describe('Editor.parse(Tex.parse(...))', () => {
           'Mismatched delimiters',
         );
       });
+    });
+  });
+
+  // https://github.com/math-blocks/math-blocks/issues/731
+  describe('round trips through the printers', () => {
+    test.each([
+      ['x>y', 'x\\gt y'],
+      ['x<y', 'x\\lt y'],
+      ['x\\le y', 'x\\leq y'],
+      ['x\\ge y', 'x\\geq y'],
+      ['x\\ne y', 'x\\neq y'],
+      ['2\\pi r', '2\\pi r'],
+      ['\\pi', '\\pi'],
+      ['\\sqrt{x}', '\\sqrt{x}'],
+      ['\\sqrt[3]{x}', '\\sqrt[3]{x}'],
+      ['\\sqrt{x+1}+2', '\\sqrt{x+1}+2'],
+      ['|x|', '\\left|x\\right|'],
+      ['|x-1|+2', '\\left|x-1\\right|+2'],
+      ['a-b', 'a-b'],
+      ['x^-2', 'x^{-2}'],
+    ])('%s prints as %s and re-parses to the same tree', (tex, expected) => {
+      const node = parse(tex);
+      const printed = print(node);
+      expect(printed).toEqual(expected);
+      expect(strip(parse(printed))).toEqual(strip(node));
     });
   });
 });

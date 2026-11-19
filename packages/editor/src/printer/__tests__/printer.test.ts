@@ -30,6 +30,76 @@ describe('print', () => {
     expect(node).toEqualEditorNode(Util.row('123'));
   });
 
+  test('2πr', () => {
+    const ast = Semantic.builders.mul(
+      [
+        Semantic.builders.number('2'),
+        Semantic.builders.pi(),
+        Semantic.builders.identifier('r'),
+      ],
+      true,
+    );
+
+    const node = print(ast);
+
+    expect(node).toEqualEditorNode(Util.row('2πr'));
+  });
+
+  test('√x', () => {
+    const ast = Semantic.builders.sqrt(Semantic.builders.identifier('x'));
+
+    const node = print(ast);
+
+    expect(node).toEqualEditorNode(
+      builders.row([builders.root(null, [builders.char('x')])]),
+    );
+  });
+
+  test('cube root of x', () => {
+    const ast = Semantic.builders.root(
+      Semantic.builders.identifier('x'),
+      Semantic.builders.number('3'),
+    );
+
+    const node = print(ast);
+
+    expect(node).toEqualEditorNode(
+      builders.row([builders.root([builders.char('3')], [builders.char('x')])]),
+    );
+  });
+
+  test('|x - 1|', () => {
+    const ast = Semantic.builders.abs(
+      Semantic.builders.add([
+        Semantic.builders.identifier('x'),
+        Semantic.builders.neg(Semantic.builders.number('1'), true),
+      ]),
+    );
+
+    const node = print(ast);
+
+    expect(node).toEqualEditorNode(
+      builders.row([
+        builders.delimited(
+          Util.row('x-1').children,
+          builders.char('|'),
+          builders.char('|'),
+        ),
+      ]),
+    );
+  });
+
+  test('x ≠ 5', () => {
+    const ast = Semantic.builders.neq([
+      Semantic.builders.identifier('x'),
+      Semantic.builders.number('5'),
+    ]);
+
+    const node = print(ast);
+
+    expect(node).toEqualEditorNode(Util.row('x≠5'));
+  });
+
   test('1', () => {
     const ast = Semantic.builders.number('1');
 
