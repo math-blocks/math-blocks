@@ -1,6 +1,6 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import type { Step } from '../types';
+import { StepKind, type Step } from '../types';
 import { factor } from '../factor/factor';
 import { solveLinear } from '../solve-linear/solve-linear';
 
@@ -42,6 +42,7 @@ export function solveQuadratic(
   // @ts-expect-error: TypeScript loses the TwoOrMore<Node> type after mapping
   const seq = builders.sequence(relations);
   const splitStep: Step = {
+    kind: StepKind.SplitFactoredEquation,
     message: 'split factored equation',
     before: builders.eq([factoredLeft, builders.number('0')]),
     after: seq,
@@ -65,6 +66,7 @@ export function solveQuadratic(
   const after = builders.sequence(solutions);
 
   return {
+    kind: StepKind.SolveQuadratic,
     message: 'solve quadratic',
     before,
     after,

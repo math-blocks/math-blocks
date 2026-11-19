@@ -1,14 +1,14 @@
 import { builders, types, util } from '@math-blocks/semantic';
 import type { Mutable } from 'utility-types';
 
-import { type Step } from '../types';
+import { StepKind, type Step } from '../types';
 import { solveLinear, isLinear } from '../solve-linear/solve-linear';
 import { simplify } from '../simplify/simplify';
 
 // TODO: support systems of equations with more than two equations
 export function solveSystem(
   node: types.Sequence,
-): Extract<Step, { message: 'solve system' }> | void {
+): Extract<Step, { kind: StepKind.SolveSystem }> | void {
   if (node.args.length !== 2) {
     return;
   }
@@ -68,6 +68,7 @@ export function solveSystem(
   });
 
   substeps.push({
+    kind: StepKind.Substitute,
     message: 'substitute',
     before: eqn2,
     after: eqn2Subbed,
@@ -108,6 +109,7 @@ export function solveSystem(
   });
 
   substeps.push({
+    kind: StepKind.Substitute,
     message: 'substitute',
     before: sol1,
     after: sol1Subbed,
@@ -125,6 +127,7 @@ export function solveSystem(
   const sol3 = step3 ? step3.after : sol1Subbed;
 
   return {
+    kind: StepKind.SolveSystem,
     message: 'solve system',
     before: builders.sequence([eqn1, eqn2]),
     after: builders.sequence([sol2, sol3]),

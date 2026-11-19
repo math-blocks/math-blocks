@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -33,6 +33,7 @@ export function dropAddIdentity(
     return;
   }
   return {
+    kind: StepKind.DropAddingZero,
     message: 'drop adding zero',
     before: node,
     after: Semantic.builders.add(newTerms),

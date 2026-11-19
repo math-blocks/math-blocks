@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const getReciprocal = (
   node: Semantic.types.Node,
@@ -32,6 +32,7 @@ export function simplifyDivByFrac(
   const after = Semantic.builders.mul([num, reciprocal], true /* implicit */);
 
   return {
+    kind: StepKind.DividingByFractionIsMultiplyingByReciprocal,
     message:
       'dividing by a fraction is the same as multiplyin by the reciprocal',
     before: node,

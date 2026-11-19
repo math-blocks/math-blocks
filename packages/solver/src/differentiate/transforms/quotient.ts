@@ -1,6 +1,6 @@
 import { types, builders, util } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export const quotientRule = (
   differentiate: (node: types.Node) => Step | void,
@@ -15,6 +15,7 @@ export const quotientRule = (
     }
 
     return {
+      kind: StepKind.Differentiate,
       message: 'differentiate',
       before: node,
       after: builders.div(step.after, den),
@@ -38,6 +39,7 @@ export const quotientRule = (
   );
 
   return {
+    kind: StepKind.QuotientRule,
     message: 'quotient rule',
     before: node,
     after: after,

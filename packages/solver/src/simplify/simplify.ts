@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step, Transform } from '../types';
+import { StepKind, type Step, type Transform } from '../types';
 
 import { addNegToSub } from './transforms/add-neg-to-sub';
 import { dropParens } from './transforms/drop-parens';
@@ -108,6 +108,7 @@ export function simplify(
 
   if (substeps.length > 0) {
     return {
+      kind: StepKind.SimplifyExpression,
       message: 'simplify expression',
       before: node,
       after: current,

@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -24,6 +24,7 @@ export function dropParens(
     return;
   }
   return {
+    kind: StepKind.DropParentheses,
     message: 'drop parentheses',
     before: node,
     after: Semantic.builders.add(newTerms),

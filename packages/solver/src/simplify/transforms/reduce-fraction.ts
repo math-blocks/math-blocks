@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import { isNegative } from '../util';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -96,6 +96,7 @@ export function reduceFraction(
   }
 
   return {
+    kind: StepKind.ReduceFraction,
     message: 'reduce fraction',
     before: node,
     after,

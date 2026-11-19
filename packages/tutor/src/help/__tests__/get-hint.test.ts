@@ -1,6 +1,7 @@
 import * as Semantic from '@math-blocks/semantic';
 import * as Solver from '@math-blocks/solver';
 import * as Testing from '../../testing';
+import { StepKind } from '../../index';
 
 import { getHint } from '../get-hint';
 
@@ -18,6 +19,7 @@ describe('#getHint', () => {
 
     const hint = getHint(problem);
 
+    expect(hint.kind).toEqual(StepKind.DoSameOperationToBothSides);
     expect(hint.message).toMatchInlineSnapshot(
       `"do the same operation to both sides"`,
     );
@@ -31,7 +33,12 @@ describe('#getHint', () => {
 
     const hint = getHint(problem);
 
+    expect(hint.kind).toEqual(StepKind.CollectLikeTerms);
     expect(hint.message).toMatchInlineSnapshot(`"collect like terms"`);
+  });
+
+  it('re-exports the same StepKind as @math-blocks/solver', () => {
+    expect(StepKind).toBe(Solver.StepKind);
   });
 
   it("should throw if there's nothing left to do", () => {

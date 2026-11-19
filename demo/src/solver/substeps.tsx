@@ -112,8 +112,8 @@ const Substeps = ({ prefix, start, step }: Props) => {
 export default Substeps;
 
 const printStep = (step: Solver.Step): React.ReactNode => {
-  switch (step.message) {
-    case 'do the same operation to both sides': {
+  switch (step.kind) {
+    case Solver.StepKind.DoSameOperationToBothSides: {
       const { operation, value } = step;
       const renderedValue = (
         <MathRenderer
@@ -138,11 +138,11 @@ const printStep = (step: Solver.Step): React.ReactNode => {
       }
       break;
     }
-    case 'move matching variable terms to one side': {
+    case Solver.StepKind.MoveMatchingVariableTermsToOneSide: {
       const { side } = step;
       return <span>Move matching variable terms to the {side} side</span>;
     }
-    case 'substitute': {
+    case Solver.StepKind.Substitute: {
       const original = (
         <MathRenderer
           row={Editor.print(step.original)}
@@ -164,11 +164,13 @@ const printStep = (step: Solver.Step): React.ReactNode => {
       );
     }
     default:
+      // The demo uses the (deprecated) English debug labels for display.
+      // Real apps should map `step.kind` to their own (translated) text.
       if (step.substeps.length === 1) {
-        if (step.message === 'simplify the left hand side') {
+        if (step.kind === Solver.StepKind.SimplifyLeftHandSide) {
           return <span>{step.substeps[0].message} on the left hand side</span>;
         }
-        if (step.message === 'simplify the right hand side') {
+        if (step.kind === Solver.StepKind.SimplifyRightHandSide) {
           return <span>{step.substeps[0].message} on the right hand side</span>;
         }
         return <span>{step.message}</span>;

@@ -3,3 +3,6 @@ export type { CheckStepResult } from './check/check-step';
 
 export { getHint } from './help/get-hint';
 export { showMeHow } from './help/show-me-how';
+
+// `getHint` returns `Step`s, so callers need `StepKind` to tell them apart.
+export { StepKind } from '@math-blocks/solver';

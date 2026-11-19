@@ -1,6 +1,6 @@
 import { types, builders } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export const powerRule = (
   differentiate: (node: types.Node) => Step | void,
@@ -9,6 +9,7 @@ export const powerRule = (
   if (node.base.type === 'Identifier') {
     if (node.base.name === 'x') {
       return {
+        kind: StepKind.PowerRule,
         message: 'power rule',
         before: node,
         after: builders.mul(
@@ -33,6 +34,7 @@ export const powerRule = (
       }
 
       return {
+        kind: StepKind.ChainRule,
         message: 'chain rule',
         before: node,
         after: builders.mul([step.after, node], true),

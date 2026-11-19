@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../types';
+import { StepKind, type Step } from '../types';
 
 const { NodeType } = Semantic;
 
@@ -100,21 +100,26 @@ export const simplifyMul = (
     return node;
   }
 
-  let message: Step['message'];
+  const common = { before: node, after, substeps: [] } as const;
   if (a.type === NodeType.Neg && b.type === NodeType.Neg) {
-    message = 'multiplying two negatives is a positive';
+    steps?.push({
+      kind: StepKind.MultiplyingTwoNegativesIsPositive,
+      message: 'multiplying two negatives is a positive',
+      ...common,
+    });
   } else if (resultIsNeg) {
-    message = 'multiplying a negative by a positive is negative';
+    steps?.push({
+      kind: StepKind.MultiplyingNegativeByPositiveIsNegative,
+      message: 'multiplying a negative by a positive is negative',
+      ...common,
+    });
   } else {
-    message = 'multiply monomials';
+    steps?.push({
+      kind: StepKind.MultiplyMonomials,
+      message: 'multiply monomials',
+      ...common,
+    });
   }
-
-  steps?.push({
-    message,
-    before: node,
-    after,
-    substeps: [],
-  });
 
   return after;
 };
