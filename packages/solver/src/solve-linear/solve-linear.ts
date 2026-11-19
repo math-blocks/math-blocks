@@ -181,10 +181,14 @@ export function solveLinear(
       }
     }
     // fraction.js keeps the sign in `s` and an unsigned numerator in `n`, so
-    // a coefficient of -1 (e.g. `-x`) has `n === 1` and still needs dividing.
+    // a coefficient of -1 (e.g. `-x`) has `n === 1` and still needs removing.
+    // We multiply both sides by -1 rather than dividing by it, since that's
+    // the more natural step.
     if (coeff.n !== 1 || coeff.s === -1) {
       const step =
-        coeff.s === -1
+        coeff.n === 1
+          ? mulByNumber(rel, builders.number('-1'))
+          : coeff.s === -1
           ? divByCoeff(rel, builders.number((-1 * coeff.n).toString()))
           : divByCoeff(rel, builders.number(coeff.n.toString()));
       if (!step) {

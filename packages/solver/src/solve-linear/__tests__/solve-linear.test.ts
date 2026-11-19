@@ -325,7 +325,7 @@ describe('solveLinear', () => {
         "-\\frac{x}{6}=-\\frac{1}{6}",
         "-\\frac{x}{6}*6=-\\frac{1}{6}*6",
         "-x=-1",
-        "\\frac{-x}{-1}=\\frac{-1}{-1}",
+        "-x*-1=-1*-1",
         "x=1",
       ]
     `);
@@ -514,7 +514,7 @@ describe('solveLinear', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "-x\\gt2",
-        "\\frac{-x}{-1}\\lt\\frac{2}{-1}",
+        "-x*-1\\lt2*-1",
         "x\\lt-2",
       ]
     `);
@@ -536,7 +536,7 @@ describe('solveLinear', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "-x=3",
-        "\\frac{-x}{-1}=\\frac{3}{-1}",
+        "-x*-1=3*-1",
         "x=-3",
       ]
     `);
@@ -558,7 +558,7 @@ describe('solveLinear', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "3=-x",
-        "\\frac{3}{-1}=\\frac{-x}{-1}",
+        "3*-1=-x*-1",
         "-3=x",
       ]
     `);
@@ -582,7 +582,7 @@ describe('solveLinear', () => {
         "-x+5\\leq1",
         "-x+5-5\\leq1-5",
         "-x\\leq-4",
-        "\\frac{-x}{-1}\\geq\\frac{-4}{-1}",
+        "-x*-1\\geq-4*-1",
         "x\\geq4",
       ]
     `);
@@ -606,7 +606,7 @@ describe('solveLinear', () => {
         "-\\frac{x}{2}=3",
         "-\\frac{x}{2}*2=3*2",
         "-x=6",
-        "\\frac{-x}{-1}=\\frac{6}{-1}",
+        "-x*-1=6*-1",
         "x=-6",
       ]
     `);
@@ -632,7 +632,7 @@ describe('solveLinear', () => {
         "4b=-4+5b",
         "4b-5b=-4+5b-5b",
         "-b=-4",
-        "\\frac{-b}{-1}=\\frac{-4}{-1}",
+        "-b*-1=-4*-1",
         "b=4",
       ]
     `);
@@ -656,21 +656,19 @@ describe('solveLinear', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
   });
 
-  // Dividing by -1 used to leave these unsimplified, e.g. `x=\\frac{1}{-1}`,
-  // `x=-0` or `x=-1^{0}-2y`.
-  it.each([
-    ['x + 2 = 3 + x + x', 'x=-1'],
-    ['2x = 3x', 'x=0'],
-    ['-x = 1 + 2y', 'x=-1-2y'],
-    ['-x + 2y > 1', 'x\\lt-1+2y'],
-    ['-2x = 1 + 2y', 'x=-\\frac{1}{2}-y'],
-  ])(
-    'simplifies the answer after dividing by a negative: %s',
-    (input, expected) => {
-      const result = solveLinear(parseNumRel(input), builders.identifier('x'))!;
-      expect(print(result.after)).toEqual(expected);
-    },
-  );
+  // Removing a negative coefficient used to leave these unsimplified, e.g.
+  // `x=\\frac{1}{-1}`, `x=-0` or `x=-1^{0}-2y`.
+  it.each`
+    input                  | expected
+    ${'x + 2 = 3 + x + x'} | ${'x=-1'}
+    ${'2x = 3x'}           | ${'x=0'}
+    ${'-x = 1 + 2y'}       | ${'x=-1-2y'}
+    ${'-x + 2y > 1'}       | ${'x\\lt-1+2y'}
+    ${'-2x = 1 + 2y'}      | ${'x=-\\frac{1}{2}-y'}
+  `('solveLinear($input) -> $expected', ({ input, expected }) => {
+    const result = solveLinear(parseNumRel(input), builders.identifier('x'))!;
+    expect(print(result.after)).toEqual(expected);
+  });
 
   describe('bail-out cases', () => {});
 });
