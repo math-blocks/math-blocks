@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/editor",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/math-blocks/math-blocks.git",
@@ -17,8 +17,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.12",
-        "@math-blocks/parser": "^0.0.14",
-        "@math-blocks/semantic": "^0.1.1"
+        "@math-blocks/core": "^0.0.13",
+        "@math-blocks/parser": "^0.0.15",
+        "@math-blocks/semantic": "^0.1.2"
     }
 }

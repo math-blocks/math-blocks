@@ -1,5 +1,15 @@
 # @math-blocks/semantic
 
+## 0.1.2
+
+### Patch Changes
+
+- 7d29fdc: Add `repository`, `bugs` and `homepage` to `package.json`, so npm links to the source and the issue tracker.
+- 5422428: Add `util.isSimplifiedNumber`, which returns true if a node is a number written in simplest form: an integer, a decimal without trailing zeros, or a fraction of integers in lowest terms, optionally negated. For example `2`, `-2.5` and `\frac{5}{2}` are simplified, while `5 \cdot \frac{1}{2}`, `\frac{4}{2}` and `2.0` aren't. Roots and constants such as `\pi` aren't handled yet.
+- c9c0185: Export `serializer`, a jest snapshot serializer that prints semantic nodes as s-expressions. It replaces the `serializer` from the deprecated `@math-blocks/testing` package, so switching is a change of import path: `import { serializer } from '@math-blocks/semantic'`. Unlike the old one, its `test` only matches objects whose `type` is the type of a semantic node, so it no longer claims `null`, primitives or other packages' nodes.
+- Updated dependencies [7d29fdc]
+  - @math-blocks/core@0.0.13
+
 ## 0.1.1
 
 ### Patch Changes

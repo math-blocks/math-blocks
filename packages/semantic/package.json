@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/semantic",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/math-blocks/math-blocks.git",
@@ -17,7 +17,7 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.12",
+        "@math-blocks/core": "^0.0.13",
         "fraction.js": "^4.0.12"
     }
 }
