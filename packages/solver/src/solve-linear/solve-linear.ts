@@ -185,12 +185,18 @@ export function solveLinear(
     // We multiply both sides by -1 rather than dividing by it, since that's
     // the more natural step.
     if (coeff.n !== 1 || coeff.s === -1) {
-      const step =
-        coeff.n === 1
-          ? mulByNumber(rel, builders.number('-1'))
-          : coeff.s === -1
-          ? divByCoeff(rel, builders.number((-1 * coeff.n).toString()))
-          : divByCoeff(rel, builders.number(coeff.n.toString()));
+      let step: Step<types.NumericRelation> | void;
+      if (coeff.n === 1) {
+        // A coefficient of -1, e.g. `-x > 2` -> `-x*-1 < 2*-1`
+        step = mulByNumber(rel, builders.number('-1'));
+      } else if (coeff.s === -1) {
+        // Any other negative coefficient, e.g.
+        // `-2x > 5` -> `\frac{-2x}{-2} < \frac{5}{-2}`
+        step = divByCoeff(rel, builders.number((-1 * coeff.n).toString()));
+      } else {
+        // A positive coefficient, e.g. `2x = 5` -> `\frac{2x}{2} = \frac{5}{2}`
+        step = divByCoeff(rel, builders.number(coeff.n.toString()));
+      }
       if (!step) {
         return;
       }
