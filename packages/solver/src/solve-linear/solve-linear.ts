@@ -220,7 +220,7 @@ export function solveLinear(
  * Whether `rel` has `ident` alone on one side and no `ident` on the other,
  * e.g. `x = 3` or `y + 1 < x`.
  */
-const isSolvedFor = (
+export const isSolvedFor = (
   rel: types.NumericRelation,
   ident: types.Identifier,
 ): boolean => {

@@ -1,7 +1,7 @@
 import { types, builders } from '@math-blocks/semantic';
 
 import { parse, print } from '../../test-util';
-import { solveLinear } from '../solve-linear';
+import { isSolvedFor, solveLinear } from '../solve-linear';
 import { NumberOfSolutions } from '../../types';
 
 const parseNumRel = (input: string): types.NumericRelation => {
@@ -656,5 +656,39 @@ describe('solveLinear', () => {
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
   });
 
+  // Dividing by -1 used to leave these unsimplified, e.g. `x=\\frac{1}{-1}`,
+  // `x=-0` or `x=-1^{0}-2y`.
+  it.each([
+    ['x + 2 = 3 + x + x', 'x=-1'],
+    ['2x = 3x', 'x=0'],
+    ['-x = 1 + 2y', 'x=-1-2y'],
+    ['-x + 2y > 1', 'x\\lt-1+2y'],
+    ['-2x = 1 + 2y', 'x=-\\frac{1}{2}-y'],
+  ])(
+    'simplifies the answer after dividing by a negative: %s',
+    (input, expected) => {
+      const result = solveLinear(parseNumRel(input), builders.identifier('x'))!;
+      expect(print(result.after)).toEqual(expected);
+    },
+  );
+
   describe('bail-out cases', () => {});
+});
+
+describe('isSolvedFor', () => {
+  const x = builders.identifier('x');
+
+  it.each(['x = 3', '3 = x', 'x < y + 1', 'y + 1 > x'])(
+    'is true for %s',
+    (input) => {
+      expect(isSolvedFor(parseNumRel(input), x)).toBe(true);
+    },
+  );
+
+  it.each(['-x = 3', '2x = 3', 'x = 2x + 1', 'x + 1 = 3', 'y = 3'])(
+    'is false for %s',
+    (input) => {
+      expect(isSolvedFor(parseNumRel(input), x)).toBe(false);
+    },
+  );
 });
