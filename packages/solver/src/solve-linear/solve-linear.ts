@@ -184,11 +184,23 @@ export function solveLinear(
         rel = simpStep.after as types.NumericRelation;
       }
     }
-    if (coeff.n !== 1) {
-      const step =
-        coeff.s === -1
-          ? divByCoeff(rel, builders.number((-1 * coeff.n).toString()))
-          : divByCoeff(rel, builders.number(coeff.n.toString()));
+    // fraction.js keeps the sign in `s` and an unsigned numerator in `n`, so
+    // a coefficient of -1 (e.g. `-x`) has `n === 1` and still needs removing.
+    // We multiply both sides by -1 rather than dividing by it, since that's
+    // the more natural step.
+    if (coeff.n !== 1 || coeff.s === -1) {
+      let step: Step<types.NumericRelation> | void;
+      if (coeff.n === 1) {
+        // A coefficient of -1, e.g. `-x > 2` -> `-x*-1 < 2*-1`
+        step = mulByNumber(rel, builders.number('-1'));
+      } else if (coeff.s === -1) {
+        // Any other negative coefficient, e.g.
+        // `-2x > 5` -> `\frac{-2x}{-2} < \frac{5}{-2}`
+        step = divByCoeff(rel, builders.number((-1 * coeff.n).toString()));
+      } else {
+        // A positive coefficient, e.g. `2x = 5` -> `\frac{2x}{2} = \frac{5}{2}`
+        step = divByCoeff(rel, builders.number(coeff.n.toString()));
+      }
       if (!step) {
         return;
       }
@@ -201,15 +213,12 @@ export function solveLinear(
         rel = simpStep.after as types.NumericRelation;
       }
     }
+  }
 
-    return {
-      kind: StepKind.SolveForVariable,
-      message: 'solve for variable',
-      before: node,
-      after: rel,
-      substeps: substeps,
-      numberOfSolutions: NumberOfSolutions.One,
-    };
+  // Don't report a solution unless the variable ended up alone on one side.
+  // Otherwise callers would get an answer such as `-x > 2` that looks solved.
+  if (!isSolvedFor(rel, ident)) {
+    return;
   }
 
   return {
@@ -221,6 +230,33 @@ export function solveLinear(
     numberOfSolutions: NumberOfSolutions.One,
   };
 }
+
+/**
+ * Whether `rel` has `ident` alone on one side and no `ident` on the other,
+ * e.g. `x = 3` or `y + 1 < x`.
+ */
+export const isSolvedFor = (
+  rel: types.NumericRelation,
+  ident: types.Identifier,
+): boolean => {
+  const [left, right] = rel.args;
+  const isIdent = (side: types.Node): boolean =>
+    isIdentifier(side) && side.name === ident.name;
+  const contains = (side: types.Node): boolean => {
+    let found = false;
+    util.traverse(side, {
+      enter: (n) => {
+        if (isIdentifier(n) && n.name === ident.name) {
+          found = true;
+        }
+      },
+    });
+    return found;
+  };
+  return (
+    (isIdent(left) && !contains(right)) || (isIdent(right) && !contains(left))
+  );
+};
 
 const getTermsToMove = (
   terms: readonly types.Node[],
