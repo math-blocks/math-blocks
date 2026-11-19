@@ -6,19 +6,21 @@ const { NodeType } = Semantic;
 /**
  * How `checkStep` compares the two steps' solved answers.
  *
- * - `'value'`: an answer that gives the variable a number, such as `x = 4/2`
- *   or `2.5 > x`, matches another that uses the same variable and relation
- *   and gives it the same number, however that number is written. So do
- *   expressions that simplify to equal numbers. Answers that aren't numeric
- *   are compared as with `'form'`.
- * - `'form'`: answers match only when they're written the same way, up to
- *   term order, which side of a relation the variable is on, and the like.
- *   Use this to tell a correct step from a finished, simplified answer.
+ * - `'form'` (the default): an answer that gives the variable a number, such
+ *   as `x = 5/2` or `2.5 < x`, matches another that uses the same variable
+ *   and relation and gives it the same number, as long as the number is in
+ *   simplest form (see `Semantic.util.isSimplifiedNumber`). So `x = 5/2` and
+ *   `x = 2.5` match, while `x = 5 * 1/2` and `x = 10/4` don't. Answers that
+ *   aren't numeric must be written the same way, up to term order, which
+ *   side of a relation the variable is on, and the like.
+ * - `'value'`: like `'form'`, but a numeric answer can be written any way,
+ *   e.g. `x = 5 * 1/2`. Use this to accept a correct step whose answer isn't
+ *   simplified yet.
  */
 export type AnswerComparison = 'value' | 'form';
 
 export type CheckStepOptions = {
-  /** How to compare the solved answers. Defaults to `'value'`. */
+  /** How to compare the solved answers. Defaults to `'form'`. */
   readonly answers?: AnswerComparison;
 };
 
@@ -397,6 +399,8 @@ type NumericAnswer = {
   readonly type: string;
   readonly variable: string;
   readonly value: Value;
+  /** The side of the relation that gives the value, as written. */
+  readonly node: Semantic.types.Node;
 };
 
 /**
@@ -439,13 +443,35 @@ const toNumericAnswers = (
   const [left, right] = node.args;
   if (left.type === NodeType.Identifier) {
     const value = evalNumber(right);
-    return value && [{ type: node.type, variable: left.name, value }];
+    return (
+      value && [{ type: node.type, variable: left.name, value, node: right }]
+    );
   }
   if (right.type === NodeType.Identifier) {
     const value = evalNumber(left);
-    return value && [{ type: SWAPPED[node.type], variable: right.name, value }];
+    return (
+      value && [
+        { type: SWAPPED[node.type], variable: right.name, value, node: left },
+      ]
+    );
   }
   return undefined;
+};
+
+/**
+ * The numeric values in a solved answer as written, e.g. the `5/2` in
+ * `x = 5/2`, or `undefined` if the answer isn't numeric.
+ */
+const numericAnswerNodes = (
+  solved: Solved,
+): readonly Semantic.types.Node[] | undefined => {
+  if (solved.kind === 'unsolved') {
+    return undefined;
+  }
+  if (solved.kind === 'expression') {
+    return evalNumber(solved.answer) ? [solved.answer] : undefined;
+  }
+  return toNumericAnswers(solved.answer)?.map((answer) => answer.node);
 };
 
 /**
@@ -509,18 +535,17 @@ const compareValues = (prev: Solved, next: Solved): boolean | undefined => {
  * `'not-equivalent'`.
  *
  * `options.answers` sets how the solutions are compared; see
- * `AnswerComparison`. With `'value'`, the default, `x + 3 = 5 -> x = 4/2`
- * and `2x + 5 = 10 -> x = 2.5` are equivalent, because `4/2` and `2.5` have
- * the same values as the solver's `2` and `5/2`. With `'form'`, they're
- * not-equivalent, because `next` isn't written the way the solver writes
- * its answer, e.g. in simplest form.
+ * `AnswerComparison`. With `'form'`, the default, `2x + 5 = 10 -> x = 2.5`
+ * is equivalent, because `2.5` has the same value as the solver's `5/2` and
+ * is in simplest form, but `x + 3 = 5 -> x = 4/2` isn't, because `4/2`
+ * isn't simplified. With `'value'`, both are equivalent.
  */
 export const checkStep = (
   prev: Semantic.types.Node,
   next: Semantic.types.Node,
   options: CheckStepOptions = {},
 ): CheckStepResult => {
-  const { answers = 'value' } = options;
+  const { answers = 'form' } = options;
 
   const prevVars = getVariableNames(prev);
   const nextVars = getVariableNames(next);
@@ -544,13 +569,23 @@ export const checkStep = (
     return { status: 'unknown', reason: nextSolved.reason };
   }
 
-  const sameValue =
-    answers === 'value' ? compareValues(prevSolved, nextSolved) : undefined;
-  const equivalent =
-    sameValue ??
-    (prevSolved.kind === nextSolved.kind &&
-      canonicalString(prevSolved.answer) ===
-        canonicalString(nextSolved.answer));
+  const sameValue = compareValues(prevSolved, nextSolved);
+  let equivalent: boolean;
+  if (sameValue === undefined) {
+    // At least one answer isn't numeric, so compare how they're written.
+    equivalent =
+      prevSolved.kind === nextSolved.kind &&
+      canonicalString(prevSolved.answer) === canonicalString(nextSolved.answer);
+  } else if (answers === 'value') {
+    equivalent = sameValue;
+  } else {
+    // With 'form', the values must match and `next` must be simplified.
+    equivalent =
+      sameValue &&
+      (numericAnswerNodes(nextSolved) ?? []).every(
+        Semantic.util.isSimplifiedNumber,
+      );
+  }
   if (equivalent) {
     return { status: 'equivalent', answer: prevSolved.answer };
   }

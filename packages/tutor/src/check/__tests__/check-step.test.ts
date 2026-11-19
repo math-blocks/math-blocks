@@ -208,32 +208,32 @@ describe('checkStep', () => {
     ): CheckStepResult['status'] =>
       checkStep(Testing.parse(prev), Testing.parse(next), { answers }).status;
 
-    // The cases from #728: valid steps whose answers aren't written the way
-    // the solver writes them.
-    const unsimplified = [
-      ['x + 3 = 5', 'x = 4/2'],
-      ['2x + 5 = 10', 'x = 2.5'],
-      ['2x = 5', 'x = 5 * 1/2'],
-    ];
-
-    test.each(unsimplified)(
-      "%s -> %s is equivalent with answers: 'value'",
-      (prev, next) => {
-        expect(statusWith(prev, next, 'value')).toBe('equivalent');
-      },
-    );
-
-    test.each(unsimplified)(
-      '%s -> %s is equivalent by default',
-      (prev, next) => {
-        expect(statusOf(prev, next)).toBe('equivalent');
-      },
-    );
-
-    test.each(unsimplified)(
-      "%s -> %s is not equivalent with answers: 'form'",
-      (prev, next) => {
-        expect(statusWith(prev, next, 'form')).toBe('not-equivalent');
+    // Valid steps whose answers aren't written the way the solver writes
+    // them. 'value' accepts all of them. 'form' accepts only answers in
+    // simplest form: an integer, a decimal, or a reduced fraction.
+    test.each`
+      prev             | next             | value           | form
+      ${'x + 3 = 5'}   | ${'x = 4/2'}     | ${'equivalent'} | ${'not-equivalent'}
+      ${'2x + 5 = 10'} | ${'x = 2.5'}     | ${'equivalent'} | ${'equivalent'}
+      ${'2x + 5 = 10'} | ${'x = 5/2'}     | ${'equivalent'} | ${'equivalent'}
+      ${'2x + 5 = 10'} | ${'2.5 = x'}     | ${'equivalent'} | ${'equivalent'}
+      ${'2x = 5'}      | ${'x = 5 * 1/2'} | ${'equivalent'} | ${'not-equivalent'}
+      ${'2x = 5'}      | ${'x = 10/4'}    | ${'equivalent'} | ${'not-equivalent'}
+      ${'x + 1 = 3'}   | ${'x = 2.0'}     | ${'equivalent'} | ${'not-equivalent'}
+      ${'x + 1 = 3'}   | ${'x = 2'}       | ${'equivalent'} | ${'equivalent'}
+      ${'2x = -5'}     | ${'x = -5/2'}    | ${'equivalent'} | ${'equivalent'}
+      ${'2x = -5'}     | ${'x = -2.5'}    | ${'equivalent'} | ${'equivalent'}
+      ${'2x = -5'}     | ${'x = -10/4'}   | ${'equivalent'} | ${'not-equivalent'}
+      ${'2x + 1 > 6'}  | ${'x > 2.5'}     | ${'equivalent'} | ${'equivalent'}
+      ${'2x + 1 > 6'}  | ${'x > 10/4'}    | ${'equivalent'} | ${'not-equivalent'}
+      ${'1/2 + 1/4'}   | ${'0.75'}        | ${'equivalent'} | ${'equivalent'}
+    `(
+      '$prev -> $next is $value by value and $form by form',
+      ({ prev, next, value, form }) => {
+        expect(statusWith(prev, next, 'value')).toBe(value);
+        expect(statusWith(prev, next, 'form')).toBe(form);
+        // 'form' is the default.
+        expect(statusOf(prev, next)).toBe(form);
       },
     );
 
@@ -325,21 +325,18 @@ describe('checkStep', () => {
     });
 
     describe("answers: 'form'", () => {
-      test.each([
-        ['x + 1 = 3', 'x = 2.0'],
-        ['2x + 5 = 10', '2.5 = x'],
-        ['2x + 1 > 6', 'x > 2.5'],
-        ['1/2 + 1/4', '0.75'],
-      ])('%s -> %s is not equivalent', (prev, next) => {
-        expect(statusWith(prev, next, 'form')).toBe('not-equivalent');
+      it('still requires values to match', () => {
+        expect(statusWith('2x + 5 = 10', 'x = 2.4', 'form')).toBe(
+          'not-equivalent',
+        );
+        expect(statusWith('2x + 1 > 6', 'x ≥ 5/2', 'form')).toBe(
+          'not-equivalent',
+        );
       });
 
-      test.each([
-        ['2x + 5 = 10', 'x = 5/2'],
-        ['2x + 5 = 10', '5/2 = x'],
-        ['x + 1 > 3', '2 < x'],
-      ])('%s -> %s is still equivalent', (prev, next) => {
-        expect(statusWith(prev, next, 'form')).toBe('equivalent');
+      it('compares answers that are not numeric as written', () => {
+        expect(statusWith('2x + 3x', '5x', 'form')).toBe('equivalent');
+        expect(statusWith('2x + 3x', '6x', 'form')).toBe('not-equivalent');
       });
     });
   });

@@ -443,6 +443,41 @@ describe('util helpers', () => {
   });
 });
 
+describe('isSimplifiedNumber', () => {
+  const n = (value: string): Node => builders.number(value);
+  const frac = (num: Node, den: Node): Node => builders.div(num, den);
+
+  test.each`
+    description        | node                                                  | expected
+    ${'2'}             | ${n('2')}                                             | ${true}
+    ${'0'}             | ${n('0')}                                             | ${true}
+    ${'2.5'}           | ${n('2.5')}                                           | ${true}
+    ${'0.25'}          | ${n('0.25')}                                          | ${true}
+    ${'-2.5'}          | ${builders.neg(n('2.5'))}                             | ${true}
+    ${'-2 (sub flag)'} | ${builders.neg(n('2'), true)}                         | ${true}
+    ${'5/2'}           | ${frac(n('5'), n('2'))}                               | ${true}
+    ${'-5/2'}          | ${builders.neg(frac(n('5'), n('2')))}                 | ${true}
+    ${'(-5)/2'}        | ${frac(builders.neg(n('5')), n('2'))}                 | ${true}
+    ${'2.0'}           | ${n('2.0')}                                           | ${false}
+    ${'2.50'}          | ${n('2.50')}                                          | ${false}
+    ${'02'}            | ${n('02')}                                            | ${false}
+    ${'-0'}            | ${builders.neg(n('0'))}                               | ${false}
+    ${'4/2'}           | ${frac(n('4'), n('2'))}                               | ${false}
+    ${'10/4'}          | ${frac(n('10'), n('4'))}                              | ${false}
+    ${'5/1'}           | ${frac(n('5'), n('1'))}                               | ${false}
+    ${'0/3'}           | ${frac(n('0'), n('3'))}                               | ${false}
+    ${'5/(-2)'}        | ${frac(n('5'), builders.neg(n('2')))}                 | ${false}
+    ${'2.5/2'}         | ${frac(n('2.5'), n('2'))}                             | ${false}
+    ${'5 * 1/2'}       | ${builders.mul([n('5'), frac(n('1'), n('2'))])}       | ${false}
+    ${'2 + 1/2'}       | ${builders.add([n('2'), frac(n('1'), n('2'))])}       | ${false}
+    ${'2 - 1 (sub)'}   | ${builders.add([n('2'), builders.neg(n('1'), true)])} | ${false}
+    ${'x'}             | ${builders.identifier('x')}                           | ${false}
+    ${'pi'}            | ${builders.pi()}                                      | ${false}
+  `('isSimplifiedNumber($description) -> $expected', ({ node, expected }) => {
+    expect(util.isSimplifiedNumber(node)).toBe(expected);
+  });
+});
+
 describe('NodeType', () => {
   test('Summation matches the type of nodes built by builders.sum', () => {
     const a = builders.identifier('a');
