@@ -496,8 +496,8 @@ describe('solveLinear', () => {
     `);
   });
 
-  // Regression tests for #704: a coefficient of -1 (a Neg node, not a Mul
-  // with a numeric coefficient) used to be left unsolved.
+  // A coefficient of -1 is a Neg node rather than a Mul with a numeric
+  // coefficient.
   it('-x > 2', () => {
     const before = parseNumRel('-x > 2');
     const ident = builders.identifier('x');

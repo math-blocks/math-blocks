@@ -43,7 +43,6 @@ describe('solveProblem', () => {
     expect(print(result.answer)).toMatchInlineSnapshot(`"x=\\frac{5}{2}"`);
   });
 
-  // Regression tests for #704.
   it.each([
     ['-x>2', 'x', 'x\\lt-2'],
     ['-x=3', 'x', 'x=-3'],

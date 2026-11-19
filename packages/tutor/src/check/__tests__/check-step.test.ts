@@ -194,13 +194,16 @@ describe('checkStep', () => {
     });
   });
 
-  // These used to be 'unknown', because the linear solver returned relations
-  // with a coefficient of -1 unsolved (#704).
   describe('relations with a coefficient of -1', () => {
     it('flips the inequality when dividing by -1', () => {
       expect(statusOf('-x > 2', 'x < -2')).toBe('equivalent');
       expect(statusOf('x < -2', '-x > 2')).toBe('equivalent');
       expect(statusOf('-x > 2', 'x > -2')).toBe('not-equivalent');
+      expect(statusOf('-x ≥ 2', 'x ≤ -2')).toBe('equivalent');
+      expect(statusOf('x ≤ -2', '-x ≥ 2')).toBe('equivalent');
+      expect(statusOf('-x ≤ 2', 'x ≥ -2')).toBe('equivalent');
+      expect(statusOf('-x ≥ 2', 'x ≥ -2')).toBe('not-equivalent');
+      expect(statusOf('-x ≥ 2', 'x < -2')).toBe('not-equivalent');
     });
 
     it('solves equations whose variable term ends up as -x', () => {
