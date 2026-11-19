@@ -678,17 +678,18 @@ describe('solveLinear', () => {
 describe('isSolvedFor', () => {
   const x = builders.identifier('x');
 
-  it.each(['x = 3', '3 = x', 'x < y + 1', 'y + 1 > x'])(
-    'is true for %s',
-    (input) => {
-      expect(isSolvedFor(parseNumRel(input), x)).toBe(true);
-    },
-  );
-
-  it.each(['-x = 3', '2x = 3', 'x = 2x + 1', 'x + 1 = 3', 'y = 3'])(
-    'is false for %s',
-    (input) => {
-      expect(isSolvedFor(parseNumRel(input), x)).toBe(false);
-    },
-  );
+  it.each`
+    input           | expected
+    ${'x = 3'}      | ${true}
+    ${'3 = x'}      | ${true}
+    ${'x < y + 1'}  | ${true}
+    ${'y + 1 > x'}  | ${true}
+    ${'-x = 3'}     | ${false}
+    ${'2x = 3'}     | ${false}
+    ${'x = 2x + 1'} | ${false}
+    ${'x + 1 = 3'}  | ${false}
+    ${'y = 3'}      | ${false}
+  `('isSolvedFor($input) -> $expected', ({ input, expected }) => {
+    expect(isSolvedFor(parseNumRel(input), x)).toBe(expected);
+  });
 });
