@@ -325,8 +325,8 @@ const solveRelation = (
     relation,
     variable,
   });
-  // As above, the linear solver sometimes returns a relation it couldn't
-  // solve, such as `-x > 2` (#704), so check that the variable is isolated.
+  // As above, check that the variable is isolated rather than trusting the
+  // solver's answer.
   return linear && isSolvedFor(linear.answer, variable)
     ? linear.answer
     : undefined;
