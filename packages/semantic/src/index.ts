@@ -5,3 +5,5 @@ import builders from './builders';
 import * as util from './util';
 
 export { types, builders, util };
+
+export { serializer } from './serializer';

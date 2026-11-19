@@ -19,8 +19,20 @@ describe('reduce fraction', () => {
     ${'\\frac{-6x}{-2}'}   | ${'3x'}
     ${'\\frac{2x}{6}'}     | ${'\\frac{x}{3}'}
     ${'\\frac{10x}{6}'}    | ${'\\frac{5x}{3}'}
+    ${'\\frac{1}{-1}'}     | ${'-1'}
+    ${'\\frac{1}{-2}'}     | ${'-\\frac{1}{2}'}
+    ${'\\frac{1}{1}'}      | ${'1'}
+    ${'\\frac{0}{-1}'}     | ${'0'}
+    ${'\\frac{0}{-3}'}     | ${'0'}
   `('isNegative($input) -> $output', ({ input, output }) => {
     const result = reduceFraction(parse(input))!;
     expect(print(result.after)).toEqual(output);
   });
+
+  test.each(['\\frac{1}{2}', '\\frac{1}{x}', '\\frac{x}{2}'])(
+    "doesn't reduce %s",
+    (input) => {
+      expect(reduceFraction(parse(input))).toBeUndefined();
+    },
+  );
 });
