@@ -27,6 +27,7 @@ type Operator =
   | 'div.exp'
   | 'mul.imp'
   | 'mul.func'
+  | 'func.arg'
   | 'neg'
   | 'eq'
   | 'neq'
@@ -144,7 +145,7 @@ const parseFunction = (
     throw new Error(`Missing argument for ${name}`);
   }
 
-  let arg = parser.parseWithOperator('neg');
+  let arg = parser.parseWithOperator('func.arg');
   const loc = locFromRange(token.loc, arg.loc);
   // The parens in `\sin(x)` delimit the argument.
   if (arg.type === Semantic.NodeType.Parens) {
@@ -667,15 +668,19 @@ const getOpPrecedence = (op: Operator): number => {
       return 5;
     case 'div': // this is to encourage wrapping fractions in parens before a negative
       return 6;
-    // Implicit multiplication by a function, e.g. the `\cos` in
-    // `\sin x \cos x`.  It's lower than 'neg', the precedence a function's
-    // argument is parsed with, so a function ends the previous argument.
-    case 'mul.func':
-      return 6;
     case 'neg':
       return 7;
-    case 'mul.imp':
+    // 'mul.func' is implicit multiplication by a function, e.g. the `\cos` in
+    // `\sin x \cos x`, and 'func.arg' is the precedence a function's argument
+    // is parsed with.  They're equal, so a function ends the previous
+    // function's argument.  They're above 'neg', so `-x\sin x` is
+    // `-(x sin x)` like `-xy` is `-(xy)`, and below 'mul.imp', so `\sin 2x`
+    // is `sin(2x)`.
+    case 'mul.func':
+    case 'func.arg':
       return 8;
+    case 'mul.imp':
+      return 9;
     case 'supsub':
       return 10;
   }

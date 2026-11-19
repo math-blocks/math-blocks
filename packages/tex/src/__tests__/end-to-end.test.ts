@@ -187,6 +187,32 @@ describe('Editor.parse(Tex.parse(...))', () => {
         expectParse('2x\\sin x', b.mul([num('2'), x, b.sin(x)], true));
       });
 
+      // A leading minus negates the whole implicit product, like `-xy` is
+      // `-(xy)`, rather than splitting it before the function.
+      test('-x\\sin x negates x sin(x)', () => {
+        expectParse('-xy', b.neg(b.mul([x, y], true)));
+        expectParse('-x\\sin x', b.neg(b.mul([x, b.sin(x)], true)));
+      });
+
+      test('-2x\\sin x negates 2x sin(x)', () => {
+        expectParse('-2x\\sin x', b.neg(b.mul([num('2'), x, b.sin(x)], true)));
+      });
+
+      test('-\\sin x \\cos x negates sin(x) cos(x)', () => {
+        expectParse('-\\sin x', b.neg(b.sin(x)));
+        expectParse(
+          '-\\sin x \\cos x',
+          b.neg(b.mul([b.sin(x), b.cos(x)], true)),
+        );
+      });
+
+      test('2-x\\sin x', () => {
+        expectParse(
+          '2-x\\sin x',
+          b.add([num('2'), b.neg(b.mul([x, b.sin(x)], true), true)]),
+        );
+      });
+
       test('\\sin^2 x', () => {
         expectParse('\\sin^2 x', b.pow(b.sin(x), num('2')));
       });
