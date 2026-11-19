@@ -16,7 +16,13 @@ export function reduceFraction(
     return undefined;
   }
 
-  if (Semantic.util.deepEquals(node.args[0], Semantic.builders.number('1'))) {
+  // `1/b` can't be reduced, unless the denominator is negative (`1/-b` is
+  // `-1/b`) or is 1 itself (`1/1` is `1`).
+  if (
+    Semantic.util.deepEquals(node.args[0], Semantic.builders.number('1')) &&
+    !isNegative(node.args[1]) &&
+    !Semantic.util.deepEquals(node.args[1], Semantic.builders.number('1'))
+  ) {
     return;
   }
 
@@ -76,7 +82,11 @@ export function reduceFraction(
     after = Semantic.builders.div(num, den);
   }
 
-  if (resultIsNegative) {
+  // `0/-b` is 0, not -0.
+  if (
+    resultIsNegative &&
+    !Semantic.util.deepEquals(after, Semantic.builders.number('0'))
+  ) {
     after = Semantic.builders.neg(after);
   }
 

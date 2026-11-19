@@ -44,6 +44,13 @@ export function simplifyMul(
     .getFactors(node)
     .map((f) => (f.type === NodeType.Neg ? f.arg : f));
 
+  // Leave products with a zero factor to `mulByZeroIsZero`.  Otherwise
+  // `0 * -1` would become `-0`.
+  const zero = Semantic.builders.number('0');
+  if (factors.some((f) => Semantic.util.deepEquals(zero, f))) {
+    return undefined;
+  }
+
   const one = Semantic.builders.number('1');
   const newFactors = factors.filter((f) => !Semantic.util.deepEquals(one, f));
 

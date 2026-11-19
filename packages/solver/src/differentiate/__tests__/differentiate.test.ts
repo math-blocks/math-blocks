@@ -186,7 +186,7 @@ describe('differentiate', () => {
         [
           "\\frac{1+x}{1}",
           "\\frac{1}{1} - differentiate",
-          "1^{0} - simplify expression",
+          "1 - simplify expression",
         ]
       `);
     });
