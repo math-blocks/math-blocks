@@ -192,11 +192,144 @@ describe('checkStep', () => {
     it('returns unknown for quadratic inequalities', () => {
       expect(statusOf('x^2 > 4', 'x^2 - 4 > 0')).toBe('unknown');
     });
+  });
 
-    it("returns unknown when the solver can't isolate the variable", () => {
-      // The linear solver doesn't divide inequalities by negative numbers yet.
-      expect(statusOf('-x > 2', 'x < -2')).toBe('unknown');
-      expect(statusOf('x < -2', '-x > 2')).toBe('unknown');
+  describe('relations with a coefficient of -1', () => {
+    it('flips the inequality when dividing by -1', () => {
+      expect(statusOf('-x > 2', 'x < -2')).toBe('equivalent');
+      expect(statusOf('x < -2', '-x > 2')).toBe('equivalent');
+      expect(statusOf('-x > 2', 'x > -2')).toBe('not-equivalent');
+      expect(statusOf('-x ≥ 2', 'x ≤ -2')).toBe('equivalent');
+      expect(statusOf('x ≤ -2', '-x ≥ 2')).toBe('equivalent');
+      expect(statusOf('-x ≤ 2', 'x ≥ -2')).toBe('equivalent');
+      expect(statusOf('-x ≥ 2', 'x ≥ -2')).toBe('not-equivalent');
+      expect(statusOf('-x ≥ 2', 'x < -2')).toBe('not-equivalent');
+    });
+
+    it('solves equations whose variable term ends up as -x', () => {
+      expect(statusOf('-x = 3', 'x = -3')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', 'b = 4')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', '-b = -4')).toBe('equivalent');
+      expect(statusOf('4b + 5 = 1 + 5b', 'b = -4')).toBe('not-equivalent');
+    });
+  });
+
+  describe('comparing answers', () => {
+    const simplifiedOf = (prev: string, next: string): boolean | undefined => {
+      const result = check(prev, next);
+      return result.status === 'equivalent' ? result.simplified : undefined;
+    };
+
+    // Numeric answers are compared by value, however they're written.
+    // `simplified` says whether `next` is a finished answer in simplest form.
+    test.each`
+      prev             | next             | simplified
+      ${'x + 3 = 5'}   | ${'x = 2'}       | ${true}
+      ${'x + 3 = 5'}   | ${'x = 4/2'}     | ${false}
+      ${'x + 1 = 3'}   | ${'x = 2.0'}     | ${false}
+      ${'2x + 5 = 10'} | ${'x = 5/2'}     | ${true}
+      ${'2x + 5 = 10'} | ${'x = 2.5'}     | ${true}
+      ${'2x + 5 = 10'} | ${'2.5 = x'}     | ${true}
+      ${'2x + 5 = 10'} | ${'2x = 5'}      | ${false}
+      ${'2x = 5'}      | ${'x = 5 * 1/2'} | ${false}
+      ${'2x = 5'}      | ${'x = 10/4'}    | ${false}
+      ${'2x = -5'}     | ${'x = -5/2'}    | ${true}
+      ${'2x = -5'}     | ${'x = -2.5'}    | ${true}
+      ${'2x = -5'}     | ${'x = -10/4'}   | ${false}
+      ${'2x + 1 > 6'}  | ${'x > 2.5'}     | ${true}
+      ${'2x + 1 > 6'}  | ${'x > 10/4'}    | ${false}
+      ${'2x + 1 > 6'}  | ${'2x > 5'}      | ${false}
+      ${'1/2 + 1/4'}   | ${'0.75'}        | ${true}
+      ${'1/2 + 1/4'}   | ${'3/4'}         | ${true}
+      ${'1/2 + 1/4'}   | ${'2/4 + 1/4'}   | ${false}
+    `(
+      '$prev -> $next is equivalent, and simplified is $simplified',
+      ({ prev, next, simplified }) => {
+        expect(statusOf(prev, next)).toBe('equivalent');
+        expect(simplifiedOf(prev, next)).toBe(simplified);
+      },
+    );
+
+    it('checks the solutions of a quadratic as written', () => {
+      expect(simplifiedOf('x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0')).toBe(
+        false,
+      );
+    });
+
+    // TODO(#743): answers that aren't numbers are never simplified yet.
+    it("doesn't consider answers that aren't numbers simplified", () => {
+      expect(simplifiedOf('2x + 3x', '5x')).toBe(false);
+    });
+
+    test.each([
+      // Fractions
+      ['x + 1 = 3', 'x = 6/3'],
+      ['2x = 1', 'x = 2/4'],
+      ['2x = -1', 'x = -2/4'],
+      // Decimals
+      ['4x = 1', 'x = 0.25'],
+      ['x = 0.1 + 0.2', 'x = 0.3'],
+      ['2x = 1', 'x = 0.5'],
+      // The variable on either side
+      ['2x + 5 = 10', '5/2 = x'],
+      ['x + 3 = 5', '4/2 = x'],
+      ['2.5 = x', 'x = 5/2'],
+      // Inequalities
+      ['2x + 1 > 6', '2.5 < x'],
+      ['2x + 1 ≤ 6', 'x ≤ 10/4'],
+      ['2x + 1 ≥ 6', '5/2 ≤ x'],
+      // Expressions
+      ['1/2 + 1/3', '5/6'],
+      ['5/2', '2.5'],
+    ])('%s -> %s is equivalent by value', (prev, next) => {
+      expect(statusOf(prev, next)).toBe('equivalent');
+    });
+
+    test.each([
+      ['x + 3 = 5', 'x = 6/2'],
+      ['2x + 5 = 10', 'x = 2.4'],
+      ['2x + 5 = 10', '2.4 = x'],
+      ['x = 0.1 + 0.2', 'x = 0.30001'],
+      // The value matches, but the relation doesn't.
+      ['2x + 1 > 6', 'x ≥ 2.5'],
+      ['2x + 1 > 6', 'x < 2.5'],
+      ['2x + 1 > 6', '2.5 > x'],
+      ['2x + 5 = 10', 'x > 2.5'],
+      // Expressions
+      ['1/2 + 1/4', '0.7'],
+    ])('%s -> %s is not equivalent', (prev, next) => {
+      expect(statusOf(prev, next)).toBe('not-equivalent');
+    });
+
+    it('compares the solutions of a quadratic in any order', () => {
+      expect(statusOf('x^2 + 5x + 6 = 0', '(x + 2)(x + 3) = 0')).toBe(
+        'equivalent',
+      );
+      expect(statusOf('x^2 - 5x + 6 = 0', 'x^2 = 5x - 6')).toBe('equivalent');
+    });
+
+    it('compares answers that are not numeric as written', () => {
+      expect(statusOf('2x + 3x', '5x')).toBe('equivalent');
+      expect(statusOf('2x + 3x', '6x')).toBe('not-equivalent');
+      expect(statusOf('x - 2', '2 - x')).toBe('not-equivalent');
+      expect(statusOf('x + 1 = x + 1', '1 = 1')).toBe('equivalent');
+      expect(statusOf('x + 1 = x + 1', '1 = 2')).toBe('not-equivalent');
+    });
+
+    it("doesn't match an equation with an expression of the same value", () => {
+      expect(statusOf('x + 3 = 5', '2')).toBe('not-equivalent');
+    });
+
+    it('still returns unknown when the variable changes', () => {
+      expect(statusOf('x + 3 = 5', 'y = 2')).toBe('unknown');
+    });
+
+    it("returns the solver's answer", () => {
+      const result = check('2x + 5 = 10', 'x = 2.5');
+      expect(result.status).toBe('equivalent');
+      if (result.status === 'equivalent') {
+        expect(Testing.print(result.answer)).toBe('x = 5 / 2');
+      }
     });
   });
 

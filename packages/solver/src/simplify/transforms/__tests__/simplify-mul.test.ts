@@ -19,4 +19,12 @@ describe('simplify multiplication', () => {
 
     expect(print(result.after)).toEqual(output);
   });
+
+  // `mulByZeroIsZero` handles these, so that `0 * -1` becomes 0, not -0.
+  test.each(['(0)(-1)', '(-1)(0)', '(0)(-a)'])(
+    'leaves %s with a zero factor alone',
+    (input) => {
+      expect(simplifyMul(parse(input), [])).toBeUndefined();
+    },
+  );
 });

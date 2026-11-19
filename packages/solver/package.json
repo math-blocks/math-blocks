@@ -1,6 +1,13 @@
 {
     "name": "@math-blocks/solver",
-    "version": "0.0.14",
+    "version": "0.0.15",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/math-blocks/math-blocks.git",
+        "directory": "packages/solver"
+    },
+    "bugs": "https://github.com/math-blocks/math-blocks/issues",
+    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/solver#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,11 +17,11 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/semantic": "^0.1.1",
+        "@math-blocks/semantic": "^0.1.2",
         "fraction.js": "^4.0.12"
     },
     "devDependencies": {
-        "@math-blocks/editor": "^0.0.14",
-        "@math-blocks/tex": "^0.1.1"
+        "@math-blocks/editor": "^0.0.15",
+        "@math-blocks/tex": "^0.1.2"
     }
 }
