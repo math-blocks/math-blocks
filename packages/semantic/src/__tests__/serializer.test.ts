@@ -214,7 +214,11 @@ describe('serializer', () => {
           ]),
         ),
       ).toBe(true);
-      // 'Sequence' isn't in NodeType, but it's still a semantic node
+      // `test` checks a node's `type` against the node definitions in
+      // node-defs.ts rather than the `NodeType` enum, because the enum is
+      // missing some node types. 'Sequence' (e.g. a quadratic's solutions
+      // `x = 2, x = 3`) is one of them, so a check based on `NodeType` would
+      // wrongly reject it.
       expect(
         serializer.test(
           Semantic.builders.sequence([
