@@ -28,6 +28,54 @@ describe('Lexer', () => {
                 `);
     });
 
+    it('should lex both an ASCII hyphen-minus and a minus sign as Minus', () => {
+      const glyphTree = row([
+        char('a'),
+        char('-'),
+        char('b'),
+        char('\u2212'),
+        char('c'),
+      ]);
+      const tokenTree = Lexer.lexRow(glyphTree);
+
+      expect(tokenTree).toMatchInlineSnapshot(`
+        (row 
+          (Identifier@[]:0:1 a) 
+          Minus@[]:1:2 
+          (Identifier@[]:2:3 b) 
+          Minus@[]:3:4 
+          (Identifier@[]:4:5 c))
+      `);
+    });
+
+    it('should lex \u00D7 and \u22C5 as Times', () => {
+      const glyphTree = row([
+        char('a'),
+        char('\u00D7'),
+        char('b'),
+        char('\u22C5'),
+        char('c'),
+      ]);
+      const tokenTree = Lexer.lexRow(glyphTree);
+
+      expect(tokenTree).toMatchInlineSnapshot(`
+        (row 
+          (Identifier@[]:0:1 a) 
+          Times@[]:1:2 
+          (Identifier@[]:2:3 b) 
+          Times@[]:3:4 
+          (Identifier@[]:4:5 c))
+      `);
+    });
+
+    it('should throw on chars it does not recognize', () => {
+      expect(() =>
+        Lexer.lexRow(row([char('a'), char('\u00A7'), char('b')])),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Unexpected character '§' (U+00A7)"`,
+      );
+    });
+
     it('should lex `1 + a`', () => {
       const glyphTree = row([char('1'), char('+'), char('a')]);
       const tokenTree = Lexer.lexRow(glyphTree);
@@ -206,11 +254,7 @@ describe('Lexer', () => {
 
     it('should lex summation with limits', () => {
       const glyphTree = row([
-        limits(
-          char('\u03a3'),
-          [char('i'), char('='), char('0')],
-          [char('\u221e')],
-        ),
+        limits(char('\u03a3'), [char('i'), char('='), char('0')], [char('n')]),
       ]);
       const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -219,17 +263,14 @@ describe('Lexer', () => {
                   (limits{SummationOperator@[]:0:1}@[]:0:1 (row 
                     (Identifier@[0,0]:0:1 i) 
                     Equal@[0,0]:1:2 
-                    (Number@[0,0]:2:3 0)) (row )))
+                    (Number@[0,0]:2:3 0)) (row 
+                    (Identifier@[0,1]:0:1 n))))
                 `);
     });
 
     it('should lex products with limits', () => {
       const glyphTree = row([
-        limits(
-          char('\u03a0'),
-          [char('i'), char('='), char('0')],
-          [char('\u221e')],
-        ),
+        limits(char('\u03a0'), [char('i'), char('='), char('0')], [char('n')]),
       ]);
       const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -238,7 +279,8 @@ describe('Lexer', () => {
                   (limits{ProductOperator@[]:0:1}@[]:0:1 (row 
                     (Identifier@[0,0]:0:1 i) 
                     Equal@[0,0]:1:2 
-                    (Number@[0,0]:2:3 0)) (row )))
+                    (Number@[0,0]:2:3 0)) (row 
+                    (Identifier@[0,1]:0:1 n))))
                 `);
     });
 
