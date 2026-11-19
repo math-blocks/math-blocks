@@ -8,6 +8,18 @@ export type CheckStepResult =
       /** Both steps have the same solution. */
       readonly status: 'equivalent';
       readonly answer: Semantic.types.Node;
+      /**
+       * Whether `next` is a finished answer in simplest form: the variable
+       * alone on one side and a simplified number on the other, such as
+       * `x = 5/2` or `x = 2.5`, or for an expression, a simplified number
+       * such as `0.75`. It's false for a correct step that still has work
+       * left, such as `x = 5 * 1/2`, `x = 10/4` or `2x = 5`. See
+       * `Semantic.util.isSimplifiedNumber`.
+       *
+       * TODO(#743): answers that aren't numbers, such as `5x`, are never
+       * considered simplified yet.
+       */
+      readonly simplified: boolean;
     }
   | {
       /** The steps have different solutions. */
@@ -359,6 +371,165 @@ const solve = (
 };
 
 /**
+ * The inverse of each relation, for when its sides are swapped, so that
+ * `3 > x` reads as `x < 3`.
+ */
+const SWAPPED: Readonly<Record<string, string>> = {
+  [NodeType.Equals]: NodeType.Equals,
+  [NodeType.NotEquals]: NodeType.NotEquals,
+  [NodeType.LessThan]: NodeType.GreaterThan,
+  [NodeType.LessThanOrEquals]: NodeType.GreaterThanOrEquals,
+  [NodeType.GreaterThan]: NodeType.LessThan,
+  [NodeType.GreaterThanOrEquals]: NodeType.LessThanOrEquals,
+};
+
+type Value = ReturnType<typeof Semantic.util.evalNode>;
+
+/** A solved relation with the variable on the left, e.g. `x < 5/2`. */
+type NumericAnswer = {
+  /**
+   * The relation's node type with the variable on the left, e.g.
+   * `NodeType.GreaterThan` for both `x > 3` and `3 < x`. Two answers only
+   * match if their types match, so `x > 3` doesn't match `x < 3` or
+   * `x ≥ 3`.
+   */
+  readonly type: string;
+  /** The name of the variable, e.g. `x`. */
+  readonly variable: string;
+  /** The exact value the variable is compared with, e.g. 3. */
+  readonly value: Value;
+  /** The side of the relation that gives the value, as written. */
+  readonly node: Semantic.types.Node;
+};
+
+/**
+ * Returns the exact value of `node`, or `undefined` if it isn't a number,
+ * e.g. because it contains a variable or a power.
+ */
+const evalNumber = (node: Semantic.types.Node): Value | undefined => {
+  try {
+    return Semantic.util.evalNode(node);
+  } catch {
+    // evalNode throws on anything that isn't a number.
+    return undefined;
+  }
+};
+
+/**
+ * Turns a solved relation such as `x = 5/2` or `2.5 > x` into a
+ * `NumericAnswer`, with the variable moved to the left. A quadratic's
+ * sequence of solutions gives one answer per solution. Returns `undefined`
+ * if any relation doesn't have a variable alone on one side and a number on
+ * the other.
+ */
+const toNumericAnswers = (
+  node: Semantic.types.Node,
+): NumericAnswer[] | undefined => {
+  if (node.type === 'Sequence') {
+    const answers: NumericAnswer[] = [];
+    for (const arg of node.args) {
+      const argAnswers = toNumericAnswers(arg);
+      if (!argAnswers) {
+        return undefined;
+      }
+      answers.push(...argAnswers);
+    }
+    return answers;
+  }
+  if (!isNumericRelation(node) || node.args.length !== 2) {
+    return undefined;
+  }
+  const [left, right] = node.args;
+  if (left.type === NodeType.Identifier) {
+    const value = evalNumber(right);
+    return (
+      value && [{ type: node.type, variable: left.name, value, node: right }]
+    );
+  }
+  if (right.type === NodeType.Identifier) {
+    const value = evalNumber(left);
+    return (
+      value && [
+        { type: SWAPPED[node.type], variable: right.name, value, node: left },
+      ]
+    );
+  }
+  return undefined;
+};
+
+/**
+ * Whether `next`, as written, is a finished answer in simplest form. For a
+ * relation, every solution must have the variable alone on one side and a
+ * simplified number on the other, e.g. `x = 5/2`, `2.5 = x` or a quadratic's
+ * `x = 2, x = 3`. For an expression, `next` must itself be a simplified
+ * number.
+ */
+const isSimplifiedAnswer = (
+  next: Semantic.types.Node,
+  kind: 'expression' | 'relation',
+): boolean => {
+  if (kind === 'expression') {
+    return Semantic.util.isSimplifiedNumber(next);
+  }
+  const answers = toNumericAnswers(next);
+  return (
+    answers?.every((answer) => Semantic.util.isSimplifiedNumber(answer.node)) ??
+    false
+  );
+};
+
+/**
+ * Whether each of `prev`'s answers matches a different one of `next`'s, in
+ * any order, since a quadratic's solutions can be listed either way.
+ */
+const sameNumericAnswers = (
+  prev: readonly NumericAnswer[],
+  next: readonly NumericAnswer[],
+): boolean => {
+  if (prev.length !== next.length) {
+    return false;
+  }
+  const unmatched = [...next];
+  return prev.every((p) => {
+    const index = unmatched.findIndex(
+      (n) =>
+        n.type === p.type &&
+        n.variable === p.variable &&
+        n.value.equals(p.value),
+    );
+    if (index === -1) {
+      return false;
+    }
+    unmatched.splice(index, 1);
+    return true;
+  });
+};
+
+/**
+ * Compares two solved answers by their numeric values. Returns `undefined`
+ * when either answer isn't numeric, so the caller can fall back to comparing
+ * them as written.
+ *
+ * `evalNode` works with exact fractions, and decimals such as `2.5` are
+ * read exactly too, so equal values compare equal without a tolerance.
+ */
+const compareValues = (prev: Solved, next: Solved): boolean | undefined => {
+  if (prev.kind === 'unsolved' || prev.kind !== next.kind) {
+    return undefined;
+  }
+  if (prev.kind === 'expression') {
+    const prevValue = evalNumber(prev.answer);
+    const nextValue = evalNumber(next.answer);
+    return prevValue && nextValue ? prevValue.equals(nextValue) : undefined;
+  }
+  const prevAnswers = toNumericAnswers(prev.answer);
+  const nextAnswers = toNumericAnswers(next.answer);
+  return prevAnswers && nextAnswers
+    ? sameNumericAnswers(prevAnswers, nextAnswers)
+    : undefined;
+};
+
+/**
  * Checks whether `next` is a valid step from `prev` by solving both and
  * comparing their solutions.
  *
@@ -366,6 +537,14 @@ const solve = (
  * their variable, so both must contain the same single variable. Steps
  * that the solver can't handle come back as `'unknown'` rather than
  * `'not-equivalent'`.
+ *
+ * Numeric answers are compared by their exact values, however they're
+ * written, so `x + 3 = 5 -> x = 4/2` and `2x + 5 = 10 -> x = 2.5` are
+ * equivalent. Answers that aren't numeric are compared as written. An
+ * equivalent result also says whether `next` is a finished, simplified
+ * answer, so a caller can accept a correct step but still ask for the
+ * answer to be simplified: `x = 2.5` is simplified, while `x = 4/2` and
+ * `2x = 5` aren't.
  */
 export const checkStep = (
   prev: Semantic.types.Node,
@@ -393,11 +572,18 @@ export const checkStep = (
     return { status: 'unknown', reason: nextSolved.reason };
   }
 
-  if (
-    prevSolved.kind === nextSolved.kind &&
-    canonicalString(prevSolved.answer) === canonicalString(nextSolved.answer)
-  ) {
-    return { status: 'equivalent', answer: prevSolved.answer };
+  // If either answer isn't numeric, compare how they're written instead.
+  const equivalent =
+    compareValues(prevSolved, nextSolved) ??
+    (prevSolved.kind === nextSolved.kind &&
+      canonicalString(prevSolved.answer) ===
+        canonicalString(nextSolved.answer));
+  if (equivalent) {
+    return {
+      status: 'equivalent',
+      answer: prevSolved.answer,
+      simplified: isSimplifiedAnswer(next, nextSolved.kind),
+    };
   }
 
   return {
