@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/typesetter",
     "version": "0.0.14",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/typesetter"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/typesetter#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

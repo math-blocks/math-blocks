@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/core",
     "version": "0.0.12",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/core"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/core#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

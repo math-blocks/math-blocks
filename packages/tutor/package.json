@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/tutor",
     "version": "0.1.0",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/tutor"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/tutor#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

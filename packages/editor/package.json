@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/editor",
     "version": "0.0.14",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/editor"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/editor#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

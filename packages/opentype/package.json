@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/opentype",
     "version": "0.0.13",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/opentype"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/opentype#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

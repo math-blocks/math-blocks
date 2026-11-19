@@ -1,13 +1,6 @@
 {
     "name": "@math-blocks/semantic",
     "version": "0.1.1",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/math-blocks/math-blocks.git",
-        "directory": "packages/semantic"
-    },
-    "bugs": "https://github.com/math-blocks/math-blocks/issues",
-    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/semantic#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
