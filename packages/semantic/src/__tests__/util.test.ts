@@ -447,6 +447,10 @@ describe('isSimplifiedNumber', () => {
   const n = (value: string): Node => builders.number(value);
   const frac = (num: Node, den: Node): Node => builders.div(num, den);
 
+  // TODO(#743): add cases for roots and constants, e.g. `\sqrt{2}`,
+  // `3\sqrt{2} + 1` and `2\pi` should be simplified, while `\sqrt{8}` and
+  // `\frac{2\pi}{4}` shouldn't.  The `pi` case below expects false until then.
+
   test.each`
     description        | node                                                  | expected
     ${'2'}             | ${n('2')}                                             | ${true}

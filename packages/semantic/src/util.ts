@@ -83,6 +83,9 @@ const isSimplifiedUnsigned = (node: types.Node): boolean => {
  *
  * Only rational numbers are handled so far.  Roots and constants such as
  * `\pi` and `e` are never considered simplified.
+ *
+ * TODO(#743): recognize simplified numbers with roots and constants, e.g.
+ * `\sqrt{2} + \sqrt{3}`, `3\sqrt{2} + 1` and `2\pi`.
  */
 export const isSimplifiedNumber = (node: types.Node): boolean => {
   // A `Neg` node's `subtraction` flag only matters inside an `Add`, so it's
