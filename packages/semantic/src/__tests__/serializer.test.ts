@@ -128,6 +128,63 @@ describe('serializer', () => {
     expect(ast).toMatchInlineSnapshot(`(func f x)`);
   });
 
+  const printNode = (val: unknown): string =>
+    serializer.print(
+      val,
+      () => '',
+      (str) => str,
+    );
+
+  test.each([
+    'UnaryPlusMinus',
+    'UnaryMinusPlus',
+    'Exp',
+    'Ln',
+    'Log',
+    'Sin',
+    'Cos',
+    'Tan',
+    'Cot',
+    'Sec',
+    'Csc',
+    'ArcSin',
+    'ArcCos',
+    'ArcTan',
+    'ArcCot',
+    'ArcSec',
+    'ArcCsc',
+  ])('%s', (type) => {
+    const ast = { id: getId(), type, arg: Semantic.builders.identifier('x') };
+    expect(printNode(ast)).toEqual(`(${type} x)`);
+  });
+
+  test('null', () => {
+    expect(printNode(null)).toEqual('null');
+  });
+
+  test.each([
+    'PlusMinus',
+    'MinusPlus',
+    'Product',
+    'Sum',
+    'Limit',
+    'Derivative',
+    'PartialDerivative',
+    'Integral',
+    'DefiniteIntegral',
+    'NotElementOf',
+    'EmptySet',
+    'Vector',
+  ])('unhandled node: %s', (type) => {
+    expect(() => printNode({ id: getId(), type })).toThrow(
+      `we don't handle serializing '${type}' nodes yet`,
+    );
+  });
+
+  test('unknown node type', () => {
+    expect(() => printNode({ id: getId(), type: 'Bogus' })).toThrow();
+  });
+
   test('unhandled node', () => {
     expect(() => {
       const ast: Semantic.types.Node = {
