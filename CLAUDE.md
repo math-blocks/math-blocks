@@ -15,3 +15,8 @@
   - `minor` — breaking changes to an export: removing or renaming it, or changing its arguments, return type, or behavior in a way existing callers would notice. For example, `@math-blocks/tex` exporting a `parse` function instead of the `Parser` class.
   - `major` — don't use it. It's reserved for a package's 1.0 release, which is the maintainer's call.
 - When a PR changes the exports of several packages, give each package its own changeset with its own bump level.
+
+## Screenshots
+
+- Post screenshots in the chat, not on GitHub. The maintainer copies them into PRs and issues by hand.
+- Don't upload images to GitHub to link them from a PR or issue. That includes committing them to an orphan or scratch branch for a `raw.githubusercontent.com` URL, and committing them to a PR's branch.
