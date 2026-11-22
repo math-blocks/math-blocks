@@ -1,4 +1,5 @@
 export { parse } from './parser';
+export type { ByteSource } from './byte-source';
 export { getFontData, getGlyphMetrics } from './util';
 export { glyphGroups, getGlyphGroup, glyphGroupsForText } from './glyph-groups';
 export { combineFonts } from './combined-font';
