@@ -258,7 +258,7 @@ jobs:
             ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install --frozen-lockfile
-      - name: Install Chromium for Playwright
-        run: yarn playwright install --with-deps chromium
+      - name: Install browsers for Playwright
+        run: yarn playwright install --with-deps chromium firefox webkit
       - name: e2e
         run: yarn e2e

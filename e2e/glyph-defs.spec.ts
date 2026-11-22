@@ -167,3 +167,130 @@ test('typing in an editor leaves the renderers on its page alone', async ({
   expectConsistent(await getGlyphDefStats(page.locator('body')));
   expect(await otherSvgs()).toEqual(before);
 });
+
+test.describe('shared definitions (GlyphDefsProvider)', () => {
+  // The worksheet page draws 40 problems and 3 editors under one
+  // GlyphDefsProvider; with `?shared=0` it draws them without it.
+  const openWorksheet = async (page: Page, query = ''): Promise<void> => {
+    await page.goto(`#/worksheet${query}`);
+    await expect(page.locator('svg use').first()).toBeAttached();
+  };
+
+  type SharedStats = {
+    readonly hiddenSvgs: number;
+    readonly mathSvgs: number;
+    readonly mathSvgsWithDefs: number;
+    readonly defs: number;
+    readonly distinctHrefs: number;
+    readonly uses: number;
+    readonly duplicateIds: readonly string[];
+    // <use> hrefs that don't resolve to a definition in a hidden <svg>.
+    readonly brokenHrefs: readonly string[];
+  };
+
+  const getSharedStats = (page: Page): Promise<SharedStats> =>
+    page.evaluate(() => {
+      const svgs = Array.from(document.querySelectorAll('svg'));
+      const hidden = svgs.filter((svg) => svg.getAttribute('aria-hidden'));
+      const math = svgs.filter((svg) => !svg.getAttribute('aria-hidden'));
+      const defIds = hidden.flatMap((svg) =>
+        Array.from(svg.querySelectorAll('defs > path')).map((p) => p.id),
+      );
+      const allIds = Array.from(document.querySelectorAll('[id]'))
+        .map((el) => el.id)
+        .filter((id) => id.startsWith('mb'));
+      const hrefs = math.flatMap((svg) =>
+        Array.from(svg.querySelectorAll('use')).map((use) =>
+          (use.getAttribute('href') ?? '').slice(1),
+        ),
+      );
+      return {
+        hiddenSvgs: hidden.length,
+        mathSvgs: math.length,
+        mathSvgsWithDefs: math.filter((svg) => svg.querySelector('defs'))
+          .length,
+        defs: defIds.length,
+        distinctHrefs: new Set(hrefs).size,
+        uses: hrefs.length,
+        duplicateIds: allIds.filter((id, i) => allIds.indexOf(id) !== i),
+        brokenHrefs: hrefs.filter((href) => !defIds.includes(href)),
+      };
+    });
+
+  test('stores each glyph once for the whole page', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openWorksheet(page);
+
+    const stats = await getSharedStats(page);
+    expect(stats.hiddenSvgs).toBe(1);
+    expect(stats.mathSvgs).toBe(43);
+    expect(stats.mathSvgsWithDefs).toBe(0);
+    expect(stats.duplicateIds).toEqual([]);
+    expect(stats.brokenHrefs).toEqual([]);
+    expect(stats.defs).toBe(stats.distinctHrefs);
+    expect(stats.defs).toBeLessThan(stats.uses / 10);
+    expect(errors).toEqual([]);
+  });
+
+  test('draws exactly what per-SVG definitions draw', async ({ page }) => {
+    await openWorksheet(page, '?shared=0');
+    const own = await page.screenshot({ fullPage: true });
+    await openWorksheet(page);
+    const shared = await page.screenshot({ fullPage: true });
+    expect(shared.equals(own)).toBe(true);
+  });
+
+  test('the hidden <svg> takes no space', async ({ page }) => {
+    await openWorksheet(page);
+    const box = await page.locator('svg[aria-hidden="true"]').boundingBox();
+    expect(box?.width).toBe(0);
+    expect(box?.height).toBe(0);
+  });
+
+  test('typing in one editor adds only new glyphs and changes no other SVG', async ({
+    page,
+  }) => {
+    await openWorksheet(page);
+    const editors = page
+      .getByRole('textbox')
+      .filter({ has: page.locator('svg') });
+    await expect(editors).toHaveCount(3);
+    const editor = editors.nth(1);
+
+    // The markup of every SVG except this editor's and the hidden one.
+    const others = (): Promise<readonly string[]> =>
+      page.evaluate(() => {
+        const svgs = Array.from(document.querySelectorAll('svg'));
+        const editorSvgs = Array.from(
+          document.querySelectorAll('[role="textbox"] svg'),
+        );
+        return svgs
+          .filter(
+            (svg) => !svg.getAttribute('aria-hidden') && svg !== editorSvgs[1],
+          )
+          .map((svg) => svg.outerHTML);
+      });
+    const before = await others();
+    const stats0 = await getSharedStats(page);
+
+    // 'q' isn't anywhere on the page, so it adds one definition.
+    await editor.click();
+    await page.keyboard.type('q');
+    await expect
+      .poll(async () => (await getSharedStats(page)).defs)
+      .toBe(stats0.defs + 1);
+
+    // Glyphs that are already on the page add none.
+    await page.keyboard.type('q+1x');
+    await expect
+      .poll(async () => (await getSharedStats(page)).uses)
+      .toBe(stats0.uses + 5);
+    const stats = await getSharedStats(page);
+    expect(stats.defs).toBe(stats0.defs + 1);
+    expect(stats.brokenHrefs).toEqual([]);
+    expect(stats.duplicateIds).toEqual([]);
+
+    expect(await others()).toEqual(before);
+  });
+});

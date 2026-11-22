@@ -25,10 +25,17 @@ export const parse = (str: string): types.Node => {
  * the definition's `d`. The <defs> block is removed. This is the markup
  * SceneRenderer produced before it deduplicated glyph outlines.
  *
- * Throws if a <use> references a missing definition or if a definition is
- * never used.
+ * `sharedDefs` holds the definitions from a GlyphDefsProvider's hidden <svg>
+ * (see readGlyphDefs), which a <use> may reference instead of its own SVG's.
+ *
+ * Throws if a <use> references a missing definition or if one of the SVG's own
+ * definitions is never used. Shared definitions may be used by other SVGs, so
+ * they aren't checked.
  */
-export const expandGlyphUses = (svg: string): string => {
+export const expandGlyphUses = (
+  svg: string,
+  sharedDefs: ReadonlyMap<string, string> = new Map(),
+): string => {
   const defs = new Map<string, string>();
   const unused = new Set<string>();
 
@@ -56,7 +63,7 @@ export const expandGlyphUses = (svg: string): string => {
   const expanded = withoutDefs.replace(
     /<use ([^>]*?)href="#([^"]+)"([^>]*)><\/use>/g,
     (_, before: string, id: string, after: string) => {
-      const d = defs.get(id);
+      const d = defs.get(id) ?? sharedDefs.get(id);
       if (d === undefined) {
         throw new Error(`<use> references missing definition: ${id}`);
       }
@@ -73,4 +80,21 @@ export const expandGlyphUses = (svg: string): string => {
   }
 
   return expanded;
+};
+
+/**
+ * Reads the glyph definitions (ID to `d`) in the given markup, for example a
+ * GlyphDefsProvider's hidden <svg>. Throws if an ID appears twice.
+ */
+export const readGlyphDefs = (markup: string): ReadonlyMap<string, string> => {
+  const defs = new Map<string, string>();
+  for (const [, id, d] of markup.matchAll(
+    /<path id="([^"]+)" d="([^"]*)"><\/path>/g,
+  )) {
+    if (defs.has(id)) {
+      throw new Error(`duplicate glyph definition: ${id}`);
+    }
+    defs.set(id, d);
+  }
+  return defs;
 };

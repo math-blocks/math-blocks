@@ -5,3 +5,4 @@ import MathEditor from './math-editor';
 
 export { MathKeypad, MathRenderer, MathmlRenderer, MathEditor };
 export { FontDataContext } from './font-data-context';
+export { GlyphDefsProvider } from './glyph-defs';

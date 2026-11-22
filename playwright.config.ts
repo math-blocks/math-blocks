@@ -15,7 +15,22 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}/`,
     trace: 'off',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Glyph definitions rely on how browsers resolve <use> references, so
+    // their tests also run in Firefox and in WebKit, the engine behind
+    // Safari.
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: /glyph-defs\.spec\.ts/,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: /glyph-defs\.spec\.ts/,
+    },
+  ],
   webServer: {
     command: `yarn build && yarn vite preview --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/`,
