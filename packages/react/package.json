@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/react",
-    "version": "0.0.16",
+    "version": "0.0.17",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/math-blocks/math-blocks.git",
@@ -19,10 +19,10 @@
     "dependencies": {
         "@math-blocks/core": "^0.0.13",
         "@math-blocks/editor": "^0.0.15",
-        "@math-blocks/opentype": "^0.0.14",
+        "@math-blocks/opentype": "^0.0.15",
         "@math-blocks/semantic": "^0.1.2",
         "@math-blocks/tex": "^0.1.2",
-        "@math-blocks/typesetter": "^0.0.15",
+        "@math-blocks/typesetter": "^0.0.16",
         "classnames": "^2.3.1"
     },
     "peerDependencies": {
