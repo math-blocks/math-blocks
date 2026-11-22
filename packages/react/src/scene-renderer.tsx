@@ -53,6 +53,107 @@ const getPath = (glyph: OpenType.Glyph): string => {
   return svgPathFromFontPath(path);
 };
 
+// Glyph IDs are only unique within a font, so definitions are keyed by font
+// plus glyph ID. Each font is named by its family, which keeps IDs readable
+// and stable across renders. The name is used as part of an XML ID, so
+// anything other than letters, digits, '-' and '_' is replaced.
+const sanitizeFamily = (family: string): string =>
+  family.replace(/[^A-Za-z0-9_-]/g, '_');
+
+type GlyphDefsContextValue = {
+  // The prefix for the IDs of this SVG's glyph definitions. It comes from
+  // React's useId() so that two renderers on the same page can't collide.
+  readonly prefix: string;
+  // The name used in definition IDs for each font in this SVG.
+  readonly fontNames: ReadonlyMap<OpenType.Font, string>;
+};
+
+const GlyphDefsContext = React.createContext<GlyphDefsContextValue>({
+  prefix: '',
+  fontNames: new Map(),
+});
+
+const getGlyphKey = (
+  glyph: SceneGraph.Glyph['glyph'],
+  fontNames: ReadonlyMap<OpenType.Font, string>,
+): string => {
+  const name =
+    fontNames.get(glyph.fontData.font) ??
+    sanitizeFamily(glyph.fontData.fontFamily);
+  return `${name}-${glyph.glyphID}`;
+};
+
+const getGlyphDefId = (prefix: string, key: string): string =>
+  `${prefix}-${key}`;
+
+type GlyphDef = {
+  readonly key: string;
+  readonly d: string;
+};
+
+type GlyphDefs = {
+  readonly defs: readonly GlyphDef[];
+  readonly fontNames: ReadonlyMap<OpenType.Font, string>;
+};
+
+// Returns the distinct glyphs used by the given nodes (and their descendants),
+// in the order they're first drawn, so that each outline is only stored once,
+// in the SVG's <defs>.
+//
+// It also names each font. A font is named by its family, unless a different
+// font in this SVG already has that name, either because both have the same
+// family or because their families sanitize to the same string. Then it gets
+// the first free name of the form `<family>-2`, `<family>-3` and so on, so two
+// fonts never share a definition.
+const getGlyphDefs = (nodes: readonly SceneGraph.Node[]): GlyphDefs => {
+  const defs = new Map<string, GlyphDef>();
+  const fontNames = new Map<OpenType.Font, string>();
+  const usedNames = new Set<string>();
+
+  const nameFont = (fontData: OpenType.FontData): void => {
+    if (fontNames.has(fontData.font)) {
+      return;
+    }
+    const family = sanitizeFamily(fontData.fontFamily);
+    let name = family;
+    for (let i = 2; usedNames.has(name); i++) {
+      name = `${family}-${i}`;
+    }
+    fontNames.set(fontData.font, name);
+    usedNames.add(name);
+  };
+
+  const visit = (node: SceneGraph.Node): void => {
+    switch (node.type) {
+      case 'char': {
+        if (node.glyph.placeholder) {
+          // Placeholders draw their own "?" mark; see PlaceholderGlyph.
+          return;
+        }
+        nameFont(node.glyph.fontData);
+        const key = getGlyphKey(node.glyph, fontNames);
+        if (!defs.has(key)) {
+          const { font } = node.glyph.fontData;
+          const d = getPath(font.getGlyph(node.glyph.glyphID));
+          defs.set(key, { key, d });
+        }
+        return;
+      }
+      case 'group':
+        node.children.forEach(visit);
+        return;
+      default:
+        // Interpolated glyphs compute a new outline each frame, so they draw
+        // their own <path> instead of using a definition.
+        return;
+    }
+  };
+
+  nodes.forEach(visit);
+
+  return { defs: [...defs.values()], fontNames };
+};
+
 // Draws a glyph the font couldn't provide as a rounded box with a "?" in it.
 const PlaceholderGlyph = ({
   x,
@@ -108,6 +209,7 @@ const PlaceholderGlyph = ({
 
 const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
   const { x, y, glyph, style } = props;
+  const { prefix, fontNames } = React.useContext(GlyphDefsContext);
   if (glyph.placeholder) {
     return <PlaceholderGlyph {...props} placeholder={glyph.placeholder} />;
   }
@@ -118,14 +220,15 @@ const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
   const scale = glyph.size / font.head.unitsPerEm;
 
   // Always uses paths since browsers do weird things to glyphs when rendering
-  // them in <text> elements.
+  // them in <text> elements. The outline itself lives in the SVG's <defs>;
+  // fill and opacity set here apply to the referenced path.
   return (
-    <path
+    <use
       fill={style.fill}
       id={id}
       style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
       aria-hidden="true"
-      d={getPath(font.getGlyph(glyph.glyphID))}
+      href={`#${getGlyphDefId(prefix, getGlyphKey(glyph, fontNames))}`}
       transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
     />
   );
@@ -221,32 +324,51 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
   const { bounds } = scene.content;
   const yAdjust = height - (bounds.depth + bounds.height);
 
+  // useId() returns IDs like ':r0:'. Colons are valid in XML IDs but awkward
+  // in URL fragments and CSS selectors, so they're dropped.
+  const prefix = `mb${React.useId().replace(/:/g, '')}`;
+
+  const { defs: glyphDefs, fontNames } = getGlyphDefs(
+    showHitboxes
+      ? [scene.selection, scene.content, scene.hitboxes]
+      : [scene.selection, scene.content],
+  );
+
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={viewBox}
-      width={width + CURSOR_WIDTH}
-      height={height}
-      style={style}
-      ref={ref}
-    >
-      <g
-        fill="currentColor"
-        stroke="none"
-        transform={`translate(0,${yAdjust})`}
+    <GlyphDefsContext.Provider value={{ prefix, fontNames }}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox={viewBox}
+        width={width + CURSOR_WIDTH}
+        height={height}
+        style={style}
+        ref={ref}
       >
-        <Group {...scene.selection} />
-        {/**
-         * We set 'fill' and stroke to 'currentColor' so that the base
-         * color is whatever the current CSS 'color' property is set up.
-         * Individual nodes within the scene can override their style's
-         * color and the render above will set the fill and/or stroke in
-         * rendered SVG element appropriately.
-         */}
-        <Group {...scene.content} />
-      </g>
-      {showHitboxes && <Group {...scene.hitboxes} />}
-    </svg>
+        {glyphDefs.length > 0 && (
+          <defs>
+            {glyphDefs.map(({ key, d }) => (
+              <path key={key} id={getGlyphDefId(prefix, key)} d={d} />
+            ))}
+          </defs>
+        )}
+        <g
+          fill="currentColor"
+          stroke="none"
+          transform={`translate(0,${yAdjust})`}
+        >
+          <Group {...scene.selection} />
+          {/**
+           * We set 'fill' and stroke to 'currentColor' so that the base
+           * color is whatever the current CSS 'color' property is set up.
+           * Individual nodes within the scene can override their style's
+           * color and the render above will set the fill and/or stroke in
+           * rendered SVG element appropriately.
+           */}
+          <Group {...scene.content} />
+        </g>
+        {showHitboxes && <Group {...scene.hitboxes} />}
+      </svg>
+    </GlyphDefsContext.Provider>
   );
 });
 
