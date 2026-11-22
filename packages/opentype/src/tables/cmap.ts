@@ -57,40 +57,28 @@ const parseCmapHeader = async (blob: ByteSource): Promise<CmapHeader> => {
   };
 };
 
-type SequentialMapGroup = {
+type MapGroup = {
   readonly startCharCode: number; // uint32
   readonly endCharCode: number; // uint32
-  readonly startGlyphID: number; // uint32
+  readonly glyphID: number; // uint32
 };
 
-// Returns a map between character codes and GID.
-const getGlyphIndexMap = (
-  groups: readonly SequentialMapGroup[],
-): Record<number, number> => {
-  const result: Record<number, number> = {};
-
-  for (const group of groups) {
-    for (
-      let charCode = group.startCharCode, i = 0;
-      charCode <= group.endCharCode;
-      charCode++, i++
-    ) {
-      const glyphId = group.startGlyphID + i;
-      result[charCode] = glyphId;
-    }
-  }
-
-  return result;
-};
-
-const parseFormat12 = async (
+// Formats 12 and 13 share a layout: a header, then groups of
+// (startCharCode, endCharCode, glyphID). In format 12 (segmented coverage)
+// each group maps to consecutive glyphs starting at glyphID. In format 13
+// (many-to-one range mappings) every character in a group maps to glyphID.
+// https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-12-segmented-coverage
+// https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-13-many-to-one-range-mappings
+const parseMapGroups = async (
   blob: ByteSource,
   subtableOffset: number,
+  format: 12 | 13,
 ): Promise<Record<number, number>> => {
-  const format12size = 2 + 2 + 4 + 4 + 4;
+  const HEADER_SIZE = 2 + 2 + 4 + 4 + 4;
+  const GROUP_SIZE = 12;
 
   const headerBuffer = await blob
-    .slice(subtableOffset, subtableOffset + format12size)
+    .slice(subtableOffset, subtableOffset + HEADER_SIZE)
     .arrayBuffer();
   const header = new DataView(headerBuffer);
 
@@ -102,21 +90,31 @@ const parseFormat12 = async (
     .arrayBuffer();
   const view = new DataView(subtableBuffer);
 
-  const HEADER_SIZE = 16;
-  const GROUP_SIZE = 12;
-
-  const groups: SequentialMapGroup[] = [];
-
+  const groups: MapGroup[] = [];
   for (let i = 0; i < numGroups; i++) {
     const offset = HEADER_SIZE + i * GROUP_SIZE;
     groups.push({
       startCharCode: view.getUint32(offset + 0),
       endCharCode: view.getUint32(offset + 4),
-      startGlyphID: view.getUint32(offset + 8),
+      glyphID: view.getUint32(offset + 8),
     });
   }
 
-  return getGlyphIndexMap(groups);
+  const result: Record<number, number> = {};
+  for (const group of groups) {
+    for (
+      let charCode = group.startCharCode;
+      charCode <= group.endCharCode;
+      charCode++
+    ) {
+      result[charCode] =
+        format === 12
+          ? group.glyphID + (charCode - group.startCharCode)
+          : group.glyphID;
+    }
+  }
+
+  return result;
 };
 
 const hex = (code: number): string =>
@@ -189,22 +187,29 @@ const parseFormat4 = async (
   return result;
 };
 
-// Returns a map between character codes and GIDs. Uses the Windows Unicode
-// full repertoire subtable (3, 10) when there is one, and falls back to the
-// Windows Unicode BMP subtable (3, 1) otherwise.
+// The Unicode subtables parseCmap reads, most preferred first: full
+// repertoire before BMP-only, and Windows before Unicode platform within each.
+// https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#unicode-platform-platform-id--0
+// https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3
+const PREFERRED_RECORDS: readonly (readonly [number, number])[] = [
+  [3, 10], // Windows, Unicode full repertoire (format 12 or 13)
+  [0, 4], // Unicode 2.0 and later, full repertoire (format 12)
+  [0, 6], // Unicode full repertoire, for last-resort fonts (format 13)
+  [3, 1], // Windows, Unicode BMP (format 4)
+  [0, 3], // Unicode 2.0 and later, BMP only (format 4)
+];
+
+const SUPPORTED_FORMATS = [4, 12, 13];
+
+const describeRecord = (record: EncodingRecord): string =>
+  `(${record.platformID}, ${record.encodingID})`;
+
+// Returns a map between character codes and GIDs, read from the most preferred
+// Unicode subtable (see PREFERRED_RECORDS) that's in a format we can read.
 export const parseCmap = async (
   blob: ByteSource,
 ): Promise<Record<number, number>> => {
   const cmap = await parseCmapHeader(blob);
-
-  const findRecord = (
-    platformID: number,
-    encodingID: number,
-  ): EncodingRecord | undefined =>
-    cmap.encodingRecords.find(
-      (record) =>
-        record.platformID === platformID && record.encodingID === encodingID,
-    );
 
   const getFormat = async (record: EncodingRecord): Promise<number> => {
     const buffer = await blob
@@ -213,31 +218,38 @@ export const parseCmap = async (
     return new DataView(buffer).getUint16(0);
   };
 
-  const fullRecord = findRecord(3, 10);
-  const fullFormat = fullRecord ? await getFormat(fullRecord) : undefined;
-  if (fullRecord && fullFormat === 12) {
-    return parseFormat12(blob, fullRecord.subtableOffset);
+  const unsupported: string[] = [];
+
+  for (const [platformID, encodingID] of PREFERRED_RECORDS) {
+    const record = cmap.encodingRecords.find(
+      (r) => r.platformID === platformID && r.encodingID === encodingID,
+    );
+    if (!record) {
+      continue;
+    }
+    const format = await getFormat(record);
+    switch (format) {
+      case 4:
+        return parseFormat4(blob, record.subtableOffset);
+      case 12:
+      case 13:
+        return parseMapGroups(blob, record.subtableOffset, format);
+      default:
+        unsupported.push(`${describeRecord(record)} is format ${format}`);
+    }
   }
 
-  // Also used when the (3, 10) subtable is in a format we can't read.
-  const bmpRecord = findRecord(3, 1);
-  const bmpFormat = bmpRecord ? await getFormat(bmpRecord) : undefined;
-  if (bmpRecord && bmpFormat === 4) {
-    return parseFormat4(blob, bmpRecord.subtableOffset);
-  }
-
-  if (!fullRecord && !bmpRecord) {
+  if (unsupported.length > 0) {
     throw new Error(
-      'Missing encoding record for platformID = 3, encodingID = 10 or 1',
+      `Unsupported cmap subtable format: ${unsupported.join('; ')}. ` +
+        `Only formats ${SUPPORTED_FORMATS.join(', ')} are supported.`,
     );
   }
 
-  const found = [
-    fullRecord && `platformID = 3, encodingID = 10 is format ${fullFormat}`,
-    bmpRecord && `platformID = 3, encodingID = 1 is format ${bmpFormat}`,
-  ].filter(Boolean);
+  const expected = PREFERRED_RECORDS.map(([p, e]) => `(${p}, ${e})`).join(', ');
+  const found = cmap.encodingRecords.map(describeRecord).join(', ') || 'none';
   throw new Error(
-    `Unsupported cmap subtable format: ${found.join('; ')}. ` +
-      'Only format 12 for encodingID = 10 and format 4 for encodingID = 1 are supported.',
+    `No Unicode cmap subtable. Expected one of ${expected} ` +
+      `(platformID, encodingID); found ${found}.`,
   );
 };
