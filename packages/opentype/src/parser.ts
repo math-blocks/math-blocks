@@ -10,7 +10,7 @@ import { parseHead } from './tables/head';
 
 import { getGlyphMetrics } from './util';
 
-import type { Font, TableRecord, TableDirectory } from './types';
+import type { Font, GlyphMetrics, TableRecord, TableDirectory } from './types';
 
 const parseTag = (view: DataView, offset = 0): string => {
   return [
@@ -129,6 +129,11 @@ export const parse = async (data: ByteSource | ArrayBuffer): Promise<Font> => {
   );
   const cff = await parseCFF(cffBlob);
 
+  // The typesetter asks for the same glyphs' metrics many times per render,
+  // and working them out means scanning the glyph's whole outline, so keep
+  // them. getGlyph already caches the glyphs themselves.
+  const metricsCache = new Map<number, GlyphMetrics>();
+
   const font: Font = {
     cff: {
       name: cff.name,
@@ -148,9 +153,13 @@ export const parse = async (data: ByteSource | ArrayBuffer): Promise<Font> => {
       }
       return glyphID;
     },
-    getGlyphMetrics: (gid: number) => {
-      const glyph = cff.getGlyph(gid);
-      return getGlyphMetrics(glyph);
+    getGlyphMetrics: (gid: number): GlyphMetrics => {
+      let metrics = metricsCache.get(gid);
+      if (!metrics) {
+        metrics = getGlyphMetrics(cff.getGlyph(gid));
+        metricsCache.set(gid, metrics);
+      }
+      return metrics;
     },
   };
 
