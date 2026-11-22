@@ -1,10 +1,14 @@
 {
     "extends": "../tsconfig-base.json",
+    "include": ["src/**/*", "src/**/*.json"],
     "exclude": ["dist", "out"],
     "compilerOptions": {
       "outDir": "dist",
       "rootDir": "src",
       "declarationDir": ".",
+      // The JSON imported by glyph-groups.ts isn't passed to this build's
+      // program, which composite projects reject (TS6307).
+      "composite": false,
       "lib": [
         "esnext",
         "dom",

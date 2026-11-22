@@ -17,6 +17,7 @@
     "@changesets/cli": "^2.27.11",
     "@codechecks/client": "^0.1.10",
     "@hot-loader/react-dom": "^16.11.0",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-typescript": "^11.1.6",
     "@storybook/addon-actions": "^6.2.7",
     "@storybook/addon-essentials": "^6.2.7",

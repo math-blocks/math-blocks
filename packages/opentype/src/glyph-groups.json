@@ -1,0 +1,109 @@
+{
+  "$comment": "Characters in each font subset group. scripts/subset-fonts.py builds one font file per group from these lists, and every code point must belong to exactly one group. Each key in codePoints is a code point (U+XXXX) or an inclusive range (U+XXXX-U+YYYY), and its value describes those characters. See https://github.com/math-blocks/math-blocks/issues/696.",
+  "groups": [
+    {
+      "name": "base",
+      "description": "Arithmetic and algebra: everything typed on a keyboard, math-italic letters, common operators and relations, delimiters, accents and arrows.",
+      "codePoints": {
+        "U+0020-U+007E": "printable ASCII: digits, Latin letters, punctuation, ( ) [ ] { } | + - = < > / \\ ^ ~",
+        "U+00B1": "± plus-minus",
+        "U+00B7": "· middle dot",
+        "U+00D7": "× multiplication",
+        "U+00F7": "÷ division",
+        "U+0300-U+0305": "combining grave, acute, circumflex (hat), tilde, macron and overline (bar) accents",
+        "U+0307": "combining dot above (dot accent)",
+        "U+0308": "combining diaeresis (double-dot accent)",
+        "U+20D7": "combining right arrow above (vector accent)",
+        "U+210E": "ℎ Planck constant, the math-italic h",
+        "U+2026": "… horizontal ellipsis",
+        "U+2032": "′ prime",
+        "U+2033": "″ double prime",
+        "U+2190-U+2194": "← ↑ → ↓ ↔ arrows",
+        "U+21D0": "⇐ leftwards double arrow",
+        "U+21D2": "⇒ implies",
+        "U+21D4": "⇔ if and only if",
+        "U+2212": "− minus",
+        "U+2213": "∓ minus-plus",
+        "U+221A": "√ square root",
+        "U+221D": "∝ proportional to",
+        "U+2248": "≈ approximately equal",
+        "U+2260": "≠ not equal",
+        "U+2264": "≤ less than or equal",
+        "U+2265": "≥ greater than or equal",
+        "U+22C5": "⋅ dot operator",
+        "U+22EF": "⋯ midline horizontal ellipsis",
+        "U+2308-U+230B": "⌈ ⌉ ⌊ ⌋ ceiling and floor",
+        "U+1D434-U+1D467": "math-italic A-Z and a-z (U+1D455 is unassigned; ℎ is used instead)"
+      }
+    },
+    {
+      "name": "trig-geometry",
+      "description": "Greek letters and geometry symbols.",
+      "codePoints": {
+        "U+00B0": "° degree",
+        "U+0391-U+03A1": "Α-Ρ Greek capital letters alpha to rho",
+        "U+03A3-U+03A9": "Σ-Ω Greek capital letters sigma to omega (U+03A2 is unassigned)",
+        "U+03B1-U+03C9": "α-ω Greek small letters",
+        "U+2220": "∠ angle",
+        "U+2225": "∥ parallel",
+        "U+223C": "∼ similar",
+        "U+2245": "≅ congruent",
+        "U+2261": "≡ identical to",
+        "U+22A5": "⊥ perpendicular",
+        "U+25B3": "△ triangle"
+      }
+    },
+    {
+      "name": "calculus",
+      "description": "Integrals, big operators and calculus symbols.",
+      "codePoints": {
+        "U+2202": "∂ partial derivative",
+        "U+2207": "∇ nabla",
+        "U+220F": "∏ product",
+        "U+2211": "∑ summation",
+        "U+221E": "∞ infinity",
+        "U+222B-U+2233": "∫ ∬ ∭ ∮ ∯ ∰ ∱ ∲ ∳ integrals"
+      }
+    },
+    {
+      "name": "linear-algebra",
+      "description": "Vector and matrix notation.",
+      "codePoints": {
+        "U+2016": "‖ double vertical line (norm)",
+        "U+2218": "∘ ring operator (composition)",
+        "U+2295": "⊕ direct sum",
+        "U+2297": "⊗ tensor product",
+        "U+22A4": "⊤ transpose",
+        "U+22EE": "⋮ vertical ellipsis",
+        "U+22F1": "⋱ diagonal ellipsis",
+        "U+27E8": "⟨ left angle bracket",
+        "U+27E9": "⟩ right angle bracket"
+      }
+    },
+    {
+      "name": "sets-logic",
+      "description": "Set notation, logic and number systems.",
+      "codePoints": {
+        "U+00AC": "¬ not",
+        "U+2102": "ℂ complex numbers",
+        "U+210D": "ℍ quaternions",
+        "U+2115": "ℕ natural numbers",
+        "U+2119": "ℙ primes",
+        "U+211A": "ℚ rational numbers",
+        "U+211D": "ℝ real numbers",
+        "U+2124": "ℤ integers",
+        "U+2200": "∀ for all",
+        "U+2203": "∃ there exists",
+        "U+2204": "∄ there does not exist",
+        "U+2205": "∅ empty set",
+        "U+2208": "∈ element of",
+        "U+2209": "∉ not an element of",
+        "U+220B": "∋ contains as member",
+        "U+220C": "∌ does not contain as member",
+        "U+2216": "∖ set minus",
+        "U+2227-U+222A": "∧ ∨ ∩ ∪ and, or, intersection, union",
+        "U+2282-U+2287": "⊂ ⊃ ⊄ ⊅ ⊆ ⊇ subset and superset"
+      }
+    }
+  ]
+}

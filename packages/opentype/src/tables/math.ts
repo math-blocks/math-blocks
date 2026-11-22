@@ -361,10 +361,13 @@ export const parseMATH = async (
     unitsPerEm,
   );
 
+  // The MathGlyphInfo subtables can be stored anywhere in the MATH table, not
+  // only between the MathGlyphInfo and MathVariants offsets. For example,
+  // fontTools may place them after MathVariants when it subsets a font.
   const glyphInfo = await parseMathGlyphInfo(
     blob,
     header.mathGlyphInfoOffset,
-    header.mathVariantsOffset,
+    blob.size,
   );
 
   const variants = await parseVariants(
