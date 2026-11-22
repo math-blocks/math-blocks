@@ -54,16 +54,34 @@ const getPath = (glyph: OpenType.Glyph): string => {
 };
 
 // Glyph IDs are only unique within a font, so definitions are keyed by font
-// family plus glyph ID. The result is used as part of an XML ID, so anything
-// other than letters, digits, '-' and '_' is replaced.
-const getGlyphKey = (glyph: SceneGraph.Glyph['glyph']): string => {
-  const family = glyph.fontData.fontFamily.replace(/[^A-Za-z0-9_-]/g, '_');
-  return `${family}-${glyph.glyphID}`;
+// plus glyph ID. Each font is named by its family, which keeps IDs readable
+// and stable across renders. The name is used as part of an XML ID, so
+// anything other than letters, digits, '-' and '_' is replaced.
+const sanitizeFamily = (family: string): string =>
+  family.replace(/[^A-Za-z0-9_-]/g, '_');
+
+type GlyphDefsContextValue = {
+  // The prefix for the IDs of this SVG's glyph definitions. It comes from
+  // React's useId() so that two renderers on the same page can't collide.
+  readonly prefix: string;
+  // The name used in definition IDs for each font in this SVG.
+  readonly fontNames: ReadonlyMap<OpenType.Font, string>;
 };
 
-// The prefix for the IDs of this SVG's glyph definitions. It comes from
-// React's useId() so that two renderers on the same page can't collide.
-const GlyphDefsContext = React.createContext<string>('');
+const GlyphDefsContext = React.createContext<GlyphDefsContextValue>({
+  prefix: '',
+  fontNames: new Map(),
+});
+
+const getGlyphKey = (
+  glyph: SceneGraph.Glyph['glyph'],
+  fontNames: ReadonlyMap<OpenType.Font, string>,
+): string => {
+  const name =
+    fontNames.get(glyph.fontData.font) ??
+    sanitizeFamily(glyph.fontData.fontFamily);
+  return `${name}-${glyph.glyphID}`;
+};
 
 const getGlyphDefId = (prefix: string, key: string): string =>
   `${prefix}-${key}`;
@@ -73,13 +91,37 @@ type GlyphDef = {
   readonly d: string;
 };
 
+type GlyphDefs = {
+  readonly defs: readonly GlyphDef[];
+  readonly fontNames: ReadonlyMap<OpenType.Font, string>;
+};
+
 // Returns the distinct glyphs used by the given nodes (and their descendants),
 // in the order they're first drawn, so that each outline is only stored once,
 // in the SVG's <defs>.
-const getGlyphDefs = (
-  nodes: readonly SceneGraph.Node[],
-): readonly GlyphDef[] => {
+//
+// It also names each font. A font is named by its family, unless a different
+// font in this SVG already has that name, either because both have the same
+// family or because their families sanitize to the same string. Then it gets
+// the first free name of the form `<family>-2`, `<family>-3` and so on, so two
+// fonts never share a definition.
+const getGlyphDefs = (nodes: readonly SceneGraph.Node[]): GlyphDefs => {
   const defs = new Map<string, GlyphDef>();
+  const fontNames = new Map<OpenType.Font, string>();
+  const usedNames = new Set<string>();
+
+  const nameFont = (fontData: OpenType.FontData): void => {
+    if (fontNames.has(fontData.font)) {
+      return;
+    }
+    const family = sanitizeFamily(fontData.fontFamily);
+    let name = family;
+    for (let i = 2; usedNames.has(name); i++) {
+      name = `${family}-${i}`;
+    }
+    fontNames.set(fontData.font, name);
+    usedNames.add(name);
+  };
 
   const visit = (node: SceneGraph.Node): void => {
     switch (node.type) {
@@ -88,7 +130,8 @@ const getGlyphDefs = (
           // Placeholders draw their own "?" mark; see PlaceholderGlyph.
           return;
         }
-        const key = getGlyphKey(node.glyph);
+        nameFont(node.glyph.fontData);
+        const key = getGlyphKey(node.glyph, fontNames);
         if (!defs.has(key)) {
           const { font } = node.glyph.fontData;
           const d = getPath(font.getGlyph(node.glyph.glyphID));
@@ -108,7 +151,7 @@ const getGlyphDefs = (
 
   nodes.forEach(visit);
 
-  return [...defs.values()];
+  return { defs: [...defs.values()], fontNames };
 };
 
 // Draws a glyph the font couldn't provide as a rounded box with a "?" in it.
@@ -166,7 +209,7 @@ const PlaceholderGlyph = ({
 
 const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
   const { x, y, glyph, style } = props;
-  const prefix = React.useContext(GlyphDefsContext);
+  const { prefix, fontNames } = React.useContext(GlyphDefsContext);
   if (glyph.placeholder) {
     return <PlaceholderGlyph {...props} placeholder={glyph.placeholder} />;
   }
@@ -185,7 +228,7 @@ const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
       id={id}
       style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
       aria-hidden="true"
-      href={`#${getGlyphDefId(prefix, getGlyphKey(glyph))}`}
+      href={`#${getGlyphDefId(prefix, getGlyphKey(glyph, fontNames))}`}
       transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
     />
   );
@@ -285,14 +328,14 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
   // in URL fragments and CSS selectors, so they're dropped.
   const prefix = `mb${React.useId().replace(/:/g, '')}`;
 
-  const glyphDefs = getGlyphDefs(
+  const { defs: glyphDefs, fontNames } = getGlyphDefs(
     showHitboxes
       ? [scene.selection, scene.content, scene.hitboxes]
       : [scene.selection, scene.content],
   );
 
   return (
-    <GlyphDefsContext.Provider value={prefix}>
+    <GlyphDefsContext.Provider value={{ prefix, fontNames }}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox={viewBox}
