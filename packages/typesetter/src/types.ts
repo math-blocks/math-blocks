@@ -19,7 +19,10 @@ export type Context = {
   // Called for each character the font can't draw, which is drawn as a
   // placeholder instead. `group` is set when the character's glyph group
   // isn't loaded. It can be called more than once per character.
-  readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
+  readonly recordMissingGlyph?: (
+    char: string,
+    group: string | undefined,
+  ) => void;
 };
 
 export type Dist = number;

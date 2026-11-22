@@ -88,7 +88,7 @@ export const makeGlyph = (
 /**
  * Returns the glyph ID for `char`, or null if the font can't draw it (for
  * example because its glyph group isn't loaded). Missing characters are
- * reported to `context.onMissingGlyph`.
+ * reported to `context.recordMissingGlyph`.
  */
 export const lookupGlyphID = (
   char: string,
@@ -100,7 +100,7 @@ export const lookupGlyphID = (
     if (!(e instanceof GlyphNotFoundError)) {
       throw e;
     }
-    context.onMissingGlyph?.(
+    context.recordMissingGlyph?.(
       char,
       e instanceof GlyphGroupNotLoadedError ? e.group : undefined,
     );

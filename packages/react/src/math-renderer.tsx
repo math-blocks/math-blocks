@@ -37,7 +37,7 @@ type Props = {
 export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
   (props, ref) => {
     const fontData = useFontData('MathRenderer');
-    const onMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
+    const recordMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
     const {
       style,
       fontSize = 64,
@@ -56,7 +56,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
       selection: selection,
       operators: operators,
-      onMissingGlyph,
+      recordMissingGlyph,
     };
 
     const options = { showCursor: props.showCursor, debug: true };

@@ -120,7 +120,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
   const fontData = useFontData('MathEditor');
-  const onMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
+  const recordMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -293,7 +293,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     selection: state.selection,
     operators: operators,
-    onMissingGlyph,
+    recordMissingGlyph,
   };
 
   // TODO: properly type this
