@@ -83,7 +83,7 @@ jobs:
       - name: lint
         run: yarn lint
 
-  build-rollup:
+  build-lib:
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -115,8 +115,8 @@ jobs:
             ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
-      - name: build-rollup
-        run: yarn build-rollup
+      - name: build-lib
+        run: yarn build-lib
 
   build-tsc:
     permissions:

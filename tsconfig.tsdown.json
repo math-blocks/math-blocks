@@ -1,0 +1,15 @@
+{
+  // Type-checks tsdown.config.ts so that ESLint's typed rules can lint it.
+  "extends": "./packages/tsconfig-base.json",
+  "include": ["./tsdown.config.ts"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+  },
+}
