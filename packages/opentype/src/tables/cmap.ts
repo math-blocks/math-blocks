@@ -83,61 +83,149 @@ const getGlyphIndexMap = (
   return result;
 };
 
-export const parseCmap = async (
+const parseFormat12 = async (
   blob: Blob,
+  subtableOffset: number,
 ): Promise<Record<number, number>> => {
-  const cmap = await parseCmapHeader(blob);
-
-  const encodingRecord = cmap.encodingRecords.find(
-    (record) => record.platformID === 3 && record.encodingID === 10,
-  );
-
-  if (!encodingRecord) {
-    throw new Error(
-      'Missing encoding record for platformID = 3, encodingID = 10',
-    );
-  }
-
   const format12size = 2 + 2 + 4 + 4 + 4;
 
-  const subtableHeader = blob.slice(
-    encodingRecord.subtableOffset,
-    encodingRecord.subtableOffset + format12size,
-  );
+  const headerBuffer = await blob
+    .slice(subtableOffset, subtableOffset + format12size)
+    .arrayBuffer();
+  const header = new DataView(headerBuffer);
 
-  const buffer = await subtableHeader.arrayBuffer();
-  const view = new DataView(buffer);
+  const length = header.getUint32(4);
+  const numGroups = header.getUint32(12);
 
-  // TODO: create a separate function for parser format 12
-  const format12Header = {
-    format: view.getUint16(0),
-    reserved: view.getUint16(2),
-    length: view.getUint32(4),
-    language: view.getUint32(8),
-    numGroups: view.getUint32(12),
-  };
-
-  const subtableBlob = blob.slice(
-    encodingRecord.subtableOffset,
-    encodingRecord.subtableOffset + format12Header.length,
-  );
-
-  const subtableBuffer = await subtableBlob.arrayBuffer();
-  const array = new DataView(subtableBuffer);
+  const subtableBuffer = await blob
+    .slice(subtableOffset, subtableOffset + length)
+    .arrayBuffer();
+  const view = new DataView(subtableBuffer);
 
   const HEADER_SIZE = 16;
   const GROUP_SIZE = 12;
 
   const groups: SequentialMapGroup[] = [];
 
-  for (let i = 0; i < format12Header.numGroups; i++) {
+  for (let i = 0; i < numGroups; i++) {
     const offset = HEADER_SIZE + i * GROUP_SIZE;
     groups.push({
-      startCharCode: array.getUint32(offset + 0),
-      endCharCode: array.getUint32(offset + 4),
-      startGlyphID: array.getUint32(offset + 8),
+      startCharCode: view.getUint32(offset + 0),
+      endCharCode: view.getUint32(offset + 4),
+      startGlyphID: view.getUint32(offset + 8),
     });
   }
 
   return getGlyphIndexMap(groups);
+};
+
+// Format 4: segment mapping to delta values. Only covers the BMP.
+// https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-4-segment-mapping-to-delta-values
+const parseFormat4 = async (
+  blob: Blob,
+  subtableOffset: number,
+): Promise<Record<number, number>> => {
+  const headerBuffer = await blob
+    .slice(subtableOffset, subtableOffset + 4)
+    .arrayBuffer();
+  const length = new DataView(headerBuffer).getUint16(2);
+
+  const subtableBuffer = await blob
+    .slice(subtableOffset, subtableOffset + length)
+    .arrayBuffer();
+  const view = new DataView(subtableBuffer);
+
+  const segCountX2 = view.getUint16(6);
+  const segCount = segCountX2 / 2;
+
+  const endCodeOffset = 14;
+  // There's a uint16 reservedPad between endCode[] and startCode[].
+  const startCodeOffset = endCodeOffset + segCountX2 + 2;
+  const idDeltaOffset = startCodeOffset + segCountX2;
+  const idRangeOffsetOffset = idDeltaOffset + segCountX2;
+
+  const result: Record<number, number> = {};
+
+  for (let i = 0; i < segCount; i++) {
+    const endCode = view.getUint16(endCodeOffset + i * 2);
+    const startCode = view.getUint16(startCodeOffset + i * 2);
+    const idDelta = view.getInt16(idDeltaOffset + i * 2);
+    const idRangeOffsetPos = idRangeOffsetOffset + i * 2;
+    const idRangeOffset = view.getUint16(idRangeOffsetPos);
+
+    // The last segment maps 0xFFFF to the missing glyph; it isn't a character.
+    if (startCode === 0xffff) {
+      continue;
+    }
+
+    for (let code = startCode; code <= endCode; code++) {
+      let glyphId: number;
+      if (idRangeOffset === 0) {
+        glyphId = (code + idDelta) & 0xffff;
+      } else {
+        // idRangeOffset is a byte offset from its own position in the
+        // idRangeOffset[] array into glyphIdArray[].
+        const glyphIdPos =
+          idRangeOffsetPos + idRangeOffset + (code - startCode) * 2;
+        const rawGlyphId = view.getUint16(glyphIdPos);
+        glyphId = rawGlyphId === 0 ? 0 : (rawGlyphId + idDelta) & 0xffff;
+      }
+      if (glyphId !== 0) {
+        result[code] = glyphId;
+      }
+    }
+  }
+
+  return result;
+};
+
+// Returns a map between character codes and GIDs. Uses the Windows Unicode
+// full repertoire subtable (3, 10) when there is one, and falls back to the
+// Windows Unicode BMP subtable (3, 1) otherwise.
+export const parseCmap = async (
+  blob: Blob,
+): Promise<Record<number, number>> => {
+  const cmap = await parseCmapHeader(blob);
+
+  const findRecord = (
+    platformID: number,
+    encodingID: number,
+  ): EncodingRecord | undefined =>
+    cmap.encodingRecords.find(
+      (record) =>
+        record.platformID === platformID && record.encodingID === encodingID,
+    );
+
+  const getFormat = async (record: EncodingRecord): Promise<number> => {
+    const buffer = await blob
+      .slice(record.subtableOffset, record.subtableOffset + 2)
+      .arrayBuffer();
+    return new DataView(buffer).getUint16(0);
+  };
+
+  const fullRecord = findRecord(3, 10);
+  if (fullRecord) {
+    const format = await getFormat(fullRecord);
+    if (format !== 12) {
+      throw new Error(
+        `Unsupported cmap subtable format ${format} for platformID = 3, encodingID = 10`,
+      );
+    }
+    return parseFormat12(blob, fullRecord.subtableOffset);
+  }
+
+  const bmpRecord = findRecord(3, 1);
+  if (bmpRecord) {
+    const format = await getFormat(bmpRecord);
+    if (format !== 4) {
+      throw new Error(
+        `Unsupported cmap subtable format ${format} for platformID = 3, encodingID = 1`,
+      );
+    }
+    return parseFormat4(blob, bmpRecord.subtableOffset);
+  }
+
+  throw new Error(
+    'Missing encoding record for platformID = 3, encodingID = 10 or 1',
+  );
 };
