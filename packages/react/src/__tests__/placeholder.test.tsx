@@ -23,6 +23,7 @@ import * as Typesetter from '@math-blocks/typesetter';
 
 import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
+import { expandGlyphUses } from '../test-util';
 
 const ASSETS = path.join(__dirname, '../../../../assets');
 
@@ -82,7 +83,11 @@ describe('placeholders', () => {
     const { svg, missing } = renderSvg(row, baseOnly);
     expect(countPlaceholders(svg)).toEqual(0);
     expect(missing).toEqual([]);
-    expect(svg).toEqual(renderSvg(row, full).svg);
+    // The two fonts give glyphs different IDs, and glyph definitions are
+    // keyed by glyph ID, so compare the outlines each <use> draws.
+    expect(expandGlyphUses(svg)).toEqual(
+      expandGlyphUses(renderSvg(row, full).svg),
+    );
   });
 
   test.each([Typesetter.MathStyle.Display, Typesetter.MathStyle.Text])(
