@@ -116,3 +116,54 @@ test.describe('editor', () => {
     await expect.poll(() => getGlyphDefStats(svg)).toEqual(initial);
   });
 });
+
+test('typing in an editor leaves the renderers on its page alone', async ({
+  page,
+}) => {
+  // The solver page has an editor, and after Go, a renderer for each step of
+  // the solution and for the answer.
+  await page.goto('#/auto-solver');
+  const editor = page.getByRole('textbox').filter({ has: page.locator('svg') });
+  await expect(editor.locator('svg use').first()).toBeAttached();
+  await page.getByRole('button', { name: 'Go' }).click();
+
+  // The glyph definitions and <use> elements of every SVG on the page except
+  // the editor's. Editor node IDs (`id="123"`) are left out: the solver page
+  // builds the steps' rows again on every render, which gives their nodes new
+  // IDs, so those change when anything on the page re-renders.
+  const otherSvgs = (): Promise<readonly string[]> =>
+    page.evaluate(() =>
+      Array.from(document.querySelectorAll('svg'))
+        .filter((svg) => !svg.closest('[role="textbox"]'))
+        .map((svg) =>
+          [
+            ...Array.from(svg.querySelectorAll('defs > path')).map(
+              (path) => `def ${path.id} ${path.getAttribute('d')}`,
+            ),
+            ...Array.from(svg.querySelectorAll('use')).map(
+              (use) =>
+                `use ${use.getAttribute('href')} ${use.getAttribute(
+                  'transform',
+                )}`,
+            ),
+          ].join('\n'),
+        ),
+    );
+  await expect.poll(async () => (await otherSvgs()).length).toBeGreaterThan(5);
+  const before = await otherSvgs();
+
+  const page0 = await getGlyphDefStats(page.locator('body'));
+  expectConsistent(page0);
+  const editor0 = await getGlyphDefStats(editor);
+
+  await editor.click();
+  await page.keyboard.type('+1+1');
+  await expect
+    .poll(async () => (await getGlyphDefStats(editor)).uses)
+    .toBe(editor0.uses + 4);
+
+  // The page as a whole still has unique IDs and resolving hrefs, and the
+  // renderers' definitions and <use> elements are exactly what they were.
+  expectConsistent(await getGlyphDefStats(page.locator('body')));
+  expect(await otherSvgs()).toEqual(before);
+});
