@@ -1,20 +1,11 @@
 import * as React from 'react';
-import type { Blob } from 'buffer';
 
 import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
 import * as Editor from '@math-blocks/editor';
-import { parse, getFontData } from '@math-blocks/opentype';
-import type { FontData } from '@math-blocks/opentype';
 import { RadicalDegreeAlgorithm } from '@math-blocks/typesetter';
 
-import stix2 from '../../../assets/STIX2Math.otf';
-import latinModern from '../../../assets/latinmodern-math.otf';
-import gyreBonum from '../../../assets/texgyrebonum-math.otf';
-import gryePagella from '../../../assets/texgyrepagella-math.otf';
-import gryeSchola from '../../../assets/texgyreschola-math.otf';
-import gyreTermes from '../../../assets/texgyretermes-math.otf';
-
 import { HStack, VStack } from '../shared/layout';
+import { FONTS, useFont } from '../shared/fonts';
 
 import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
@@ -22,21 +13,9 @@ import { examples } from './examples';
 const initialExample = 1;
 
 const EditorPage: React.FunctionComponent = () => {
-  const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
-  const [lmFontData, setLmFontData] = React.useState<FontData | null>(null);
-  const [bonumFontData, setBonumFontData] = React.useState<FontData | null>(
-    null,
-  );
-  const [pagellaFontData, setPagellaFontData] = React.useState<FontData | null>(
-    null,
-  );
-  const [scholaFontData, setScholaFontData] = React.useState<FontData | null>(
-    null,
-  );
-  const [termesFontData, setTermesFontData] = React.useState<FontData | null>(
-    null,
-  );
   const [fontIndex, setFontIndex] = React.useState<number>(0);
+  // Only the selected font is loaded.
+  const fontData = useFont(FONTS[fontIndex].folder);
 
   const [math, setMath] = React.useState<Editor.types.CharRow>(
     examples[initialExample],
@@ -48,92 +27,10 @@ const EditorPage: React.FunctionComponent = () => {
   const [showHitboxes, setShowHitboxes] = React.useState<boolean>(false);
   const [inline, setInline] = React.useState<boolean>(false);
 
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(stix2);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setStixFontData(getFontData(font, 'STIX2'));
-    };
-
-    loadFont();
-  }, []);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(latinModern);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setLmFontData(getFontData(font, 'LM-Math'));
-    };
-
-    loadFont();
-  }, []);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(gyreBonum);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setBonumFontData(getFontData(font, 'Bonum-Math'));
-    };
-
-    loadFont();
-  }, []);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(gryePagella);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setPagellaFontData(getFontData(font, 'Pagella-Math'));
-    };
-
-    loadFont();
-  }, []);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(gryeSchola);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setScholaFontData(getFontData(font, 'Schola-Math'));
-    };
-
-    loadFont();
-  }, []);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(gyreTermes);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setTermesFontData(getFontData(font, 'Termes-Math'));
-    };
-
-    loadFont();
-  }, []);
-
-  if (
-    !stixFontData ||
-    !lmFontData ||
-    !bonumFontData ||
-    !pagellaFontData ||
-    !scholaFontData ||
-    !termesFontData
-  ) {
+  if (!fontData) {
     return null;
   }
 
-  const fonts = [
-    stixFontData,
-    lmFontData,
-    bonumFontData,
-    pagellaFontData,
-    scholaFontData,
-    termesFontData,
-  ];
-  const fontData = fonts[fontIndex];
   const fontSize = 64;
 
   // TODO:
@@ -199,12 +96,11 @@ const EditorPage: React.FunctionComponent = () => {
                 onChange={(e) => setFontIndex(parseInt(e.target.value))}
                 defaultValue={fontIndex}
               >
-                <option value={0}>STIX2</option>
-                <option value={1}>Latin Modern</option>
-                <option value={2}>Gyre Bonum</option>
-                <option value={3}>Gyre Pagella</option>
-                <option value={4}>Gyre Schola</option>
-                <option value={5}>Gyre Termes</option>
+                {FONTS.map((font, index) => (
+                  <option key={font.folder} value={index}>
+                    {font.name}
+                  </option>
+                ))}
               </select>
             </HStack>
             <HStack>

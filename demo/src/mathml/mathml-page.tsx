@@ -1,12 +1,9 @@
 import * as React from 'react';
-import type { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import { FontDataContext } from '@math-blocks/react';
-import { getFontData, parse } from '@math-blocks/opentype';
-import type { Font } from '@math-blocks/opentype';
 
-import stix2 from '../../../assets/STIX2Math.otf';
+import { useFont } from '../shared/fonts';
 
 import AccessibleMath from './accessible-math';
 
@@ -60,25 +57,11 @@ const MathmlPage: React.FunctionComponent = () => {
     Editor.builders.char('0'),
   ]);
 
-  const [font, setFont] = React.useState<Font | null>(null);
+  const fontData = useFont('stix-two-math');
 
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(stix2);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      console.log(font);
-      setFont(font);
-    };
-
-    loadFont();
-  }, []);
-
-  if (!font) {
+  if (!fontData) {
     return null;
   }
-
-  const fontData = getFontData(font, 'STIX2');
 
   return (
     <FontDataContext.Provider value={fontData}>
