@@ -20,6 +20,7 @@ import * as Typesetter from '@math-blocks/typesetter';
 
 import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
+import { expandGlyphUses } from '../test-util';
 
 const ASSETS = path.join(__dirname, '../../../../assets');
 
@@ -95,10 +96,15 @@ const render = (
   fontData: FontData,
   mathStyle: Typesetter.MathStyle,
 ): string =>
-  ReactDOMServer.renderToStaticMarkup(
-    <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={row} mathStyle={mathStyle} />
-    </FontDataContext.Provider>,
+  // The combined font gives glyphs different IDs from the original font, and
+  // glyph definitions are keyed by glyph ID, so compare the outlines that each
+  // <use> draws rather than the IDs it references.
+  expandGlyphUses(
+    ReactDOMServer.renderToStaticMarkup(
+      <FontDataContext.Provider value={fontData}>
+        <MathRenderer row={row} mathStyle={mathStyle} />
+      </FontDataContext.Provider>,
+    ),
   );
 
 describe.each(FONTS)(
