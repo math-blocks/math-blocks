@@ -892,15 +892,16 @@ const parseCharset = async (
       i += 2;
       gid += 1;
     }
-  } else if (format === 1) {
-    throw new Error("Can't parse charset format 1 yet");
-  } else if (format === 2) {
+  } else if (format === 1 || format === 2) {
+    // Both formats are a list of ranges: the first SID in the range followed
+    // by the number of SIDs left in it. That count is a Card8 in format 1 and
+    // a Card16 in format 2.
     let gid = 1;
     let i = 1;
     while (gid < nGlyphs) {
       const first = view.getUint16(i);
-      const nLeft = view.getUint16(i + 2);
-      i += 4;
+      const nLeft = format === 1 ? view.getUint8(i + 2) : view.getUint16(i + 2);
+      i += format === 1 ? 3 : 4;
 
       for (let j = 0; j <= nLeft; j++) {
         const sid = first + j;
