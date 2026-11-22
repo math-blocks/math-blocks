@@ -119,6 +119,9 @@ const parseFormat12 = async (
   return getGlyphIndexMap(groups);
 };
 
+const hex = (code: number): string =>
+  `U+${code.toString(16).toUpperCase().padStart(4, '0')}`;
+
 // Format 4: segment mapping to delta values. Only covers the BMP.
 // https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-4-segment-mapping-to-delta-values
 const parseFormat4 = async (
@@ -153,12 +156,12 @@ const parseFormat4 = async (
     const idRangeOffsetPos = idRangeOffsetOffset + i * 2;
     const idRangeOffset = view.getUint16(idRangeOffsetPos);
 
-    // The last segment maps 0xFFFF to the missing glyph; it isn't a character.
-    if (startCode === 0xffff) {
-      continue;
-    }
-
     for (let code = startCode; code <= endCode; code++) {
+      // The last segment ends at 0xFFFF, which isn't a character. It's
+      // usually a segment of its own, but can be the end of a longer one.
+      if (code === 0xffff) {
+        continue;
+      }
       let glyphId: number;
       if (idRangeOffset === 0) {
         glyphId = (code + idDelta) & 0xffff;
@@ -167,6 +170,13 @@ const parseFormat4 = async (
         // idRangeOffset[] array into glyphIdArray[].
         const glyphIdPos =
           idRangeOffsetPos + idRangeOffset + (code - startCode) * 2;
+        if (glyphIdPos + 2 > view.byteLength) {
+          const range = `${hex(startCode)}..${hex(endCode)}`;
+          throw new Error(
+            `Malformed cmap format 4 subtable: segment ${i} (${range}) ` +
+              'reads past the end of glyphIdArray',
+          );
+        }
         const rawGlyphId = view.getUint16(glyphIdPos);
         glyphId = rawGlyphId === 0 ? 0 : (rawGlyphId + idDelta) & 0xffff;
       }
@@ -204,28 +214,30 @@ export const parseCmap = async (
   };
 
   const fullRecord = findRecord(3, 10);
-  if (fullRecord) {
-    const format = await getFormat(fullRecord);
-    if (format !== 12) {
-      throw new Error(
-        `Unsupported cmap subtable format ${format} for platformID = 3, encodingID = 10`,
-      );
-    }
+  const fullFormat = fullRecord ? await getFormat(fullRecord) : undefined;
+  if (fullRecord && fullFormat === 12) {
     return parseFormat12(blob, fullRecord.subtableOffset);
   }
 
+  // Also used when the (3, 10) subtable is in a format we can't read.
   const bmpRecord = findRecord(3, 1);
-  if (bmpRecord) {
-    const format = await getFormat(bmpRecord);
-    if (format !== 4) {
-      throw new Error(
-        `Unsupported cmap subtable format ${format} for platformID = 3, encodingID = 1`,
-      );
-    }
+  const bmpFormat = bmpRecord ? await getFormat(bmpRecord) : undefined;
+  if (bmpRecord && bmpFormat === 4) {
     return parseFormat4(blob, bmpRecord.subtableOffset);
   }
 
+  if (!fullRecord && !bmpRecord) {
+    throw new Error(
+      'Missing encoding record for platformID = 3, encodingID = 10 or 1',
+    );
+  }
+
+  const found = [
+    fullRecord && `platformID = 3, encodingID = 10 is format ${fullFormat}`,
+    bmpRecord && `platformID = 3, encodingID = 1 is format ${bmpFormat}`,
+  ].filter(Boolean);
   throw new Error(
-    'Missing encoding record for platformID = 3, encodingID = 10 or 1',
+    `Unsupported cmap subtable format: ${found.join('; ')}. ` +
+      'Only format 12 for encodingID = 10 and format 4 for encodingID = 1 are supported.',
   );
 };

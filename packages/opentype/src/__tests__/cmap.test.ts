@@ -12,43 +12,38 @@ type Segment = {
   // When set, the segment's glyph IDs come from glyphIdArray[] instead of
   // code + idDelta.
   readonly glyphIds?: readonly number[];
+  // Overrides the idRangeOffset the builder works out, to make a malformed
+  // subtable.
+  readonly idRangeOffset?: number;
 };
 
-// Builds a cmap table with a single (3, 1) format 4 subtable.
-const buildFormat4Cmap = (segments: readonly Segment[]): Blob => {
+// Builds the bytes of a format 4 subtable.
+const buildFormat4Subtable = (segments: readonly Segment[]): ArrayBuffer => {
   const segCount = segments.length;
   const glyphIdArray: number[] = [];
   const idRangeOffsets: number[] = segments.map((segment, i) => {
-    if (!segment.glyphIds) {
-      return 0;
+    let offset = 0;
+    if (segment.glyphIds) {
+      // Byte offset from idRangeOffset[i] to the segment's first entry in
+      // glyphIdArray[], which starts right after idRangeOffset[].
+      offset = (segCount - i + glyphIdArray.length) * 2;
+      glyphIdArray.push(...segment.glyphIds);
     }
-    // Byte offset from idRangeOffset[i] to the segment's first entry in
-    // glyphIdArray[], which starts right after idRangeOffset[].
-    const offset = (segCount - i + glyphIdArray.length) * 2;
-    glyphIdArray.push(...segment.glyphIds);
-    return offset;
+    return segment.idRangeOffset ?? offset;
   });
 
-  const subtableLength = 16 + segCount * 8 + glyphIdArray.length * 2;
-  const headerLength = 4 + 8;
-  const buffer = new ArrayBuffer(headerLength + subtableLength);
+  const length = 16 + segCount * 8 + glyphIdArray.length * 2;
+  const buffer = new ArrayBuffer(length);
   const view = new DataView(buffer);
 
-  // cmap header with one encoding record.
-  view.setUint16(0, 0); // version
-  view.setUint16(2, 1); // numTables
-  view.setUint16(4, 3); // platformID
-  view.setUint16(6, 1); // encodingID
-  view.setUint32(8, headerLength); // subtableOffset
-
-  let pos = headerLength;
+  let pos = 0;
   const write16 = (value: number): void => {
     view.setUint16(pos, value & 0xffff);
     pos += 2;
   };
 
   write16(4); // format
-  write16(subtableLength); // length
+  write16(length); // length
   write16(0); // language
   write16(segCount * 2); // segCountX2
   write16(0); // searchRange (unused by the parser)
@@ -61,15 +56,62 @@ const buildFormat4Cmap = (segments: readonly Segment[]): Blob => {
   idRangeOffsets.forEach(write16);
   glyphIdArray.forEach(write16);
 
-  return new Blob([buffer]);
+  return buffer;
 };
+
+// The start of a subtable in a format the parser doesn't read. The parser
+// only looks at the format field before giving up on it.
+const buildUnsupportedSubtable = (format: number): ArrayBuffer => {
+  const buffer = new ArrayBuffer(4);
+  new DataView(buffer).setUint16(0, format);
+  return buffer;
+};
+
+type SubtableRecord = {
+  readonly platformID: number;
+  readonly encodingID: number;
+  readonly subtable: ArrayBuffer;
+};
+
+// Builds a cmap table from encoding records and their subtables.
+const buildCmap = (records: readonly SubtableRecord[]): Blob => {
+  const headerLength = 4 + records.length * 8;
+  const totalLength = records.reduce(
+    (sum, record) => sum + record.subtable.byteLength,
+    headerLength,
+  );
+  const bytes = new Uint8Array(totalLength);
+  const view = new DataView(bytes.buffer);
+
+  view.setUint16(0, 0); // version
+  view.setUint16(2, records.length); // numTables
+
+  let subtableOffset = headerLength;
+  records.forEach((record, i) => {
+    view.setUint16(4 + i * 8, record.platformID);
+    view.setUint16(4 + i * 8 + 2, record.encodingID);
+    view.setUint32(4 + i * 8 + 4, subtableOffset);
+    bytes.set(new Uint8Array(record.subtable), subtableOffset);
+    subtableOffset += record.subtable.byteLength;
+  });
+
+  return new Blob([bytes]);
+};
+
+// Builds a cmap table with a single (3, 1) format 4 subtable.
+const buildFormat4Cmap = (segments: readonly Segment[]): Blob =>
+  buildCmap([
+    { platformID: 3, encodingID: 1, subtable: buildFormat4Subtable(segments) },
+  ]);
+
+const SENTINEL: Segment = { startCode: 0xffff, endCode: 0xffff, idDelta: 1 };
 
 describe('parseCmap', () => {
   describe('format 4', () => {
     test('idRangeOffset == 0 uses code + idDelta', async () => {
       const blob = buildFormat4Cmap([
         { startCode: 0x41, endCode: 0x43, idDelta: 10 - 0x41 },
-        { startCode: 0xffff, endCode: 0xffff, idDelta: 1 },
+        SENTINEL,
       ]);
 
       expect(await parseCmap(blob)).toEqual({ 0x41: 10, 0x42: 11, 0x43: 12 });
@@ -81,7 +123,7 @@ describe('parseCmap', () => {
         { startCode: 0xf000, endCode: 0xf001, idDelta: 0x1003 },
         // 0x20 - 0x1e = 2, written as the uint16 0xffe2.
         { startCode: 0x20, endCode: 0x20, idDelta: -0x1e },
-        { startCode: 0xffff, endCode: 0xffff, idDelta: 1 },
+        SENTINEL,
       ]);
 
       expect(await parseCmap(blob)).toEqual({ 0xf000: 3, 0xf001: 4, 0x20: 2 });
@@ -94,7 +136,7 @@ describe('parseCmap', () => {
         { startCode: 0x61, endCode: 0x63, idDelta: 0, glyphIds: [20, 0, 22] },
         // idDelta is added to non-zero entries from glyphIdArray.
         { startCode: 0x100, endCode: 0x101, idDelta: 5, glyphIds: [1, 2] },
-        { startCode: 0xffff, endCode: 0xffff, idDelta: 1 },
+        SENTINEL,
       ]);
 
       expect(await parseCmap(blob)).toEqual({
@@ -112,7 +154,7 @@ describe('parseCmap', () => {
         { startCode: 0x30, endCode: 0x31, idDelta: 0, glyphIds: [3, 4] },
         { startCode: 0x41, endCode: 0x42, idDelta: 100 - 0x41 },
         { startCode: 0x61, endCode: 0x61, idDelta: 0, glyphIds: [9] },
-        { startCode: 0xffff, endCode: 0xffff, idDelta: 1 },
+        SENTINEL,
       ]);
 
       expect(await parseCmap(blob)).toEqual({
@@ -125,15 +167,89 @@ describe('parseCmap', () => {
     });
   });
 
-  test('throws when there is no (3, 10) or (3, 1) subtable', async () => {
-    const buffer = new ArrayBuffer(12);
-    const view = new DataView(buffer);
-    view.setUint16(2, 1); // numTables
-    view.setUint16(4, 0); // platformID
-    view.setUint16(6, 3); // encodingID
-    view.setUint32(8, 12);
+  describe('format 4 edge cases', () => {
+    test('skips 0xFFFF when it ends a longer segment', async () => {
+      const blob = buildFormat4Cmap([
+        { startCode: 0xfffd, endCode: 0xffff, idDelta: 5 - 0xfffd },
+      ]);
 
-    await expect(parseCmap(new Blob([buffer]))).rejects.toThrow(
+      expect(await parseCmap(blob)).toEqual({ 0xfffd: 5, 0xfffe: 6 });
+    });
+
+    test('throws a named error when idRangeOffset points past glyphIdArray', async () => {
+      const blob = buildFormat4Cmap([
+        { startCode: 0x41, endCode: 0x42, idDelta: 0, idRangeOffset: 0x1000 },
+        SENTINEL,
+      ]);
+
+      await expect(parseCmap(blob)).rejects.toThrow(
+        'Malformed cmap format 4 subtable: segment 0 (U+0041..U+0042) ' +
+          'reads past the end of glyphIdArray',
+      );
+    });
+  });
+
+  describe('choosing a subtable', () => {
+    const bmp = buildFormat4Subtable([
+      { startCode: 0x41, endCode: 0x41, idDelta: 7 - 0x41 },
+      SENTINEL,
+    ]);
+
+    test('falls back to (3, 1) when (3, 10) is in an unsupported format', async () => {
+      const blob = buildCmap([
+        {
+          platformID: 3,
+          encodingID: 10,
+          subtable: buildUnsupportedSubtable(13),
+        },
+        { platformID: 3, encodingID: 1, subtable: bmp },
+      ]);
+
+      expect(await parseCmap(blob)).toEqual({ 0x41: 7 });
+    });
+
+    test('throws when neither subtable is in a supported format', async () => {
+      const blob = buildCmap([
+        {
+          platformID: 3,
+          encodingID: 10,
+          subtable: buildUnsupportedSubtable(13),
+        },
+        {
+          platformID: 3,
+          encodingID: 1,
+          subtable: buildUnsupportedSubtable(6),
+        },
+      ]);
+
+      await expect(parseCmap(blob)).rejects.toThrow(
+        'Unsupported cmap subtable format: ' +
+          'platformID = 3, encodingID = 10 is format 13; ' +
+          'platformID = 3, encodingID = 1 is format 6.',
+      );
+    });
+
+    test('throws when the only (3, 1) subtable is in an unsupported format', async () => {
+      const blob = buildCmap([
+        {
+          platformID: 3,
+          encodingID: 1,
+          subtable: buildUnsupportedSubtable(6),
+        },
+      ]);
+
+      await expect(parseCmap(blob)).rejects.toThrow(
+        'Unsupported cmap subtable format: platformID = 3, encodingID = 1 is format 6.',
+      );
+    });
+  });
+
+  test('throws when there is no (3, 10) or (3, 1) subtable', async () => {
+    const blob = buildCmap([
+      { platformID: 0, encodingID: 3, subtable: buildUnsupportedSubtable(4) },
+    ]);
+
+    await expect(parseCmap(blob)).rejects.toThrow(
       'Missing encoding record for platformID = 3, encodingID = 10 or 1',
     );
   });
