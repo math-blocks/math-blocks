@@ -323,6 +323,7 @@ const generateNodeBuilders = () => {
     type,
     id: getId(),
     args,
+    loc,
   }),`);
   lines.push('');
   lines.push(`  number: (

@@ -1,6 +1,13 @@
 {
     "name": "@math-blocks/semantic",
-    "version": "0.1.0",
+    "version": "0.1.2",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/math-blocks/math-blocks.git",
+        "directory": "packages/semantic"
+    },
+    "bugs": "https://github.com/math-blocks/math-blocks/issues",
+    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/semantic#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,7 +17,7 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.12",
+        "@math-blocks/core": "^0.0.13",
         "fraction.js": "^4.0.12"
     }
 }

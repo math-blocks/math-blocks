@@ -16,6 +16,7 @@ const external = [
   '@math-blocks/semantic',
   '@math-blocks/solver',
   '@math-blocks/tex',
+  '@math-blocks/tutor',
   '@math-blocks/typesetter',
 ];
 
@@ -49,5 +50,6 @@ export default [
   createBuildConfig('semantic'),
   createBuildConfig('solver'),
   createBuildConfig('tex'),
+  createBuildConfig('tutor'),
   createBuildConfig('typesetter'),
 ];

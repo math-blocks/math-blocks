@@ -1,6 +1,13 @@
 {
     "name": "@math-blocks/editor",
-    "version": "0.0.13",
+    "version": "0.0.15",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/math-blocks/math-blocks.git",
+        "directory": "packages/editor"
+    },
+    "bugs": "https://github.com/math-blocks/math-blocks/issues",
+    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/editor#readme",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,8 +17,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.12",
-        "@math-blocks/parser": "^0.0.13",
-        "@math-blocks/semantic": "^0.1.0"
+        "@math-blocks/core": "^0.0.13",
+        "@math-blocks/parser": "^0.0.15",
+        "@math-blocks/semantic": "^0.1.2"
     }
 }

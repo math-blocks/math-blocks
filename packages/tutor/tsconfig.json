@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig-base.json",
+  "exclude": ["dist", "out"],
+  "compilerOptions": {
+    "outDir": "out",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../.buildcache/tutor.tsbuildinfo"
+  },
+  "references": [
+    {"path": "../core"},
+    {"path": "../parser"},
+    {"path": "../semantic"},
+    {"path": "../solver"}
+  ]
+}

@@ -8,6 +8,7 @@ import { dropAddIdentity } from './transforms/drop-add-identity';
 import { evalMul, evalAdd, evalDiv } from './transforms/eval';
 import { collectLikeTerms } from './transforms/collect-like-terms';
 import { distribute } from './transforms/distribute';
+import { expandPow } from './transforms/expand-pow';
 import { distributeDiv } from './transforms/distribute-div';
 import { reduceFraction } from './transforms/reduce-fraction';
 import { mulFraction } from './transforms/mul-fraction';
@@ -35,6 +36,7 @@ export function simplify(
     simplifyMul, // We do this first so that we don't repeat what it does in other transforms
     mulByZeroIsZero,
 
+    expandPow,
     distribute,
     distributeDiv,
     collectLikeTerms,

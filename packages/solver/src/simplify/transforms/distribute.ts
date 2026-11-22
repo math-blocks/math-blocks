@@ -66,8 +66,8 @@ const negToSub = (
   return before;
 };
 
-// a(b + c) -> ab + bc
-const distMul = (
+// a(b + c) -> ab + ac
+const distMulRight = (
   node: Semantic.types.Mul,
   substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.Node[] | undefined => {
@@ -122,7 +122,18 @@ const distMul = (
         const newTerm = simplifyMul(term as Semantic.types.Mul, substeps);
         return newTerm;
       });
-    } else if (node.args[0].type === NodeType.Add) {
+    }
+  }
+  return undefined;
+};
+
+// (a + b)c -> ac + bc
+const distMulLeft = (
+  node: Semantic.types.Mul,
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined => {
+  if (node.args.length === 2) {
+    if (node.args[0].type === NodeType.Add) {
       const add = node.args[0];
 
       // Convert subtraction to negative within the `add` node
@@ -175,6 +186,15 @@ const distMul = (
   }
   return undefined;
 };
+
+// (a + b)c -> ac + bc, or a(b + c) -> ab + ac when a isn't a sum.  Trying
+// the left sum first means (a + b)(c + d) -> a(c + d) + b(c + d), which is
+// how a student would usually write it.
+const distMul = (
+  node: Semantic.types.Mul,
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined =>
+  distMulLeft(node, substeps) ?? distMulRight(node, substeps);
 
 /**
  * If node is of the form a(b + c + ...) perform distribution on the node to

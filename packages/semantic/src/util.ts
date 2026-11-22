@@ -46,6 +46,59 @@ export const isNumber = (node: types.Node): boolean => {
 };
 
 // TODO: autogenerate this from the validation schema
+const isUnsignedInteger = (node: types.Node): node is types.Number =>
+  node.type === NodeType.Number && /^[0-9]+$/.test(node.value);
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+/**
+ * Whether `node` is an unsigned number in simplest form: an integer, a
+ * decimal without trailing zeros, or a fraction of integers in lowest terms
+ * with a denominator greater than 1.  The numerator may be negative, e.g.
+ * `\frac{-5}{2}`.
+ */
+const isSimplifiedUnsigned = (node: types.Node): boolean => {
+  if (node.type === NodeType.Number) {
+    return /^(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$/.test(node.value);
+  }
+  if (node.type === NodeType.Div) {
+    const [num, den] = node.args;
+    const absNum = num.type === NodeType.Neg ? num.arg : num;
+    if (!isUnsignedInteger(absNum) || !isUnsignedInteger(den)) {
+      return false;
+    }
+    const n = parseInt(absNum.value, 10);
+    const d = parseInt(den.value, 10);
+    return n !== 0 && d > 1 && gcd(n, d) === 1;
+  }
+  return false;
+};
+
+/**
+ * Returns true if `node` is a number written in simplest form: an integer, a
+ * decimal without trailing zeros, or a fraction of integers in lowest terms,
+ * optionally negated.  For example `2`, `-2.5`, `\frac{5}{2}` and
+ * `-\frac{5}{2}` are simplified, while `5 \cdot \frac{1}{2}`, `\frac{4}{2}`,
+ * `\frac{5}{1}`, `2.0` and `-0` aren't.
+ *
+ * Only rational numbers are handled so far.  Roots and constants such as
+ * `\pi` and `e` are never considered simplified.
+ *
+ * TODO(#743): recognize simplified numbers with roots and constants, e.g.
+ * `\sqrt{2} + \sqrt{3}`, `3\sqrt{2} + 1` and `2\pi`.
+ */
+export const isSimplifiedNumber = (node: types.Node): boolean => {
+  // A `Neg` node's `subtraction` flag only matters inside an `Add`, so it's
+  // ignored here.  The solver leaves it set on answers such as `x = -2`.
+  if (node.type === NodeType.Neg) {
+    return (
+      isSimplifiedUnsigned(node.arg) &&
+      !(node.arg.type === NodeType.Number && node.arg.value === '0')
+    );
+  }
+  return isSimplifiedUnsigned(node);
+};
+
 export const isNumeric = (node: types.Node): node is types.Node => {
   const NumericNodeTypes: NodeType[keyof NodeType][] = [
     NodeType.Number,

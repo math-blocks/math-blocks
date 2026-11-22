@@ -1,5 +1,20 @@
 # @math-blocks/tex
 
+## 0.1.2
+
+### Patch Changes
+
+- 7d29fdc: Add `repository`, `bugs` and `homepage` to `package.json`, so npm links to the source and the issue tracker.
+- Updated dependencies [7d29fdc]
+  - @math-blocks/core@0.0.13
+  - @math-blocks/editor@0.0.15
+
+## 0.1.1
+
+### Patch Changes
+
+- @math-blocks/editor@0.0.14
+
 ## 0.1.0
 
 ### Minor Changes
