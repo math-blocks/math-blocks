@@ -26,7 +26,6 @@ import tempfile
 
 from fontTools import subset
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, 'assets')
@@ -139,23 +138,6 @@ def rename(font, letter, group, source_name):
     top_dict.FamilyName = family
 
 
-def ensure_format_12_cmap(font):
-    """Add a (3, 10) format 12 cmap subtable if the subset doesn't have one.
-
-    @math-blocks/opentype only reads that subtable, and fontTools only writes
-    it when a font has characters beyond U+FFFF, which most groups don't.
-    """
-    cmap = font['cmap']
-    if cmap.getcmap(3, 10):
-        return
-    table = CmapSubtable.newSubtable(12)
-    table.platformID = 3
-    table.platEncID = 10
-    table.language = 0
-    table.cmap = dict(font.getBestCmap())
-    cmap.tables.append(table)
-
-
 def build(out_dir):
     groups = load_groups()
     options = subset_options()
@@ -170,7 +152,6 @@ def build(out_dir):
             subsetter.populate(unicodes=code_points)
             subsetter.subset(font)
             rename(font, letter, group, source_name)
-            ensure_format_12_cmap(font)
             path = os.path.join(font_dir, f'{group}.otf')
             font.save(path)
             written.append(os.path.relpath(path, out_dir))
