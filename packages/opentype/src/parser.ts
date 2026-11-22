@@ -1,4 +1,5 @@
-import { Blob } from 'buffer';
+import { fromArrayBuffer } from './byte-source';
+import type { ByteSource } from './byte-source';
 
 import { GlyphNotFoundError } from './errors';
 
@@ -23,7 +24,7 @@ const parseTag = (view: DataView, offset = 0): string => {
 };
 
 const parseTableRecords = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
   numTables: number,
 ): Promise<Record<string, TableRecord>> => {
@@ -51,7 +52,9 @@ const parseTableRecords = async (
   return result;
 };
 
-export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
+export const parseDirectory = async (
+  blob: ByteSource,
+): Promise<TableDirectory> => {
   const byteCount = 4 + 8;
 
   const buffer = await blob.slice(0, byteCount).arrayBuffer();
@@ -71,7 +74,18 @@ export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
   return dir;
 };
 
-export const parse = async (blob: Blob): Promise<Font> => {
+/**
+ * Parses an OpenType font with a MATH table and CFF outlines. `data` is the
+ * font file: a Blob, or an ArrayBuffer.
+ */
+export const parse = async (data: ByteSource | ArrayBuffer): Promise<Font> => {
+  // Checks for arrayBuffer() rather than using `instanceof ArrayBuffer`, which
+  // fails for an ArrayBuffer from another realm (an iframe, a worker, or a
+  // different test environment).
+  const blob =
+    'arrayBuffer' in data && typeof data.arrayBuffer === 'function'
+      ? data
+      : fromArrayBuffer(data as ArrayBuffer);
   const dir = await parseDirectory(blob);
 
   const headTableRecord = dir.tableRecords['head'];

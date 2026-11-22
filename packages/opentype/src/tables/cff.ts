@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { ByteSource } from '../byte-source';
 import type { Mutable } from 'utility-types';
 
 import { STANDARD_STRINGS } from './cff-standard-strings';
@@ -17,7 +17,7 @@ type Index = {
 };
 
 const parseIndex = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
 ): Promise<[Index, number]> => {
   let buffer = await blob.slice(offset, offset + 3).arrayBuffer();
@@ -864,7 +864,7 @@ const parseCharstring = (
 };
 
 const parseCharset = async (
-  blob: Blob,
+  blob: ByteSource,
   topDict: TopDict,
   nGlyphs: number,
 ): Promise<Record<number, number>> => {
@@ -932,7 +932,7 @@ const getBias = (subrsIndex: Index): number => {
   return 32768;
 };
 
-export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
+export const parseCFF = async (blob: ByteSource): Promise<CFFResult> => {
   let offset = 0;
 
   const headerBuffer = await blob.slice(offset, offset + 4).arrayBuffer();
