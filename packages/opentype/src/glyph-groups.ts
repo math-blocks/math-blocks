@@ -37,5 +37,6 @@ const parseCodePoints = (entries: readonly string[]): number[] => {
 export const glyphGroups: readonly GlyphGroup[] = data.groups.map((group) => ({
   name: group.name,
   description: group.description,
-  codePoints: parseCodePoints(group.codePoints),
+  // The keys are the code points; the values only describe them.
+  codePoints: parseCodePoints(Object.keys(group.codePoints)),
 }));

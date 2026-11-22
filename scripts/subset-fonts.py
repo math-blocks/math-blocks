@@ -53,16 +53,27 @@ CODE_POINT = re.compile(r'^U\+([0-9A-F]{4,6})(?:-U\+([0-9A-F]{4,6}))?$')
 def load_groups():
     """Return [(group name, sorted code points)], checking the file's format
     and that no code point belongs to more than one group."""
+    errors = []
+
+    def reject_duplicate_keys(pairs):
+        # JSON parsers keep only the last of two identical keys, so a repeated
+        # entry would silently replace the earlier one's description.
+        keys = [key for key, _ in pairs]
+        for key in sorted({k for k in keys if keys.count(k) > 1}):
+            errors.append(f'duplicate key {key!r}')
+        return dict(pairs)
+
     with open(GROUPS_FILE, encoding='utf-8') as f:
-        data = json.load(f)
+        data = json.load(f, object_pairs_hook=reject_duplicate_keys)
 
     groups = []
     owner = {}
-    errors = []
     for group in data['groups']:
         name = group['name']
         code_points = set()
-        for entry in group['codePoints']:
+        for entry, description in group['codePoints'].items():
+            if not isinstance(description, str) or not description.strip():
+                errors.append(f'{name}: {entry!r} needs a description')
             m = CODE_POINT.match(entry)
             if not m:
                 errors.append(f'{name}: invalid entry {entry!r}')
