@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`parse CFF  topDict 1`] = `
+exports[`parse > CFF  > topDict 1`] = `
 {
   "BlueFuzz": 1,
   "BlueScale": 0.039625,
@@ -78,7 +78,7 @@ exports[`parse CFF  topDict 1`] = `
 }
 `;
 
-exports[`parse math MathContants constants should have expected values 1`] = `
+exports[`parse > math > MathContants > constants should have expected values 1`] = `
 {
   "accentBaseHeight": 0.48,
   "axisHeight": 0.258,
@@ -139,7 +139,7 @@ exports[`parse math MathContants constants should have expected values 1`] = `
 }
 `;
 
-exports[`parse math MathVariants horizontal glyph construction for uni0303 (combining tilde) 1`] = `
+exports[`parse > math > MathVariants > horizontal glyph construction for uni0303 (combining tilde) 1`] = `
 {
   "glyphAssembly": null,
   "mathGlyphVariantRecords": [
@@ -171,7 +171,7 @@ exports[`parse math MathVariants horizontal glyph construction for uni0303 (comb
 }
 `;
 
-exports[`parse math MathVariants vertical glyph construction for parenleft 1`] = `
+exports[`parse > math > MathVariants > vertical glyph construction for parenleft 1`] = `
 {
   "glyphAssembly": {
     "italicsCorrection": {
@@ -259,7 +259,7 @@ exports[`parse math MathVariants vertical glyph construction for parenleft 1`] =
 }
 `;
 
-exports[`parseDirectory tableRecords 1`] = `
+exports[`parseDirectory > tableRecords 1`] = `
 {
   "CFF ": {
     "checksum": 2978540771,

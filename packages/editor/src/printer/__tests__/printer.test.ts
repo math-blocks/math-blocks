@@ -11,12 +11,10 @@ const { NodeType } = Semantic;
 
 expect.extend({ toEqualEditorNode });
 
-declare global {
+declare module 'vitest' {
   /* eslint-disable */
-  namespace jest {
-    interface Matchers<R, T> {
-      toEqualEditorNode(actual: types.CharNode): R;
-    }
+  interface Matchers<T = any> {
+    toEqualEditorNode(actual: types.CharNode): void;
   }
   /* eslint-enable */
 }

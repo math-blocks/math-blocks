@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 // Characters the font can't draw, for example because their glyph group isn't
 // loaded, render as a placeholder box instead of throwing. See
@@ -8,7 +8,9 @@ import fs from 'fs';
 import path from 'path';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Blob } from 'buffer';
+// In the jsdom environment, Vitest resolves 'buffer' to the npm polyfill, which
+// has no Blob, so ask for Node's module.
+import { Blob } from 'node:buffer';
 
 import * as Editor from '@math-blocks/editor';
 import {
@@ -33,7 +35,7 @@ type Missing = readonly [string, string | undefined];
 
 // Some tests silence console.error; don't let that leak into other tests.
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 // Renders in a DOM, so effects run and onMissingGlyph is called.
@@ -150,7 +152,7 @@ describe('placeholders', () => {
   });
 
   test('other errors from getGlyphID are not turned into placeholders', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const fontData = failFor(full, '+', new Error('font is broken'));
     expect(() => renderSvg(parseTex('1+2'), fontData)).toThrow(
       'font is broken',
@@ -307,7 +309,7 @@ describe('onMissingGlyph', () => {
   );
 
   test('reports each missing character once, after rendering', () => {
-    const onMissingGlyph = jest.fn();
+    const onMissingGlyph = vi.fn();
     render(
       <Renderer
         tex="θ+θ+∫"
@@ -322,7 +324,7 @@ describe('onMissingGlyph', () => {
   });
 
   test('reports again only when the missing characters change', () => {
-    const onMissingGlyph = jest.fn();
+    const onMissingGlyph = vi.fn();
     const { rerender } = render(
       <Renderer
         tex="θ+1"
@@ -354,10 +356,10 @@ describe('onMissingGlyph', () => {
   });
 
   test('can set state without warnings or a render loop', () => {
-    const errors = jest
+    const errors = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
-    const renders = jest.fn();
+    const renders = vi.fn();
     const App = (): React.ReactElement => {
       const [missing, setMissing] = React.useState<readonly string[]>([]);
       renders();
@@ -380,7 +382,7 @@ describe('onMissingGlyph', () => {
   });
 
   test('is not called when every character can be drawn', () => {
-    const onMissingGlyph = jest.fn();
+    const onMissingGlyph = vi.fn();
     render(
       <Renderer tex="θ+∫" fontData={full} onMissingGlyph={onMissingGlyph} />,
     );
@@ -424,7 +426,7 @@ test('an integral in a limits node with fewer than two size variants uses its ba
 
 describe('useFontData', () => {
   test('explains that a font is needed when there is no provider', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(() => render(<MathRenderer row={parseTex('x')} />)).toThrow(
       'MathRenderer needs a font: render it inside a FontDataContext.Provider',
     );

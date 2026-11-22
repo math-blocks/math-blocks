@@ -110,7 +110,7 @@ describe('collect like terms', () => {
     const ast = parse('2x + 3y');
 
     expect(() => collectLikeTerms(ast)).toThrowErrorMatchingInlineSnapshot(
-      `"no step returned"`,
+      `[Error: no step returned]`,
     );
   });
 

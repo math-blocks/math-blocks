@@ -96,7 +96,7 @@ describe('fromBaseUrl', () => {
 
   test('fetches `${baseUrl}/${group}.otf`, ignoring trailing slashes', async () => {
     const response = { ok: true, status: 200, statusText: 'OK' };
-    const fetchMock = jest.fn().mockResolvedValue(response);
+    const fetchMock = vi.fn().mockResolvedValue(response);
     global.fetch = fetchMock;
 
     const load = fromBaseUrl('/fonts/stix-two-math/');
@@ -105,7 +105,7 @@ describe('fromBaseUrl', () => {
   });
 
   test('throws for a failed response', async () => {
-    global.fetch = jest
+    global.fetch = vi
       .fn()
       .mockResolvedValue({ ok: false, status: 404, statusText: 'Not Found' });
 
@@ -116,15 +116,19 @@ describe('fromBaseUrl', () => {
 });
 
 describe('browser builds', () => {
-  test("the package doesn't import 'buffer' at runtime", () => {
+  test("the package doesn't import 'buffer' at runtime", async () => {
     // Bundlers replace Node's 'buffer' with a polyfill in browser builds. The
     // one the demo gets has no Blob and crashes as it loads, so the package
     // must only use 'buffer' for types.
-    jest.isolateModules(() => {
-      jest.doMock('buffer', () => {
-        throw new Error("'buffer' was imported at runtime");
-      });
-      expect(() => require('../index')).not.toThrow();
+    vi.resetModules();
+    vi.doMock('buffer', () => {
+      throw new Error("'buffer' was imported at runtime");
     });
+    try {
+      await expect(import('../index')).resolves.toBeDefined();
+    } finally {
+      vi.doUnmock('buffer');
+      vi.resetModules();
+    }
   });
 });

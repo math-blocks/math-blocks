@@ -41,7 +41,7 @@ describe('#getHint', () => {
     };
 
     expect(() => getHint(problem)).toThrowErrorMatchingInlineSnapshot(
-      `"Couldn't get a hint"`,
+      `[Error: Couldn't get a hint]`,
     );
   });
 });

@@ -316,7 +316,7 @@ describe('EditorParser', () => {
     const input = row([char('2'), util.sub('0')]);
 
     expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-      `"subscripts are only allowed on identifiers"`,
+      `[Error: subscripts are only allowed on identifiers]`,
     );
   });
 
@@ -324,7 +324,7 @@ describe('EditorParser', () => {
     const input = util.row('2-');
 
     expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-      `"Unexpected 'EOL' atom"`,
+      `[Error: Unexpected 'EOL' atom]`,
     );
   });
 
@@ -332,7 +332,7 @@ describe('EditorParser', () => {
     const input = util.row('2+2+');
 
     expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-      `"Unexpected 'EOL' atom"`,
+      `[Error: Unexpected 'EOL' atom]`,
     );
   });
 
@@ -927,7 +927,7 @@ describe('EditorParser', () => {
       ]);
 
       expect(() => parser.parse(row)).toThrowErrorMatchingInlineSnapshot(
-        `"Unexpected 'EOL' atom"`,
+        `[Error: Unexpected 'EOL' atom]`,
       );
     });
 
@@ -946,7 +946,7 @@ describe('EditorParser', () => {
       ]);
 
       expect(() => parser.parse(row)).toThrowErrorMatchingInlineSnapshot(
-        `"Matrix cells must be non-null"`,
+        `[Error: Matrix cells must be non-null]`,
       );
     });
   });

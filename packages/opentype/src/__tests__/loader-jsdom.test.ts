@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 // jsdom's Blob has no arrayBuffer(), so a loader that wrapped the subsets in a
 // Blob before parsing them failed in jsdom test environments.
