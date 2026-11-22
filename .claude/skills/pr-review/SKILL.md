@@ -70,7 +70,7 @@ Run this step at every level. A high-risk change is one where a mistake is costl
 - It deletes or disables a test, or changes an expected snapshot under `__snapshots__/` or an inline expected value, so that wrong output now passes.
 - It changes shared infrastructure that many packages read, such as the node definitions and builders in `packages/semantic/src/` (`types.ts`, `node-defs.ts`, `builders.ts`), the editor's shared types in `packages/editor/src/shared-types.ts`, or the scene graph in `packages/typesetter/src/scene-graph.ts`.
 - It changes `.github/workflows/`, permissions, secrets, release config under `.changeset/`, or anything else that runs with repository credentials or publishes packages.
-- It replaces binary or generated data in bulk, such as the fonts under `assets/` or most of `yarn.lock`.
+- It replaces binary or generated data in bulk, such as the fonts under `assets/` or most of `pnpm-lock.yaml`.
 
 For each one, record the file, the range of changed lines that makes it risky, and a one-line statement of what a human reviewer should confirm. Take the range from the diff hunk that holds the change. Use new-file line numbers for added or changed lines, and old-file numbers for lines the PR only deletes. When a change spans several hunks of one file, record the hunk that matters most and name the others in the statement. Keep the list to the changes that most need a second look, at most 5.
 

@@ -6,9 +6,7 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@10.34.9",
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
@@ -84,7 +82,7 @@
     "xml2js": "^0.4.23"
   },
   "scripts": {
-    "prepublishOnly": "yarn build-rollup",
+    "prepublishOnly": "pnpm build-rollup",
     "codechecks": "codechecks",
     "build": "vite build",
     "build-ci": "vite build --base=/math-blocks/",
@@ -106,7 +104,6 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "fraction.js": "^4.0.12",
-    "lerna": "^4.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "6.28.0"
