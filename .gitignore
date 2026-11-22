@@ -5,6 +5,9 @@ node_modules
 dist
 docs
 coverage
+# Playwright output
+test-results
+playwright-report
 out
 packages/*/out
 demo/out

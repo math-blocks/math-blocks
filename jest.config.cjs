@@ -4,6 +4,8 @@ module.exports = {
     '.+\\.(css|styl|less|sass|scss)$': 'jest-css-modules-transform',
   },
   modulePathIgnorePatterns: ['/out/', '/dist/', './.rollup.cache'],
+  // Playwright runs the end-to-end tests in e2e/; see playwright.config.ts.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/e2e/'],
   moduleNameMapper: {
     '^@math-blocks/(.*)$': '<rootDir>/packages/$1/src/index.ts',
     // Load a .js file with no exports whenever an .otf file is requested.

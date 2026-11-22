@@ -40,6 +40,14 @@ module.exports = {
         ],
       },
     },
+    {
+      // Playwright's page.getByRole() and friends aren't Testing Library
+      // queries, but the Testing Library rules treat them as if they were.
+      files: ['e2e/**/*.ts'],
+      rules: {
+        'testing-library/prefer-screen-queries': 'off',
+      },
+    },
   ],
   rules: {
     'comma-dangle': ['error', 'always-multiline'],
@@ -65,7 +73,11 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    project: ['./packages/**/tsconfig.json', './demo/tsconfig.json'],
+    project: [
+      './packages/**/tsconfig.json',
+      './demo/tsconfig.json',
+      './e2e/tsconfig.json',
+    ],
   },
   settings: { react: { version: 'detect' } },
 };
