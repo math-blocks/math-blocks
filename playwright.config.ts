@@ -17,19 +17,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    // Glyph definitions rely on how browsers resolve <use> references, so
-    // their tests also run in Firefox and in WebKit, the engine behind
-    // Safari.
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      testMatch: /glyph-defs\.spec\.ts/,
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      testMatch: /glyph-defs\.spec\.ts/,
-    },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // WebKit is the engine behind Safari.
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
     command: `yarn build && yarn vite preview --port ${PORT} --strictPort`,

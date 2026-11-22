@@ -129,13 +129,22 @@ test.describe('editor', () => {
     expect(errors).toEqual([]);
   });
 
-  test('shows an error when a font fails to load', async ({ page }) => {
+  test('shows an error when a font fails to load', async ({
+    page,
+    browserName,
+  }) => {
     await page.route(/calculus-[\w-]{8}\.otf$/, (route) => route.abort());
     await page.goto('#/editor');
 
     await expect(page.getByText('Unexpected Application Error!')).toBeVisible();
+    // The message is the browser's own for a failed fetch().
+    const fetchFailed = {
+      chromium: 'Failed to fetch',
+      firefox: 'NetworkError when attempting to fetch resource.',
+      webkit: 'Load failed',
+    }[browserName];
     await expect(
-      page.getByRole('heading', { name: 'Failed to fetch' }),
+      page.getByRole('heading', { name: fetchFailed }),
     ).toBeVisible();
   });
 
