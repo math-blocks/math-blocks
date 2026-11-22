@@ -113,25 +113,46 @@ export const lookupGlyphID = (
  * character the font can't draw. The box is about the size of a capital
  * letter. The "?" comes from the base glyph group, which is always loaded.
  */
+// The placeholder's size and "?" depend only on the font, so they're worked
+// out once per font.
+const placeholderCache = new WeakMap<
+  Font,
+  { readonly metrics: GlyphMetrics; readonly markID: number }
+>();
+
+const getPlaceholder = (
+  font: Font,
+): { readonly metrics: GlyphMetrics; readonly markID: number } => {
+  let placeholder = placeholderCache.get(font);
+  if (!placeholder) {
+    const unitsPerEm = font.head.unitsPerEm;
+    const capHeight = font.getGlyphMetrics(font.getGlyphID('H')).bearingY;
+    const gap = Math.round(0.05 * unitsPerEm);
+    const width = Math.round(0.75 * capHeight);
+    placeholder = {
+      metrics: {
+        advance: width + 2 * gap,
+        bearingX: gap,
+        bearingY: capHeight,
+        width,
+        height: capHeight,
+      },
+      markID: font.getGlyphID('?'),
+    };
+    placeholderCache.set(font, placeholder);
+  }
+  return placeholder;
+};
+
 export const makePlaceholderGlyph = (
   char: string,
   context: Context,
   isDelimiter = false,
 ): Glyph => {
-  const { font } = context.fontData;
-  const unitsPerEm = font.head.unitsPerEm;
-  const capHeight = font.getGlyphMetrics(font.getGlyphID('H')).bearingY;
-  const gap = Math.round(0.05 * unitsPerEm);
-  const width = Math.round(0.75 * capHeight);
+  const { metrics, markID } = getPlaceholder(context.fontData.font);
   return {
-    ...makeGlyph(char, font.getGlyphID('?'), context, isDelimiter),
-    placeholder: {
-      advance: width + 2 * gap,
-      bearingX: gap,
-      bearingY: capHeight,
-      width,
-      height: capHeight,
-    },
+    ...makeGlyph(char, markID, context, isDelimiter),
+    placeholder: metrics,
   };
 };
 
