@@ -33,7 +33,7 @@ const toArrayBuffer = async (data: FontFileData): Promise<ArrayBuffer> =>
  * @example
  * const font = await loadFontSubsets(
  *   ['calculus'],
- *   fromBaseUrl('/fonts/mathblocks-math-a'),
+ *   fromBaseUrl('/fonts/stix-two-math'),
  * );
  */
 export const loadFontSubsets = async (
@@ -62,7 +62,7 @@ export const loadFontSubsets = async (
 
 /**
  * Returns a LoadGroup that fetches `${baseUrl}/${group}.otf`, for subsets
- * hosted in one folder, such as a copy of `assets/subsets/mathblocks-math-a/`.
+ * hosted in one folder, such as a copy of `assets/subsets/stix-two-math/`.
  */
 export const fromBaseUrl = (baseUrl: string): LoadGroup => {
   const base = baseUrl.replace(/\/+$/, '');

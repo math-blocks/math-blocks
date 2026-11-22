@@ -71,7 +71,7 @@ describe('glyphGroupsForRow', () => {
         fs.readFileSync(
           path.join(
             __dirname,
-            '../../../../assets/subsets/mathblocks-math-a',
+            '../../../../assets/subsets/stix-two-math',
             `${group}.otf`,
           ),
         ),
