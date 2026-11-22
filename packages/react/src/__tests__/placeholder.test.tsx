@@ -149,6 +149,38 @@ describe('placeholders', () => {
     );
   });
 
+  test('a delimiter whose construction has no size variants is not a placeholder', () => {
+    // OpenType allows a glyph construction with an assembly and no size
+    // variants. The delimiter should then be drawn with its base glyph.
+    const { font } = full;
+    const parenIDs = new Set([font.getGlyphID('('), font.getGlyphID(')')]);
+    const fontData: FontData = {
+      ...full,
+      font: {
+        ...font,
+        math: {
+          ...font.math,
+          variants: {
+            ...font.math.variants,
+            getVertGlyphConstruction: (glyphID: number) => {
+              const construction =
+                font.math.variants.getVertGlyphConstruction(glyphID);
+              return construction && parenIDs.has(glyphID)
+                ? { ...construction, mathGlyphVariantRecords: [] }
+                : construction;
+            },
+          },
+        },
+      },
+    };
+    const { svg, missing } = renderSvg(
+      parseTex('\\left(\\frac{a}{b}\\right)'),
+      fontData,
+    );
+    expect(countPlaceholders(svg)).toEqual(0);
+    expect(missing).toEqual([]);
+  });
+
   test('draw big operators with limits as placeholders', () => {
     const { svg, missing } = renderSvg(parseTex('∑_{i=0}^{n}i'), baseOnly);
     expect(countPlaceholders(svg)).toEqual(1);

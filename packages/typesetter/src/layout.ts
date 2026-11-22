@@ -493,16 +493,20 @@ type ThresholdOptions = {
 // TODO: special case how we compute the delimiters for rows including "y" or
 // other deep descenders so that we get the same font size as the rest of the
 // glyphs on that row.
-const getDelimiters = (char: string, context: Context): number[] => {
+// Returns the glyph IDs of the delimiter's size variants, smallest first, or
+// null if the font can't draw the delimiter.
+const getDelimiters = (char: string, context: Context): number[] | null => {
   const { font } = context.fontData;
 
   const glyphID = lookupGlyphID(char, context);
   if (glyphID === null) {
-    return [];
+    return null;
   }
   const construction = font.math.variants.getVertGlyphConstruction(glyphID);
 
-  if (!construction) {
+  // A construction can have an assembly and no size variants, in which case
+  // the delimiter is drawn with its base glyph.
+  if (!construction || construction.mathGlyphVariantRecords.length === 0) {
     return [glyphID];
   }
 
@@ -529,7 +533,7 @@ export const makeDelimiter = (
 ): Glyph | InterpolatedGlyph => {
   const glyphIDs = getDelimiters(char, context);
 
-  if (glyphIDs.length === 0) {
+  if (glyphIDs === null) {
     // The font can't draw this delimiter. A placeholder doesn't stretch.
     return makePlaceholderGlyph(char, context, true);
   }

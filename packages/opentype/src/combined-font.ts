@@ -24,8 +24,6 @@ export type CombinedFont = Font & {
   readonly withGroup: (name: string, font: Font) => CombinedFont;
 };
 
-export { GlyphGroupNotLoadedError } from './errors';
-
 // OpenType glyph IDs are 16-bit, so local IDs are always below this.
 export const GLYPH_ID_STRIDE = 0x10000;
 
