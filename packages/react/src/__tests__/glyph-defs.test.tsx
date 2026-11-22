@@ -11,7 +11,7 @@ import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import { combineFonts, getFontData, parse } from '@math-blocks/opentype';
-import type { FontData } from '@math-blocks/opentype';
+import type { Font, FontData } from '@math-blocks/opentype';
 import { parse as parseTex } from '@math-blocks/tex';
 import * as Typesetter from '@math-blocks/typesetter';
 
@@ -24,14 +24,16 @@ const ASSETS = path.join(__dirname, '../../../../assets');
 
 let fontData: FontData;
 let baseOnly: FontData;
+let lmFont: FontData['font'];
 
 beforeAll(async () => {
-  const load = (...segments: readonly string[]) =>
+  const load = (...segments: readonly string[]): Promise<Font> =>
     parse(new Blob([fs.readFileSync(path.join(ASSETS, ...segments))]));
   fontData = getFontData(await load('STIX2Math.otf'), 'STIX2');
   // Only the base subset, so characters in other groups are placeholders.
   const base = await load('subsets', 'stix-two-math', 'base.otf');
   baseOnly = getFontData(combineFonts({ base }), 'STIX2');
+  lmFont = await load('latinmodern-math.otf');
 });
 
 const toMarkup = (element: React.ReactElement): string =>
@@ -152,6 +154,105 @@ describe('glyph definitions', () => {
     expect(svg.match(/<path d="/g)).toHaveLength(2);
     // Throws if a definition is unused.
     expandGlyphUses(svg);
+  });
+
+  describe('fonts that would share a name', () => {
+    // Draws the glyph for 'x' in STIX once with each of the given font data,
+    // all in one scene, using the same glyph ID each time.
+    const renderWithFonts = (fonts: readonly FontData[]): string => {
+      const context: Typesetter.Context = {
+        fontData,
+        baseFontSize: 64,
+        mathStyle: Typesetter.MathStyle.Display,
+        cramped: false,
+        renderMode: Typesetter.RenderMode.Static,
+        operators: [],
+      };
+      const scene = Typesetter.typeset(
+        Editor.builders.row([Editor.builders.char('x')]),
+        context,
+      );
+      const findChar = (
+        node: Typesetter.SceneGraph.Node,
+      ): Typesetter.SceneGraph.Glyph | undefined =>
+        node.type === 'char'
+          ? node
+          : node.type === 'group'
+          ? node.children.map(findChar).find(Boolean)
+          : undefined;
+      const char = findChar(scene.content);
+      if (!char) {
+        throw new Error("no glyph for 'x'");
+      }
+      const chars = fonts.map(
+        (data, i): Typesetter.SceneGraph.Glyph => ({
+          ...char,
+          x: i * 40,
+          glyph: { ...char.glyph, fontData: data },
+        }),
+      );
+      return toMarkup(
+        <SceneRenderer
+          scene={{ ...scene, content: { ...scene.content, children: chars } }}
+        />,
+      );
+    };
+
+    const getDefs = (svg: string): readonly (readonly [string, string])[] =>
+      [...svg.matchAll(/<path id="([^"]+)" d="([^"]*)"><\/path>/g)].map(
+        (match) => [match[1], match[2]] as const,
+      );
+
+    test('different fonts with the same family get separate definitions', () => {
+      const svg = renderWithFonts([
+        fontData,
+        getFontData(lmFont, fontData.fontFamily),
+      ]);
+
+      const defs = getDefs(svg);
+      expect(defs).toHaveLength(2);
+      expect(defs[0][0]).toMatch(/-STIX2-\d+$/);
+      expect(defs[1][0]).toMatch(/-STIX2-2-\d+$/);
+      // Each <use> draws its own font's outline.
+      expect(defs[0][1]).not.toEqual(defs[1][1]);
+      expect(getHrefs(svg)).toEqual(defs.map(([id]) => id));
+    });
+
+    test('families that sanitize to the same name get separate definitions', () => {
+      const svg = renderWithFonts([
+        getFontData(fontData.font, 'A B'),
+        getFontData(lmFont, 'A_B'),
+      ]);
+
+      const ids = getDefs(svg).map(([id]) => id);
+      expect(ids).toHaveLength(2);
+      expect(ids[0]).toMatch(/-A_B-\d+$/);
+      expect(ids[1]).toMatch(/-A_B-2-\d+$/);
+    });
+
+    test('a suffixed name never reuses an existing family', () => {
+      // The second 'A' can't be named 'A-2', since a font already has it.
+      const svg = renderWithFonts([
+        getFontData(fontData.font, 'A'),
+        getFontData(baseOnly.font, 'A-2'),
+        getFontData(lmFont, 'A'),
+      ]);
+
+      const ids = getDefs(svg).map(([id]) => id.replace(/^mb[^-]*-/, ''));
+      expect(ids).toHaveLength(3);
+      expect(new Set(ids).size).toBe(3);
+      expect(ids[2]).toMatch(/^A-3-\d+$/);
+    });
+
+    test('the same font under two font data objects shares definitions', () => {
+      const svg = renderWithFonts([
+        fontData,
+        getFontData(fontData.font, fontData.fontFamily),
+      ]);
+
+      expect(getDefs(svg)).toHaveLength(1);
+      expect(getHrefs(svg)).toHaveLength(2);
+    });
   });
 
   test('interpolated glyphs draw their own <path>', () => {
