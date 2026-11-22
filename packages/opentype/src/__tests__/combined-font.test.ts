@@ -19,8 +19,8 @@ describe('combineFonts', () => {
   let font: CombinedFont;
 
   beforeAll(async () => {
-    base = await loadSubset('mathblocks-math-a', 'base');
-    calculus = await loadSubset('mathblocks-math-a', 'calculus');
+    base = await loadSubset('stix-two-math', 'base');
+    calculus = await loadSubset('stix-two-math', 'calculus');
     font = combineFonts({ base });
   });
 
@@ -73,7 +73,7 @@ describe('combineFonts', () => {
     expect(intID).toEqual(calculusSlot * 0x10000 + calculus.getGlyphID('∫'));
 
     // Loading another group first, or afterwards, doesn't change the IDs.
-    const trig = await loadSubset('mathblocks-math-a', 'trig-geometry');
+    const trig = await loadSubset('stix-two-math', 'trig-geometry');
     const trigFirst = font.withGroup('trig-geometry', trig);
     expect(trigFirst.withGroup('calculus', calculus).getGlyphID('∫')).toEqual(
       intID,
@@ -117,7 +117,7 @@ describe('combineFonts', () => {
     expect(() => font.withGroup('chemistry', calculus)).toThrow(
       'Unknown glyph group "chemistry"',
     );
-    const otherCalculus = await loadSubset('mathblocks-math-b', 'calculus');
+    const otherCalculus = await loadSubset('latin-modern-math', 'calculus');
     expect(() => font.withGroup('calculus', otherCalculus)).toThrow(
       'Can\'t add "calculus" from "MathBlocks Math B" to a combined font made from "MathBlocks Math A"',
     );
