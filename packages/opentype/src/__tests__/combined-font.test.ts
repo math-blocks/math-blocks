@@ -1,4 +1,5 @@
-import { combineFonts, GlyphGroupNotLoadedError } from '../combined-font';
+import { combineFonts } from '../combined-font';
+import { GlyphGroupNotLoadedError } from '../errors';
 import type { CombinedFont } from '../combined-font';
 import { glyphGroups, glyphGroupsForText } from '../glyph-groups';
 import {

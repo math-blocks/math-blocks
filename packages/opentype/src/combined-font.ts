@@ -1,3 +1,4 @@
+import { GlyphGroupNotLoadedError, GlyphNotFoundError } from './errors';
 import { glyphGroups, getGlyphGroup } from './glyph-groups';
 
 import type { Font, GlyphMetrics } from './types';
@@ -22,23 +23,6 @@ export type CombinedFont = Font & {
    */
   readonly withGroup: (name: string, font: Font) => CombinedFont;
 };
-
-/** Thrown by `getGlyphID` for a character whose group isn't loaded yet. */
-export class GlyphGroupNotLoadedError extends Error {
-  /** The name of the group to load, e.g. "calculus". */
-  readonly group: string;
-  readonly codePoint: number;
-
-  constructor(group: string, codePoint: number) {
-    const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
-    super(
-      `U+${hex} is in the "${group}" glyph group, which hasn't been loaded`,
-    );
-    this.name = 'GlyphGroupNotLoadedError';
-    this.group = group;
-    this.codePoint = codePoint;
-  }
-}
 
 // OpenType glyph IDs are 16-bit, so local IDs are always below this.
 export const GLYPH_ID_STRIDE = 0x10000;
@@ -153,8 +137,7 @@ const build = (parts: ReadonlyMap<number, Font>): CombinedFont => {
       const group =
         codePoint === undefined ? undefined : getGlyphGroup(codePoint);
       if (codePoint === undefined || !group) {
-        // Same message as a single font's getGlyphID.
-        throw new Error(`No glyphID in font for given codePoint: ${codePoint}`);
+        throw new GlyphNotFoundError(codePoint);
       }
       const slot = slotByName.get(group.name) as number;
       const part = parts.get(slot);

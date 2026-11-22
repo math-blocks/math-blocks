@@ -6,7 +6,12 @@ import * as OpenType from '@math-blocks/opentype';
 
 import { lerpPath } from './lerp';
 
-const Line = ({ id, style, thickness, ...props }: SceneGraph.Line) => {
+const Line = ({
+  id,
+  style,
+  thickness,
+  ...props
+}: SceneGraph.Line): React.ReactElement => {
   return (
     <line
       {...props}
@@ -17,7 +22,7 @@ const Line = ({ id, style, thickness, ...props }: SceneGraph.Line) => {
   );
 };
 
-const Rect = ({ fill, id, ...props }: SceneGraph.Rect) => {
+const Rect = ({ fill, id, ...props }: SceneGraph.Rect): React.ReactElement => {
   return <rect {...props} fill={fill} stroke="none" />;
 };
 
@@ -48,7 +53,65 @@ const getPath = (glyph: OpenType.Glyph): string => {
   return svgPathFromFontPath(path);
 };
 
-const Glyph = ({ x, y, glyph, style }: SceneGraph.Glyph) => {
+// Draws a glyph the font couldn't provide as a rounded box with a "?" in it.
+const PlaceholderGlyph = ({
+  x,
+  y,
+  glyph,
+  style,
+  placeholder,
+}: SceneGraph.Glyph & {
+  readonly placeholder: OpenType.GlyphMetrics;
+}): React.ReactElement => {
+  const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
+  const { font } = glyph.fontData;
+  const scale = glyph.size / font.head.unitsPerEm;
+  const strokeWidth = glyph.size * font.math.constants.fractionRuleThickness;
+
+  // The box, inset by half the stroke so its outside edge matches the metrics.
+  const left = x + placeholder.bearingX * scale + strokeWidth / 2;
+  const top = y - placeholder.bearingY * scale + strokeWidth / 2;
+  const width = placeholder.width * scale - strokeWidth;
+  const height = placeholder.height * scale - strokeWidth;
+
+  // The "?", scaled down and centred in the box.
+  const mark = font.getGlyphMetrics(glyph.glyphID);
+  const markScale = scale * 0.7;
+  const markX = left + width / 2 - (mark.bearingX + mark.width / 2) * markScale;
+  const markY =
+    top + height / 2 + (mark.bearingY - mark.height / 2) * markScale;
+
+  return (
+    <g
+      id={id}
+      style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
+      aria-hidden="true"
+    >
+      <rect
+        x={left}
+        y={top}
+        width={width}
+        height={height}
+        rx={width * 0.2}
+        fill="none"
+        stroke={style.fill ?? 'currentColor'}
+        strokeWidth={strokeWidth}
+      />
+      <path
+        fill={style.fill}
+        d={getPath(font.getGlyph(glyph.glyphID))}
+        transform={`translate(${markX}, ${markY}) scale(${markScale}, -${markScale})`}
+      />
+    </g>
+  );
+};
+
+const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
+  const { x, y, glyph, style } = props;
+  if (glyph.placeholder) {
+    return <PlaceholderGlyph {...props} placeholder={glyph.placeholder} />;
+  }
+
   const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
 
   const { font } = glyph.fontData;
@@ -74,7 +137,7 @@ const InterpolatedGlyph = ({
   interpolatedGlyph,
   amount,
   style,
-}: SceneGraph.InterpolatedGlyph) => {
+}: SceneGraph.InterpolatedGlyph): React.ReactElement => {
   const id =
     typeof interpolatedGlyph.id !== 'undefined'
       ? String(interpolatedGlyph.id)
@@ -102,7 +165,13 @@ const InterpolatedGlyph = ({
   );
 };
 
-const Group = ({ x, y, children, style, id }: SceneGraph.Group) => {
+const Group = ({
+  x,
+  y,
+  children,
+  style,
+  id,
+}: SceneGraph.Group): React.ReactElement => {
   const _id = typeof id !== 'undefined' ? String(id) : undefined;
 
   return (
@@ -119,7 +188,7 @@ const Group = ({ x, y, children, style, id }: SceneGraph.Group) => {
   );
 };
 
-const Node = (props: SceneGraph.Node) => {
+const Node = (props: SceneGraph.Node): React.ReactElement => {
   switch (props.type) {
     case 'char':
       return <Glyph {...props} />;

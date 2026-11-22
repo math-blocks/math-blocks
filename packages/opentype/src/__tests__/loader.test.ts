@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import vm from 'vm';
 
 import { fromBaseUrl, loadFontSubsets } from '../loader';
 import { ASSETS } from '../test-util';
@@ -53,6 +54,22 @@ describe('loadFontSubsets', () => {
       Promise.resolve({ arrayBuffer: () => loader.load(group) }),
     );
     expect(() => font.getGlyphID('∈')).not.toThrow();
+  });
+
+  test('accepts an ArrayBuffer from another realm', async () => {
+    // `instanceof ArrayBuffer` is false for buffers made in another realm,
+    // such as an iframe, a worker or a different test environment.
+    const loader = diskLoader();
+    const font = await loadFontSubsets(['calculus'], async (group) => {
+      const local = new Uint8Array(await loader.load(group));
+      const foreign = vm.runInNewContext(
+        `new ArrayBuffer(${local.byteLength})`,
+      ) as ArrayBuffer;
+      expect(foreign instanceof ArrayBuffer).toBe(false);
+      new Uint8Array(foreign).set(local);
+      return foreign;
+    });
+    expect(() => font.getGlyphID('∫')).not.toThrow();
   });
 
   test('rejects unknown groups without loading anything', async () => {

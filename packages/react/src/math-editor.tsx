@@ -5,14 +5,15 @@ import * as Editor from '@math-blocks/editor';
 import * as Typesetter from '@math-blocks/typesetter';
 import { macros } from '@math-blocks/tex';
 
-import { FontDataContext } from './font-data-context';
+import { useFontData } from './font-data-context';
+import { useMissingGlyphs } from './use-missing-glyphs';
 import styles from './editor.module.css';
 import SceneRenderer from './scene-renderer';
 import useEventListener from './use-event-listener';
 
 import type { EditingEvent } from './math-keypad';
 
-const { useEffect, useState, useRef, useContext, useCallback, useMemo } = React;
+const { useEffect, useState, useRef, useCallback, useMemo } = React;
 
 type Props = {
   // The initial value for the editor
@@ -35,6 +36,12 @@ type Props = {
 
   // Renders bounding boxes around each group and glyph.
   readonly showHitboxes?: boolean;
+
+  // Called, after rendering, for each character the font can't draw (for
+  // example because its glyph group isn't loaded), which is drawn as a
+  // placeholder instead. `group` is set when the character's glyph group isn't
+  // loaded. It's called again only when the set of missing characters changes.
+  readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
 };
 
 const reducer = Editor.getReducer(macros);
@@ -112,7 +119,8 @@ export const MathEditor = (props: Props): React.ReactNode => {
   const [active, setActive] = useState<boolean>(false);
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
-  const fontData = useContext(FontDataContext);
+  const fontData = useFontData('MathEditor');
+  const recordMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -285,6 +293,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     selection: state.selection,
     operators: operators,
+    recordMissingGlyph,
   };
 
   // TODO: properly type this
