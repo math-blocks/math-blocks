@@ -3,7 +3,7 @@ import type { Mutable } from 'utility-types';
 
 import * as Layout from '../layout';
 
-import type { Context, HBox, VBox } from '../types';
+import type { Context, Glyph, HBox, VBox } from '../types';
 import { RenderMode } from '../enums';
 
 const AccentMap: Record<Editor.AccentType, string> = {
@@ -31,23 +31,28 @@ export const typesetAccent = (
 
   const char = AccentMap[node.accent];
   const { font } = context.fontData;
-  let glyphID = font.getGlyphID(char);
+  let glyphID = Layout.lookupGlyphID(char, context);
 
-  const construction = font.math.variants.getHorizGlyphConstruction(glyphID);
+  let accent: Glyph;
+  if (glyphID === null) {
+    accent = Layout.makePlaceholderGlyph(char, context, true);
+  } else {
+    const construction = font.math.variants.getHorizGlyphConstruction(glyphID);
 
-  if (node.children[0].children.length > 1 && construction) {
-    for (const variant of construction.mathGlyphVariantRecords) {
-      const { variantGlyph, advanceMeasurement } = variant;
-      const realAdvance =
-        (fontSize * advanceMeasurement) / font.head.unitsPerEm;
-      if (Math.floor(realAdvance) < Math.ceil(inner.width)) {
-        glyphID = variantGlyph;
+    if (node.children[0].children.length > 1 && construction) {
+      for (const variant of construction.mathGlyphVariantRecords) {
+        const { variantGlyph, advanceMeasurement } = variant;
+        const realAdvance =
+          (fontSize * advanceMeasurement) / font.head.unitsPerEm;
+        if (Math.floor(realAdvance) < Math.ceil(inner.width)) {
+          glyphID = variantGlyph;
+        }
       }
     }
+    accent = Layout.makeGlyph(char, glyphID, context, true);
   }
 
-  const metrics = font.getGlyphMetrics(glyphID);
-  const accent = Layout.makeGlyph(char, glyphID, context, true);
+  const metrics = accent.placeholder ?? font.getGlyphMetrics(accent.glyphID);
   const box = Layout.makeStaticHBox([accent], context) as Mutable<HBox>;
 
   // TODO: Use the MathTopAccentAttachment table to determine how much to

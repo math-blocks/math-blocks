@@ -1,5 +1,7 @@
 import { Blob } from 'buffer';
 
+import { GlyphNotFoundError } from './errors';
+
 import { parseCFF } from './tables/cff';
 import { parseCmap } from './tables/cmap';
 import { parseMATH } from './tables/math';
@@ -128,7 +130,7 @@ export const parse = async (blob: Blob): Promise<Font> => {
       }
       const glyphID = glyphIndexMap[codePoint];
       if (!glyphID) {
-        throw new Error(`No glyphID in font for given codePoint: ${codePoint}`);
+        throw new GlyphNotFoundError(codePoint);
       }
       return glyphID;
     },

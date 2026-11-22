@@ -10,8 +10,9 @@ import { diffChars } from 'diff';
 import * as Core from '@math-blocks/core';
 import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
-import { getFontData, parse } from '@math-blocks/opentype';
+import { combineFonts, getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
+import * as Tex from '@math-blocks/tex';
 import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
@@ -897,5 +898,31 @@ describe('renderer', () => {
         </FontDataContext.Provider>,
       ).toMatchSVGSnapshot();
     });
+  });
+});
+
+describe("placeholders for characters the font can't draw", () => {
+  // Only the base subset of STIX, so characters in other groups render as
+  // placeholders.
+  const loadBaseOnly = async (): Promise<FontData> => {
+    const fontPath = path.join(
+      __dirname,
+      '../../../../assets/subsets/mathblocks-math-a/base.otf',
+    );
+    const base = await parse(new Blob([fs.readFileSync(fontPath)]));
+    return getFontData(combineFonts({ base }), 'STIX2');
+  };
+
+  test.each([
+    ['greek', 'θ+1'],
+    ['integral (display)', '∫_0^1x'],
+    ['delimiters', '\\left⟨\\frac{a}{b}\\right⟩'],
+  ])('%s', async (_name, tex) => {
+    const fontData = await loadBaseOnly();
+    expect(
+      <FontDataContext.Provider value={fontData}>
+        <MathRenderer row={Tex.parse(tex)} fontSize={60} />
+      </FontDataContext.Provider>,
+    ).toMatchSVGSnapshot();
   });
 });

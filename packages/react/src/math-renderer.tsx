@@ -4,10 +4,8 @@ import * as Editor from '@math-blocks/editor';
 import * as Typesetter from '@math-blocks/typesetter';
 import { macros } from '@math-blocks/tex';
 
-import { FontDataContext } from './font-data-context';
+import { useFontData } from './font-data-context';
 import SceneRenderer from './scene-renderer';
-
-const { useContext } = React;
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -25,13 +23,18 @@ type Props = {
 
   // Renders bounding boxes around each group and glyph.
   readonly showHitboxes?: boolean;
+
+  // Called for each character the font can't draw (for example because its
+  // glyph group isn't loaded), which is drawn as a placeholder instead.
+  // `group` is set when the character's glyph group isn't loaded.
+  readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
 };
 
 // TODO: expose other settings such as display style as props
 // TODO: add an onBlur prop
 export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
   (props, ref) => {
-    const fontData = useContext(FontDataContext);
+    const fontData = useFontData('MathRenderer');
     const {
       style,
       fontSize = 64,
@@ -50,6 +53,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
       selection: selection,
       operators: operators,
+      onMissingGlyph: props.onMissingGlyph,
     };
 
     const options = { showCursor: props.showCursor, debug: true };
