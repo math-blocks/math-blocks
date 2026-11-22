@@ -123,12 +123,10 @@ expect.extend({
     // whereas jest-snapshots can be multi-test per file.
 
     // TODO: format the output
-    // TEMPORARY: expand each <use> into the <path> it references so that the
-    // output of the deduplicating renderer can be compared with the snapshots
-    // the previous renderer wrote. This shows that no glyph moved.
-    const output = TestUtil.expandGlyphUses(
-      ReactDOMServer.renderToStaticMarkup(element),
-    );
+    const output = ReactDOMServer.renderToStaticMarkup(element);
+    // Throws if a <use> references a missing glyph definition or if a
+    // definition is never used.
+    TestUtil.expandGlyphUses(output);
     const svgText = format(
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output,
     ).replace(/\r\n/g, '\n');

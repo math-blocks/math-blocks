@@ -90,7 +90,7 @@ describe('glyph definitions', () => {
     const svg = toMarkup(<MathRenderer row={parseTex('x+x')} />);
 
     for (const id of getDefIds(svg)) {
-      expect(id).toMatch(/^mb[A-Za-z0-9_-]*-glyph-STIX2-\d+$/);
+      expect(id).toMatch(/^mb[A-Za-z0-9_-]*-STIX2-\d+$/);
     }
   });
 

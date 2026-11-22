@@ -61,7 +61,7 @@ const getGlyphKey = (glyph: SceneGraph.Glyph['glyph']): string => {
 const GlyphDefsContext = React.createContext<string>('');
 
 const getGlyphDefId = (prefix: string, key: string): string =>
-  `${prefix}-glyph-${key}`;
+  `${prefix}-${key}`;
 
 type GlyphDef = {
   readonly key: string;
