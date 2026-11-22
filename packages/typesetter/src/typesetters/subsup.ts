@@ -48,7 +48,8 @@ export const typesetSubsup = (
 
   if (prevLayoutNode) {
     let italicsCorrection = 0;
-    if (prevLayoutNode.type === 'Glyph') {
+    // A placeholder has no italic correction of its own.
+    if (prevLayoutNode.type === 'Glyph' && !prevLayoutNode.placeholder) {
       const correction = font.math.glyphInfo.getItalicCorrection(
         prevLayoutNode.glyphID,
       );

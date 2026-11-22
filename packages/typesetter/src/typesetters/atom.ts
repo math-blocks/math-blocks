@@ -26,19 +26,15 @@ export const typesetAtom = (
   node: Editor.types.CharAtom,
   context: Context,
 ): Glyph => {
-  const { font } = context.fontData;
-
   let glyph: Mutable<Glyph>;
 
   // Convert individual glyphs to italic glyphs if they exist in the
   // current font.
   if (/[a-z]/.test(node.value) && !context.operator) {
     const char = context.macro ? node.value : getMathItalicChar(node.value);
-    const glyphID = font.getGlyphID(char);
-    glyph = Layout.makeGlyph(char, glyphID, context);
+    glyph = Layout.makeGlyphForChar(char, context);
   } else {
-    const glyphID = font.getGlyphID(node.value);
-    glyph = Layout.makeGlyph(node.value, glyphID, context);
+    glyph = Layout.makeGlyphForChar(node.value, context);
   }
 
   glyph.id = node.id;

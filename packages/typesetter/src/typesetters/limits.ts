@@ -74,13 +74,20 @@ export const typesetLimits = (
     const { font } = context.fontData;
 
     const char = node.inner.value;
-    let glyphID = font.getGlyphID(char);
-    const construction = font.math.variants.getVertGlyphConstruction(glyphID);
-    if (construction) {
-      glyphID = construction.mathGlyphVariantRecords[1].variantGlyph;
+    const glyphID = Layout.lookupGlyphID(char, context);
+    if (glyphID === null) {
+      inner = Layout.makePlaceholderGlyph(char, context, true);
+    } else {
+      // The integral's second size variant suits inline limits. Fall back to
+      // the base glyph when the font has fewer than two variants.
+      const construction = font.math.variants.getVertGlyphConstruction(glyphID);
+      inner = Layout.makeGlyph(
+        char,
+        construction?.mathGlyphVariantRecords[1]?.variantGlyph ?? glyphID,
+        context,
+        true,
+      );
     }
-
-    inner = Layout.makeGlyph(char, glyphID, context, true);
 
     const subsup: Editor.types.CharSubSup = {
       type: Editor.NodeType.SubSup,

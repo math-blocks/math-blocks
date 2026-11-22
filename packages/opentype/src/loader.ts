@@ -18,8 +18,13 @@ export type FontFileData =
 /** Returns the contents of the subset file for a glyph group. */
 export type LoadGroup = (group: string) => Promise<FontFileData>;
 
+// Checks for an arrayBuffer() method rather than using `instanceof
+// ArrayBuffer`, which fails for an ArrayBuffer from another realm (an iframe,
+// a worker, or a different test environment).
 const toArrayBuffer = async (data: FontFileData): Promise<ArrayBuffer> =>
-  data instanceof ArrayBuffer ? data : data.arrayBuffer();
+  'arrayBuffer' in data && typeof data.arrayBuffer === 'function'
+    ? data.arrayBuffer()
+    : (data as ArrayBuffer);
 
 /**
  * Loads the font subsets for the given glyph groups and combines them into a
