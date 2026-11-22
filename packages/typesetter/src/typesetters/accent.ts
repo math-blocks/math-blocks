@@ -6,7 +6,8 @@ import * as Layout from '../layout';
 import type { Context, HBox, VBox } from '../types';
 import { RenderMode } from '../enums';
 
-const AccentMap: Record<Editor.AccentType, string> = {
+// The character drawn for each accent type.
+export const AccentMap: Record<Editor.AccentType, string> = {
   [Editor.AccentType.Grave]: '\u0300',
   [Editor.AccentType.Acute]: '\u0301',
   [Editor.AccentType.Hat]: '\u0302',
