@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { ByteSource } from '../byte-source';
 
 type EncodingRecord = {
   readonly platformID: number; // uint16
@@ -13,7 +13,7 @@ type CmapHeader = {
 };
 
 const parseEncodingRecords = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
   numTables: number,
 ): Promise<EncodingRecord[]> => {
@@ -37,7 +37,7 @@ const parseEncodingRecords = async (
   return result;
 };
 
-const parseCmapHeader = async (blob: Blob): Promise<CmapHeader> => {
+const parseCmapHeader = async (blob: ByteSource): Promise<CmapHeader> => {
   let buffer, view;
 
   buffer = await blob.slice(0, 4).arrayBuffer();
@@ -84,7 +84,7 @@ const getGlyphIndexMap = (
 };
 
 const parseFormat12 = async (
-  blob: Blob,
+  blob: ByteSource,
   subtableOffset: number,
 ): Promise<Record<number, number>> => {
   const format12size = 2 + 2 + 4 + 4 + 4;
@@ -122,7 +122,7 @@ const parseFormat12 = async (
 // Format 4: segment mapping to delta values. Only covers the BMP.
 // https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-4-segment-mapping-to-delta-values
 const parseFormat4 = async (
-  blob: Blob,
+  blob: ByteSource,
   subtableOffset: number,
 ): Promise<Record<number, number>> => {
   const headerBuffer = await blob
@@ -183,7 +183,7 @@ const parseFormat4 = async (
 // full repertoire subtable (3, 10) when there is one, and falls back to the
 // Windows Unicode BMP subtable (3, 1) otherwise.
 export const parseCmap = async (
-  blob: Blob,
+  blob: ByteSource,
 ): Promise<Record<number, number>> => {
   const cmap = await parseCmapHeader(blob);
 

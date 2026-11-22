@@ -5,8 +5,14 @@ node_modules
 dist
 docs
 coverage
+# Playwright output
+test-results
+playwright-report
 out
 packages/*/out
 demo/out
 !dist/_redirects
 .pr-review-summary.md
+
+# Python bytecode from scripts/
+__pycache__/

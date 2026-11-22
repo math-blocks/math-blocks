@@ -5,6 +5,8 @@ import { Blob } from 'buffer';
 import type { Font, TableDirectory } from '../types';
 
 import { parse, parseDirectory } from '../parser';
+import { describeCharacter } from '../test-util';
+import { getGlyphMetrics } from '../util';
 
 describe('parseDirectory', () => {
   let dir: TableDirectory;
@@ -206,5 +208,56 @@ describe('parse latinmodern-math.otf', () => {
   test('FontBBox with a negative int16 operand', () => {
     // Latin Modern encodes the FontBBox yMin, -3060, as an int16 (operand 28).
     expect(font.cff.topDict.FontBBox).toEqual([-1042, -3060, 4082, 3560]);
+  });
+});
+
+describe('parse from an ArrayBuffer', () => {
+  test('reads the same font as from a Blob', async () => {
+    const file = fs.readFileSync(
+      path.join(__dirname, '../../../../assets/STIX2Math.otf'),
+    );
+    const arrayBuffer = new ArrayBuffer(file.byteLength);
+    new Uint8Array(arrayBuffer).set(file);
+
+    const fromBlob = await parse(new Blob([file]));
+    const fromBuffer = await parse(arrayBuffer);
+
+    expect(fromBuffer.head).toEqual(fromBlob.head);
+    expect(fromBuffer.cff).toEqual(fromBlob.cff);
+    expect(fromBuffer.math.constants).toEqual(fromBlob.math.constants);
+    // Characters from each table: plain letters, a delimiter with size
+    // variants and an assembly, and an accent.
+    for (const char of ['x', 'A', '(', '∫', '̂']) {
+      expect(describeCharacter(fromBuffer, char.codePointAt(0) ?? 0)).toEqual(
+        describeCharacter(fromBlob, char.codePointAt(0) ?? 0),
+      );
+    }
+  });
+});
+
+describe('getGlyphMetrics', () => {
+  let font: Font;
+
+  beforeAll(async () => {
+    const file = fs.readFileSync(
+      path.join(__dirname, '../../../../assets/STIX2Math.otf'),
+    );
+    font = await parse(new Blob([file]));
+  });
+
+  test('works out the metrics from the glyph outline', () => {
+    for (const char of ['x', 'H', '(', '∫', ' ']) {
+      const gid = font.getGlyphID(char);
+      expect(font.getGlyphMetrics(gid)).toEqual(
+        getGlyphMetrics(font.getGlyph(gid)),
+      );
+    }
+  });
+
+  test('works them out once per glyph', () => {
+    const x = font.getGlyphID('x');
+    const metrics = font.getGlyphMetrics(x);
+    expect(font.getGlyphMetrics(x)).toBe(metrics);
+    expect(font.getGlyphMetrics(font.getGlyphID('y'))).not.toBe(metrics);
   });
 });

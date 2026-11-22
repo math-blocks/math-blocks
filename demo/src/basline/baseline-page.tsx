@@ -1,17 +1,14 @@
 import * as React from 'react';
-import type { Blob } from 'buffer';
 
 import { builders as b } from '@math-blocks/editor';
 import { MathRenderer, FontDataContext } from '@math-blocks/react';
-import { parse, getFontData } from '@math-blocks/opentype';
-import type { FontData } from '@math-blocks/opentype';
 import {
   RadicalDegreeAlgorithm,
   MathStyle,
   RenderMode,
 } from '@math-blocks/typesetter';
 
-import stix2 from '../../../assets/STIX2Math.otf';
+import { useFont } from '../shared/fonts';
 
 const simpleRow = b.row([
   b.char('2'),
@@ -27,18 +24,7 @@ const simpleRow = b.row([
 ]);
 
 const BaselinePage: React.FunctionComponent = () => {
-  const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(stix2);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      setStixFontData(getFontData(font, 'STIX2'));
-    };
-
-    loadFont();
-  }, []);
+  const stixFontData = useFont('stix-two-math');
 
   if (!stixFontData) {
     return null;

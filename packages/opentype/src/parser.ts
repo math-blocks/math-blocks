@@ -1,4 +1,7 @@
-import { Blob } from 'buffer';
+import { fromArrayBuffer } from './byte-source';
+import type { ByteSource } from './byte-source';
+
+import { GlyphNotFoundError } from './errors';
 
 import { parseCFF } from './tables/cff';
 import { parseCmap } from './tables/cmap';
@@ -7,7 +10,7 @@ import { parseHead } from './tables/head';
 
 import { getGlyphMetrics } from './util';
 
-import type { Font, TableRecord, TableDirectory } from './types';
+import type { Font, GlyphMetrics, TableRecord, TableDirectory } from './types';
 
 const parseTag = (view: DataView, offset = 0): string => {
   return [
@@ -21,7 +24,7 @@ const parseTag = (view: DataView, offset = 0): string => {
 };
 
 const parseTableRecords = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
   numTables: number,
 ): Promise<Record<string, TableRecord>> => {
@@ -49,7 +52,9 @@ const parseTableRecords = async (
   return result;
 };
 
-export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
+export const parseDirectory = async (
+  blob: ByteSource,
+): Promise<TableDirectory> => {
   const byteCount = 4 + 8;
 
   const buffer = await blob.slice(0, byteCount).arrayBuffer();
@@ -69,7 +74,18 @@ export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
   return dir;
 };
 
-export const parse = async (blob: Blob): Promise<Font> => {
+/**
+ * Parses an OpenType font with a MATH table and CFF outlines. `data` is the
+ * font file: a Blob, or an ArrayBuffer.
+ */
+export const parse = async (data: ByteSource | ArrayBuffer): Promise<Font> => {
+  // Checks for arrayBuffer() rather than using `instanceof ArrayBuffer`, which
+  // fails for an ArrayBuffer from another realm (an iframe, a worker, or a
+  // different test environment).
+  const blob =
+    'arrayBuffer' in data && typeof data.arrayBuffer === 'function'
+      ? data
+      : fromArrayBuffer(data as ArrayBuffer);
   const dir = await parseDirectory(blob);
 
   const headTableRecord = dir.tableRecords['head'];
@@ -113,6 +129,11 @@ export const parse = async (blob: Blob): Promise<Font> => {
   );
   const cff = await parseCFF(cffBlob);
 
+  // The typesetter asks for the same glyphs' metrics many times per render,
+  // and working them out means scanning the glyph's whole outline, so keep
+  // them. getGlyph already caches the glyphs themselves.
+  const metricsCache = new Map<number, GlyphMetrics>();
+
   const font: Font = {
     cff: {
       name: cff.name,
@@ -128,13 +149,17 @@ export const parse = async (blob: Blob): Promise<Font> => {
       }
       const glyphID = glyphIndexMap[codePoint];
       if (!glyphID) {
-        throw new Error(`No glyphID in font for given codePoint: ${codePoint}`);
+        throw new GlyphNotFoundError(codePoint);
       }
       return glyphID;
     },
-    getGlyphMetrics: (gid: number) => {
-      const glyph = cff.getGlyph(gid);
-      return getGlyphMetrics(glyph);
+    getGlyphMetrics: (gid: number): GlyphMetrics => {
+      let metrics = metricsCache.get(gid);
+      if (!metrics) {
+        metrics = getGlyphMetrics(cff.getGlyph(gid));
+        metricsCache.set(gid, metrics);
+      }
+      return metrics;
     },
   };
 
