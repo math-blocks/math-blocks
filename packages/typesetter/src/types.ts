@@ -1,7 +1,7 @@
 import { MathStyle, RenderMode, RadicalDegreeAlgorithm } from './enums';
 
 import type { Selection } from '@math-blocks/editor';
-import type { FontData } from '@math-blocks/opentype';
+import type { FontData, GlyphMetrics } from '@math-blocks/opentype';
 
 export type Context = {
   readonly fontData: FontData;
@@ -16,6 +16,10 @@ export type Context = {
   readonly renderMode: RenderMode;
   readonly radicalDegreeAlgorithm?: RadicalDegreeAlgorithm;
   readonly selection?: Selection;
+  // Called for each character the font can't draw, which is drawn as a
+  // placeholder instead. `group` is set when the character's glyph group
+  // isn't loaded. It can be called more than once per character.
+  readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
 };
 
 export type Dist = number;
@@ -77,6 +81,10 @@ export type Glyph = {
   readonly fontData: FontData;
   readonly pending?: boolean;
   readonly isDelimiter: boolean;
+  // Set when the font can't draw `char`, for example because its glyph group
+  // isn't loaded. The glyph is then drawn as a placeholder box of this size
+  // (in font units), and `glyphID` is the "?" drawn inside it.
+  readonly placeholder?: GlyphMetrics;
 } & Common;
 
 export type InterpolatedGlyph = {

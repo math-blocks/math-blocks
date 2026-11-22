@@ -1,4 +1,8 @@
 import { UnreachableCaseError } from '@math-blocks/core';
+import {
+  GlyphGroupNotLoadedError,
+  GlyphNotFoundError,
+} from '@math-blocks/opentype';
 import type { Font, GlyphMetrics } from '@math-blocks/opentype';
 
 import { MathStyle } from './enums';
@@ -81,6 +85,71 @@ export const makeGlyph = (
   };
 };
 
+/**
+ * Returns the glyph ID for `char`, or null if the font can't draw it (for
+ * example because its glyph group isn't loaded). Missing characters are
+ * reported to `context.onMissingGlyph`.
+ */
+export const lookupGlyphID = (
+  char: string,
+  context: Context,
+): number | null => {
+  try {
+    return context.fontData.font.getGlyphID(char);
+  } catch (e) {
+    if (!(e instanceof GlyphNotFoundError)) {
+      throw e;
+    }
+    context.onMissingGlyph?.(
+      char,
+      e instanceof GlyphGroupNotLoadedError ? e.group : undefined,
+    );
+    return null;
+  }
+};
+
+/**
+ * Returns a glyph that's drawn as a placeholder box with a "?" in it, for a
+ * character the font can't draw. The box is about the size of a capital
+ * letter. The "?" comes from the base glyph group, which is always loaded.
+ */
+export const makePlaceholderGlyph = (
+  char: string,
+  context: Context,
+  isDelimiter = false,
+): Glyph => {
+  const { font } = context.fontData;
+  const unitsPerEm = font.head.unitsPerEm;
+  const capHeight = font.getGlyphMetrics(font.getGlyphID('H')).bearingY;
+  const gap = Math.round(0.05 * unitsPerEm);
+  const width = Math.round(0.75 * capHeight);
+  return {
+    ...makeGlyph(char, font.getGlyphID('?'), context, isDelimiter),
+    placeholder: {
+      advance: width + 2 * gap,
+      bearingX: gap,
+      bearingY: capHeight,
+      width,
+      height: capHeight,
+    },
+  };
+};
+
+/**
+ * Returns a glyph for `char`, or a placeholder glyph if the font can't draw
+ * it.
+ */
+export const makeGlyphForChar = (
+  char: string,
+  context: Context,
+  isDelimiter = false,
+): Glyph => {
+  const glyphID = lookupGlyphID(char, context);
+  return glyphID === null
+    ? makePlaceholderGlyph(char, context, isDelimiter)
+    : makeGlyph(char, glyphID, context, isDelimiter);
+};
+
 export const makeInterpolatedGlyph = (
   char: string,
   glyphID1: number,
@@ -102,9 +171,13 @@ export const makeInterpolatedGlyph = (
   };
 };
 
+// A placeholder glyph has its own metrics; every other glyph uses the font's.
+const getMetrics = (glyph: Glyph): GlyphMetrics =>
+  glyph.placeholder ?? glyph.fontData.font.getGlyphMetrics(glyph.glyphID);
+
 export const getCharAdvance = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
-  const metrics = font.getGlyphMetrics(glyph.glyphID);
+  const metrics = getMetrics(glyph);
   const unitsPerEm = font.head.unitsPerEm;
   if (!metrics) {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
@@ -136,7 +209,7 @@ export const getInterpolatedCharAdvance = (
 
 export const getCharBearingX = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
-  const metrics = font.getGlyphMetrics(glyph.glyphID);
+  const metrics = getMetrics(glyph);
   const unitsPerEm = font.head.unitsPerEm;
   if (!metrics) {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
@@ -146,7 +219,7 @@ export const getCharBearingX = (glyph: Glyph): number => {
 
 export const getCharWidth = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
-  const metrics = font.getGlyphMetrics(glyph.glyphID);
+  const metrics = getMetrics(glyph);
   const unitsPerEm = font.head.unitsPerEm;
   if (!metrics) {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
@@ -156,7 +229,7 @@ export const getCharWidth = (glyph: Glyph): number => {
 
 export const getCharHeight = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
-  const metrics = font.getGlyphMetrics(glyph.glyphID);
+  const metrics = getMetrics(glyph);
   const unitsPerEm = font.head.unitsPerEm;
   if (!metrics) {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
@@ -182,7 +255,7 @@ export const getInterpolatedCharHeight = (glyph: InterpolatedGlyph): number => {
 
 export const getCharDepth = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
-  const metrics = font.getGlyphMetrics(glyph.glyphID);
+  const metrics = getMetrics(glyph);
   const unitsPerEm = font.head.unitsPerEm;
   if (!metrics) {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
@@ -423,7 +496,10 @@ type ThresholdOptions = {
 const getDelimiters = (char: string, context: Context): number[] => {
   const { font } = context.fontData;
 
-  const glyphID = font.getGlyphID(char);
+  const glyphID = lookupGlyphID(char, context);
+  if (glyphID === null) {
+    return [];
+  }
   const construction = font.math.variants.getVertGlyphConstruction(glyphID);
 
   if (!construction) {
@@ -452,6 +528,11 @@ export const makeDelimiter = (
   context: Context,
 ): Glyph | InterpolatedGlyph => {
   const glyphIDs = getDelimiters(char, context);
+
+  if (glyphIDs.length === 0) {
+    // The font can't draw this delimiter. A placeholder doesn't stretch.
+    return makePlaceholderGlyph(char, context, true);
+  }
 
   if (glyphIDs.length === 1) {
     return makeGlyph(char, glyphIDs[0], context, true);

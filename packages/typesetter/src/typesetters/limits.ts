@@ -74,13 +74,20 @@ export const typesetLimits = (
     const { font } = context.fontData;
 
     const char = node.inner.value;
-    let glyphID = font.getGlyphID(char);
-    const construction = font.math.variants.getVertGlyphConstruction(glyphID);
-    if (construction) {
-      glyphID = construction.mathGlyphVariantRecords[1].variantGlyph;
+    const glyphID = Layout.lookupGlyphID(char, context);
+    if (glyphID === null) {
+      inner = Layout.makePlaceholderGlyph(char, context, true);
+    } else {
+      const construction = font.math.variants.getVertGlyphConstruction(glyphID);
+      inner = Layout.makeGlyph(
+        char,
+        construction
+          ? construction.mathGlyphVariantRecords[1].variantGlyph
+          : glyphID,
+        context,
+        true,
+      );
     }
-
-    inner = Layout.makeGlyph(char, glyphID, context, true);
 
     const subsup: Editor.types.CharSubSup = {
       type: Editor.NodeType.SubSup,
