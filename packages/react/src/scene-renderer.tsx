@@ -6,7 +6,12 @@ import * as OpenType from '@math-blocks/opentype';
 
 import { lerpPath } from './lerp';
 
-const Line = ({ id, style, thickness, ...props }: SceneGraph.Line) => {
+const Line = ({
+  id,
+  style,
+  thickness,
+  ...props
+}: SceneGraph.Line): React.ReactElement => {
   return (
     <line
       {...props}
@@ -17,7 +22,7 @@ const Line = ({ id, style, thickness, ...props }: SceneGraph.Line) => {
   );
 };
 
-const Rect = ({ fill, id, ...props }: SceneGraph.Rect) => {
+const Rect = ({ fill, id, ...props }: SceneGraph.Rect): React.ReactElement => {
   return <rect {...props} fill={fill} stroke="none" />;
 };
 
@@ -101,7 +106,7 @@ const PlaceholderGlyph = ({
   );
 };
 
-const Glyph = (props: SceneGraph.Glyph) => {
+const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
   const { x, y, glyph, style } = props;
   if (glyph.placeholder) {
     return <PlaceholderGlyph {...props} placeholder={glyph.placeholder} />;
@@ -132,7 +137,7 @@ const InterpolatedGlyph = ({
   interpolatedGlyph,
   amount,
   style,
-}: SceneGraph.InterpolatedGlyph) => {
+}: SceneGraph.InterpolatedGlyph): React.ReactElement => {
   const id =
     typeof interpolatedGlyph.id !== 'undefined'
       ? String(interpolatedGlyph.id)
@@ -160,7 +165,13 @@ const InterpolatedGlyph = ({
   );
 };
 
-const Group = ({ x, y, children, style, id }: SceneGraph.Group) => {
+const Group = ({
+  x,
+  y,
+  children,
+  style,
+  id,
+}: SceneGraph.Group): React.ReactElement => {
   const _id = typeof id !== 'undefined' ? String(id) : undefined;
 
   return (
@@ -177,7 +188,7 @@ const Group = ({ x, y, children, style, id }: SceneGraph.Group) => {
   );
 };
 
-const Node = (props: SceneGraph.Node) => {
+const Node = (props: SceneGraph.Node): React.ReactElement => {
   switch (props.type) {
     case 'char':
       return <Glyph {...props} />;
