@@ -1,5 +1,4 @@
 import * as React from 'react';
-import type { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
@@ -7,11 +6,9 @@ import * as Solver from '@math-blocks/solver';
 import * as Typesetter from '@math-blocks/typesetter';
 import * as Tex from '@math-blocks/tex';
 import { MathEditor, MathRenderer, FontDataContext } from '@math-blocks/react';
-import { getFontData, parse } from '@math-blocks/opentype';
-import type { Font } from '@math-blocks/opentype';
 import { macros } from '@math-blocks/tex';
 
-import stix2 from '../../../assets/STIX2Math.otf';
+import { useFont } from '../shared/fonts';
 
 import Substeps from './substeps';
 
@@ -154,27 +151,15 @@ const SolverPage: React.FunctionComponent = () => {
     }
   }, [action, ast]);
 
-  const [font, setFont] = React.useState<Font | null>(null);
+  const fontData = useFont('stix-two-math');
 
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(stix2);
-      const blob = await res.blob();
-      const font = await parse(blob as Blob);
-      console.log(font);
-      setFont(font);
-    };
-
-    loadFont();
-  }, []);
-
-  if (!font) {
+  if (!fontData) {
     return null;
   }
 
   const fontSize = 24;
   const context: Typesetter.Context = {
-    fontData: getFontData(font, 'STIX2'),
+    fontData,
     baseFontSize: fontSize,
     mathStyle: Typesetter.MathStyle.Display,
     renderMode: Typesetter.RenderMode.Static,

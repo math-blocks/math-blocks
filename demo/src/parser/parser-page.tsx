@@ -1,16 +1,13 @@
 import * as React from 'react';
 import ReactJson from 'react-json-view';
 import cx from 'classnames';
-import type { Blob } from 'buffer';
 
 import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
-import { parse as parseFont, getFontData } from '@math-blocks/opentype';
-import type { FontData } from '@math-blocks/opentype';
 import { builders, parse } from '@math-blocks/editor';
 import type { State } from '@math-blocks/editor';
 import type { types } from '@math-blocks/semantic';
 
-import stix2 from '../../../assets/STIX2Math.otf';
+import { useFont } from '../shared/fonts';
 
 import { HStack, VStack } from '../shared/layout';
 import FormattingPalette from '../shared/formatting-palette';
@@ -28,7 +25,7 @@ const simpleRow = builders.row([
 
 const EditorPage: React.FunctionComponent = () => {
   const [tab, setTab] = React.useState<'parse' | 'edit'>('parse');
-  const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
+  const stixFontData = useFont('stix-two-math');
   const [editTree, setEditTree] = React.useState<State['row']>(simpleRow);
   const [ast, setAst] = React.useState<types.Node>(() => parse(simpleRow));
   const [darkMode, setDarkMode] = React.useState<boolean>(() => {
@@ -36,17 +33,6 @@ const EditorPage: React.FunctionComponent = () => {
     return query.matches;
   });
   const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const loadFont = async (): Promise<void> => {
-      const res = await fetch(stix2);
-      const blob = await res.blob();
-      const font = await parseFont(blob as Blob);
-      setStixFontData(getFontData(font, 'STIX2'));
-    };
-
-    loadFont();
-  }, []);
 
   React.useEffect(() => {
     window
