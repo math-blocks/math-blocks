@@ -10,3 +10,6 @@ packages/*/out
 demo/out
 !dist/_redirects
 .pr-review-summary.md
+
+# Python bytecode from scripts/
+__pycache__/

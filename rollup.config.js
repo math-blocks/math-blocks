@@ -1,4 +1,5 @@
 import path from 'path';
+import json from '@rollup/plugin-json';
 import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
 
@@ -29,6 +30,7 @@ const createBuildConfig = (name) => {
       format: 'cjs',
     },
     plugins: [
+      json(),
       typescript({
         outputToFilesystem: false,
         tsconfig: `./packages/${name}/tsconfig.rollup.json`,
