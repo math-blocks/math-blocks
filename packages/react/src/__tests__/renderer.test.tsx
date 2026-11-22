@@ -914,7 +914,7 @@ describe("placeholders for characters the font can't draw", () => {
   // Only the base subset of STIX, so characters in other groups render as
   // placeholders.
   const loadBaseOnly = async (): Promise<FontData> => {
-    const font = await loadFontSubsets([], readSubset('mathblocks-math-a'));
+    const font = await loadFontSubsets([], readSubset('stix-two-math'));
     return getFontData(font, 'STIX2');
   };
 
