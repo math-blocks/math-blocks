@@ -6,6 +6,7 @@ import type { Font, TableDirectory } from '../types';
 
 import { parse, parseDirectory } from '../parser';
 import { describeCharacter } from '../test-util';
+import { getGlyphMetrics } from '../util';
 
 describe('parseDirectory', () => {
   let dir: TableDirectory;
@@ -231,5 +232,32 @@ describe('parse from an ArrayBuffer', () => {
         describeCharacter(fromBlob, char.codePointAt(0) ?? 0),
       );
     }
+  });
+});
+
+describe('getGlyphMetrics', () => {
+  let font: Font;
+
+  beforeAll(async () => {
+    const file = fs.readFileSync(
+      path.join(__dirname, '../../../../assets/STIX2Math.otf'),
+    );
+    font = await parse(new Blob([file]));
+  });
+
+  test('works out the metrics from the glyph outline', () => {
+    for (const char of ['x', 'H', '(', '∫', ' ']) {
+      const gid = font.getGlyphID(char);
+      expect(font.getGlyphMetrics(gid)).toEqual(
+        getGlyphMetrics(font.getGlyph(gid)),
+      );
+    }
+  });
+
+  test('works them out once per glyph', () => {
+    const x = font.getGlyphID('x');
+    const metrics = font.getGlyphMetrics(x);
+    expect(font.getGlyphMetrics(x)).toBe(metrics);
+    expect(font.getGlyphMetrics(font.getGlyphID('y'))).not.toBe(metrics);
   });
 });
