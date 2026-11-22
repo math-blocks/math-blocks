@@ -114,3 +114,17 @@ describe('fromBaseUrl', () => {
     );
   });
 });
+
+describe('browser builds', () => {
+  test("the package doesn't import 'buffer' at runtime", () => {
+    // Bundlers replace Node's 'buffer' with a polyfill in browser builds. The
+    // one the demo gets has no Blob and crashes as it loads, so the package
+    // must only use 'buffer' for types.
+    jest.isolateModules(() => {
+      jest.doMock('buffer', () => {
+        throw new Error("'buffer' was imported at runtime");
+      });
+      expect(() => require('../index')).not.toThrow();
+    });
+  });
+});

@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { Blob as NodeBlob } from 'buffer';
 
 import { combineFonts } from './combined-font';
 import { glyphGroups } from './glyph-groups';
@@ -59,7 +59,12 @@ export const loadFontSubsets = async (
   const fonts = await Promise.all(
     names.map(async (name): Promise<[string, Font]> => {
       const buffer = await toArrayBuffer(await loadGroup(name));
-      return [name, await parse(new Blob([buffer]))];
+      // The global Blob, which browsers and Node have. Importing Blob from
+      // 'buffer' instead would make bundlers include a Node polyfill in
+      // browser builds, which crashes the page as it loads. `parse` is typed
+      // with Node's Blob, but only uses what both have.
+      const blob = new Blob([buffer]) as unknown as NodeBlob;
+      return [name, await parse(blob)];
     }),
   );
   return combineFonts(Object.fromEntries(fonts));
