@@ -15,7 +15,12 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}/`,
     trace: 'off',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // WebKit is the engine behind Safari.
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: {
     command: `yarn build && yarn vite preview --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/`,
