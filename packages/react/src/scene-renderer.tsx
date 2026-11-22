@@ -53,11 +53,24 @@ const svgPathFromFontPath = (path: OpenType.Path): string => {
   return result;
 };
 
-const getPath = (glyph: OpenType.Glyph): string => {
-  // The glyph's path is in font units.
-  const path = glyph.path;
+// A font's glyph outlines never change, so each glyph's path string is built
+// once per font and reused by every render and every renderer.
+// eslint-disable-next-line functional/prefer-readonly-type
+const pathCache = new WeakMap<OpenType.Font, Map<number, string>>();
 
-  return svgPathFromFontPath(path);
+const getPath = (font: OpenType.Font, glyphID: number): string => {
+  let paths = pathCache.get(font);
+  if (!paths) {
+    paths = new Map();
+    pathCache.set(font, paths);
+  }
+  let d = paths.get(glyphID);
+  if (d === undefined) {
+    // The glyph's path is in font units.
+    d = svgPathFromFontPath(font.getGlyph(glyphID).path);
+    paths.set(glyphID, d);
+  }
+  return d;
 };
 
 // Glyph IDs are only unique within a font, so definitions are keyed by font
@@ -114,7 +127,7 @@ const getGlyphDefs = (
         const key = getGlyphKey(node.glyph, fontNamer.fontNames);
         if (!defs.has(key)) {
           const { font } = node.glyph.fontData;
-          const d = getPath(font.getGlyph(node.glyph.glyphID));
+          const d = getPath(font, node.glyph.glyphID);
           defs.set(key, { key, d });
         }
         return;
@@ -180,7 +193,7 @@ const PlaceholderGlyph = ({
       />
       <path
         fill={style.fill}
-        d={getPath(font.getGlyph(glyph.glyphID))}
+        d={getPath(font, glyph.glyphID)}
         transform={`translate(${markX}, ${markY}) scale(${markScale}, -${markScale})`}
       />
     </g>

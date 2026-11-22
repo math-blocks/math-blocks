@@ -18,6 +18,14 @@ export const sanitizeFamily = (family: string): string =>
  * their families sanitize to the same string. Then it gets the first free name
  * of the form `<family>-2`, `<family>-3` and so on, so two fonts never share a
  * definition.
+ *
+ * Under a GlyphDefsProvider, renderers name fonts while rendering, since the
+ * names go into their <use> hrefs. A render that React discards (StrictMode,
+ * concurrent rendering) can therefore reserve a name for a font that's never
+ * shown. Names stay unique and every href matches its definition, so nothing
+ * draws wrongly; the only effect is that a later font with the same family can
+ * get a higher suffix than it otherwise would. Suffixes are never needed with
+ * one font per family, the usual case.
  */
 export class FontNamer {
   private readonly names = new Map<OpenType.Font, string>();
@@ -208,9 +216,12 @@ export const getStandaloneSvg = (svg: SVGSVGElement): SVGSVGElement => {
   // Definitions are looked up where the SVG is: its document, or the shadow
   // root it's in. A detached SVG has nowhere to look.
   const root = svg.getRootNode();
+  // Checks nodeType rather than `instanceof`, which fails for an SVG in
+  // another frame, whose Document is a different constructor.
   const findById = (id: string): Element | null =>
-    root instanceof Document || root instanceof ShadowRoot
-      ? root.getElementById(id)
+    root.nodeType === Node.DOCUMENT_NODE ||
+    root.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+      ? (root as Document | ShadowRoot).getElementById(id)
       : null;
 
   // Definitions already inside the SVG travel with the copy.

@@ -362,6 +362,28 @@ describe('getStandaloneSvg', () => {
     host.remove();
   });
 
+  test('finds definitions for an SVG in another frame', () => {
+    const iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    const frameDocument = iframe.contentDocument as Document;
+    // The frame's Document is a different constructor from this window's.
+    expect(frameDocument instanceof Document).toBe(false);
+
+    frameDocument.body.innerHTML = [
+      '<svg aria-hidden="true"><defs><path id="g1" d="M 0,0 L 1,1"></path></defs></svg>',
+      '<svg id="math"><use href="#g1"></use></svg>',
+    ].join('');
+    const svg = frameDocument.getElementById(
+      'math',
+    ) as unknown as SVGSVGElement;
+
+    const copy = getStandaloneSvg(svg);
+    expect(copy.querySelector('defs > path')?.getAttribute('d')).toBe(
+      'M 0,0 L 1,1',
+    );
+    iframe.remove();
+  });
+
   test('leaves the references of a detached SVG as they are', () => {
     const { container } = render(
       <FontDataContext.Provider value={fontData}>
