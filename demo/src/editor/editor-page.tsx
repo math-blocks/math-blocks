@@ -58,7 +58,6 @@ const EditorPage: React.FunctionComponent = () => {
           />
           <br />
           <br />
-          <div style={{ fontFamily: 'Bonum-Math', fontSize: fontSize }}></div>
           <VStack style={{ gap: 4 }}>
             <HStack>
               <span style={{ fontFamily: 'sans-serif', paddingRight: 8 }}>

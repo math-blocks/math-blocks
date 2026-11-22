@@ -57,7 +57,14 @@ export const loadFont = (folder: FontFolder): Promise<FontData> => {
   if (!fontData) {
     fontData = loadFontSubsets(ALL_GROUPS, (group) =>
       loadSubset(folder, group),
-    ).then((font) => getFontData(font, folder));
+    ).then(
+      (font) => getFontData(font, folder),
+      (error) => {
+        // Forget the failure, so the next attempt fetches the font again.
+        cache.delete(folder);
+        throw error;
+      },
+    );
     cache.set(folder, fontData);
   }
   return fontData;
@@ -65,10 +72,13 @@ export const loadFont = (folder: FontFolder): Promise<FontData> => {
 
 /**
  * Returns the font's data once it's loaded, and null until then. Only the
- * font that's asked for is loaded.
+ * font that's asked for is loaded. If it fails to load, this throws the error
+ * while rendering, so the router's error page shows it instead of the page
+ * staying blank.
  */
 export const useFont = (folder: FontFolder): FontData | null => {
   const [fontData, setFontData] = React.useState<FontData | null>(null);
+  const [error, setError] = React.useState<unknown>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -78,12 +88,20 @@ export const useFont = (folder: FontFolder): FontData | null => {
           setFontData(loaded);
         }
       },
-      (error) => console.error(error),
+      (loadError: unknown) => {
+        if (!cancelled) {
+          setError(loadError);
+        }
+      },
     );
     return () => {
       cancelled = true;
     };
   }, [folder]);
+
+  if (error) {
+    throw error;
+  }
 
   // While another font loads, this is still the previous one, so the page
   // doesn't go blank when switching fonts.
