@@ -3,14 +3,17 @@ import path from 'path';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import format from 'xml-formatter';
-import { Blob } from 'buffer';
 import type { Story, StoryContext } from '@storybook/react';
 import { diffChars } from 'diff';
 
 import * as Core from '@math-blocks/core';
 import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
-import { combineFonts, getFontData, parse } from '@math-blocks/opentype';
+import {
+  getFontData,
+  glyphGroups,
+  loadFontSubsets,
+} from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import * as Tex from '@math-blocks/tex';
 import { macros } from '@math-blocks/tex';
@@ -25,41 +28,50 @@ const { char: glyph, row, subsup } = Editor.builders;
 const reducer = Editor.getReducer(macros);
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
+// The tests render with the font subsets in assets/subsets/, all groups
+// combined, which must render exactly like the original fonts. We can't use
+// the same loader as the stories since theirs relies on the bundler's file
+// loader, which we don't have access to here.
+const readSubset =
+  (subset: string) =>
+  async (group: string): Promise<ArrayBuffer> => {
+    const file = fs.readFileSync(
+      path.join(
+        __dirname,
+        '../../../../assets/subsets',
+        subset,
+        `${group}.otf`,
+      ),
+    );
+    const buffer = new ArrayBuffer(file.byteLength);
+    new Uint8Array(buffer).set(file);
+    return buffer;
+  };
+
+const allGroups = glyphGroups.map((group) => group.name);
+
 let stixFontData: FontData | null = null;
 let lmFontData: FontData | null = null;
 
-// We can't use the same loader since the storybook one relies on webpack's
-// file-loader which we don't have access to here.
 const stixFontLoader = async (): Promise<FontData> => {
-  if (stixFontData) {
-    return stixFontData;
+  if (!stixFontData) {
+    const font = await loadFontSubsets(
+      allGroups,
+      readSubset('mathblocks-math-a'),
+    );
+    stixFontData = getFontData(font, 'STIX2');
   }
-
-  const fontPath = path.join(__dirname, '../../../../assets/STIX2Math.otf');
-  const buffer = fs.readFileSync(fontPath);
-  const blob = new Blob([buffer]);
-
-  const font = await parse(blob);
-  stixFontData = getFontData(font, 'STIX2');
-
   return stixFontData;
 };
 
 const lmFontLoader = async (): Promise<FontData> => {
-  if (lmFontData) {
-    return lmFontData;
+  if (!lmFontData) {
+    const font = await loadFontSubsets(
+      allGroups,
+      readSubset('mathblocks-math-b'),
+    );
+    lmFontData = getFontData(font, 'LM-Math');
   }
-
-  const fontPath = path.join(
-    __dirname,
-    '../../../../assets/latinmodern-math.otf',
-  );
-  const buffer = fs.readFileSync(fontPath);
-  const blob = new Blob([buffer]);
-
-  const font = await parse(blob);
-  lmFontData = getFontData(font, 'LM-Math');
-
   return lmFontData;
 };
 
@@ -905,12 +917,8 @@ describe("placeholders for characters the font can't draw", () => {
   // Only the base subset of STIX, so characters in other groups render as
   // placeholders.
   const loadBaseOnly = async (): Promise<FontData> => {
-    const fontPath = path.join(
-      __dirname,
-      '../../../../assets/subsets/mathblocks-math-a/base.otf',
-    );
-    const base = await parse(new Blob([fs.readFileSync(fontPath)]));
-    return getFontData(combineFonts({ base }), 'STIX2');
+    const font = await loadFontSubsets([], readSubset('mathblocks-math-a'));
+    return getFontData(font, 'STIX2');
   };
 
   test.each([
