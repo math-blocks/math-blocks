@@ -104,7 +104,7 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "fraction.js": "^4.0.12",
-    "lerna": "^4.0.0",
+    "lerna": "^10.1.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "6.28.0"
