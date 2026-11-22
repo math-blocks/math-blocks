@@ -6,6 +6,7 @@ import * as Typesetter from '@math-blocks/typesetter';
 import { macros } from '@math-blocks/tex';
 
 import { useFontData } from './font-data-context';
+import { useMissingGlyphs } from './use-missing-glyphs';
 import styles from './editor.module.css';
 import SceneRenderer from './scene-renderer';
 import useEventListener from './use-event-listener';
@@ -36,9 +37,10 @@ type Props = {
   // Renders bounding boxes around each group and glyph.
   readonly showHitboxes?: boolean;
 
-  // Called for each character the font can't draw (for example because its
-  // glyph group isn't loaded), which is drawn as a placeholder instead.
-  // `group` is set when the character's glyph group isn't loaded.
+  // Called, after rendering, for each character the font can't draw (for
+  // example because its glyph group isn't loaded), which is drawn as a
+  // placeholder instead. `group` is set when the character's glyph group isn't
+  // loaded. It's called again only when the set of missing characters changes.
   readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
 };
 
@@ -118,6 +120,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
   const fontData = useFontData('MathEditor');
+  const onMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -290,7 +293,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     selection: state.selection,
     operators: operators,
-    onMissingGlyph: props.onMissingGlyph,
+    onMissingGlyph,
   };
 
   // TODO: properly type this

@@ -1,10 +1,13 @@
+/**
+ * @jest-environment jsdom
+ */
 // Characters the font can't draw, for example because their glyph group isn't
 // loaded, render as a placeholder box instead of throwing. See
 // https://github.com/math-blocks/math-blocks/issues/764.
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
-import ReactDOMServer from 'react-dom/server';
+import { render, screen } from '@testing-library/react';
 import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
@@ -28,25 +31,30 @@ const loadFont = (...segments: readonly string[]): Promise<Font> =>
 
 type Missing = readonly [string, string | undefined];
 
+// Some tests silence console.error; don't let that leak into other tests.
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+// Renders in a DOM, so effects run and onMissingGlyph is called.
 const renderSvg = (
   row: Editor.types.CharRow,
   fontData: FontData,
   mathStyle = Typesetter.MathStyle.Display,
 ): { readonly svg: string; readonly missing: readonly Missing[] } => {
   const missing: Missing[] = [];
-  return {
-    // Rendered first, so `missing` is filled in by the time it's read.
-    svg: ReactDOMServer.renderToStaticMarkup(
-      <FontDataContext.Provider value={fontData}>
-        <MathRenderer
-          row={row}
-          mathStyle={mathStyle}
-          onMissingGlyph={(char, group) => missing.push([char, group])}
-        />
-      </FontDataContext.Provider>,
-    ),
-    missing,
-  };
+  const { container, unmount } = render(
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer
+        row={row}
+        mathStyle={mathStyle}
+        onMissingGlyph={(char, group) => missing.push([char, group])}
+      />
+    </FontDataContext.Provider>,
+  );
+  const svg = container.innerHTML;
+  unmount();
+  return { svg, missing };
 };
 
 const countPlaceholders = (svg: string): number =>
@@ -226,7 +234,9 @@ describe('placeholders', () => {
       x: number,
       y: number,
     ): { x: number; y: number; width: number; height: number } | null => {
-      for (const child of group.children) {
+      // A scene graph group, not a DOM node.
+      const { children } = group;
+      for (const child of children) {
         if (child.type === 'rect' && child.id === theta.id) {
           return {
             x: x + child.x,
@@ -272,12 +282,150 @@ describe('placeholders', () => {
   });
 });
 
+describe('onMissingGlyph', () => {
+  let baseOnly: FontData;
+  let full: FontData;
+
+  beforeAll(async () => {
+    const base = await loadFont('subsets', 'mathblocks-math-a', 'base.otf');
+    baseOnly = getFontData(combineFonts({ base }), 'STIX2');
+    full = getFontData(await loadFont('STIX2Math.otf'), 'STIX2');
+  });
+
+  const Renderer = ({
+    tex,
+    fontData,
+    onMissingGlyph,
+  }: {
+    readonly tex: string;
+    readonly fontData: FontData;
+    readonly onMissingGlyph: (char: string, group: string | undefined) => void;
+  }): React.ReactElement => (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer row={parseTex(tex)} onMissingGlyph={onMissingGlyph} />
+    </FontDataContext.Provider>
+  );
+
+  test('reports each missing character once, after rendering', () => {
+    const onMissingGlyph = jest.fn();
+    render(
+      <Renderer
+        tex="θ+θ+∫"
+        fontData={baseOnly}
+        onMissingGlyph={onMissingGlyph}
+      />,
+    );
+    expect(onMissingGlyph.mock.calls).toEqual([
+      ['θ', 'trig-geometry'],
+      ['∫', 'calculus'],
+    ]);
+  });
+
+  test('reports again only when the missing characters change', () => {
+    const onMissingGlyph = jest.fn();
+    const { rerender } = render(
+      <Renderer
+        tex="θ+1"
+        fontData={baseOnly}
+        onMissingGlyph={onMissingGlyph}
+      />,
+    );
+    rerender(
+      <Renderer
+        tex="θ+2"
+        fontData={baseOnly}
+        onMissingGlyph={onMissingGlyph}
+      />,
+    );
+    expect(onMissingGlyph).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <Renderer
+        tex="θ+α"
+        fontData={baseOnly}
+        onMissingGlyph={onMissingGlyph}
+      />,
+    );
+    expect(onMissingGlyph.mock.calls).toEqual([
+      ['θ', 'trig-geometry'],
+      ['θ', 'trig-geometry'],
+      ['α', 'trig-geometry'],
+    ]);
+  });
+
+  test('can set state without warnings or a render loop', () => {
+    const errors = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const renders = jest.fn();
+    const App = (): React.ReactElement => {
+      const [missing, setMissing] = React.useState<readonly string[]>([]);
+      renders();
+      return (
+        <>
+          <Renderer
+            tex="θ+∑"
+            fontData={baseOnly}
+            onMissingGlyph={(char) => setMissing((m) => [...m, char])}
+          />
+          <span>{missing.join(',')}</span>
+        </>
+      );
+    };
+    render(<App />);
+    expect(screen.getByText('θ,∑')).toBeInTheDocument();
+    // One render, then one more after the reports update the state.
+    expect(renders).toHaveBeenCalledTimes(2);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  test('is not called when every character can be drawn', () => {
+    const onMissingGlyph = jest.fn();
+    render(
+      <Renderer tex="θ+∫" fontData={full} onMissingGlyph={onMissingGlyph} />,
+    );
+    expect(onMissingGlyph).not.toHaveBeenCalled();
+  });
+});
+
+test('an integral in a limits node with fewer than two size variants uses its base glyph', async () => {
+  const font = await loadFont('STIX2Math.otf');
+  const intID = font.getGlyphID('∫');
+  const fontData: FontData = getFontData(
+    {
+      ...font,
+      math: {
+        ...font.math,
+        variants: {
+          ...font.math.variants,
+          getVertGlyphConstruction: (glyphID: number) => {
+            const construction =
+              font.math.variants.getVertGlyphConstruction(glyphID);
+            return construction && glyphID === intID
+              ? { ...construction, mathGlyphVariantRecords: [] }
+              : construction;
+          },
+        },
+      },
+    },
+    'STIX2',
+  );
+  const row = Editor.builders.row([
+    Editor.builders.limits(
+      Editor.builders.char('∫'),
+      [Editor.builders.char('0')],
+      [Editor.builders.char('1')],
+    ),
+  ]);
+  const { svg, missing } = renderSvg(row, fontData);
+  expect(countPlaceholders(svg)).toEqual(0);
+  expect(missing).toEqual([]);
+});
+
 describe('useFontData', () => {
   test('explains that a font is needed when there is no provider', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    expect(() =>
-      ReactDOMServer.renderToStaticMarkup(<MathRenderer row={parseTex('x')} />),
-    ).toThrow(
+    expect(() => render(<MathRenderer row={parseTex('x')} />)).toThrow(
       'MathRenderer needs a font: render it inside a FontDataContext.Provider',
     );
   });

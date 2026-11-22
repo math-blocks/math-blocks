@@ -78,12 +78,12 @@ export const typesetLimits = (
     if (glyphID === null) {
       inner = Layout.makePlaceholderGlyph(char, context, true);
     } else {
+      // The integral's second size variant suits inline limits. Fall back to
+      // the base glyph when the font has fewer than two variants.
       const construction = font.math.variants.getVertGlyphConstruction(glyphID);
       inner = Layout.makeGlyph(
         char,
-        construction
-          ? construction.mathGlyphVariantRecords[1].variantGlyph
-          : glyphID,
+        construction?.mathGlyphVariantRecords[1]?.variantGlyph ?? glyphID,
         context,
         true,
       );
