@@ -40,3 +40,35 @@ export const glyphGroups: readonly GlyphGroup[] = data.groups.map((group) => ({
   // The keys are the code points; the values only describe them.
   codePoints: parseCodePoints(Object.keys(group.codePoints)),
 }));
+
+const groupByCodePoint = new Map<number, GlyphGroup>();
+for (const group of glyphGroups) {
+  for (const codePoint of group.codePoints) {
+    groupByCodePoint.set(codePoint, group);
+  }
+}
+
+/**
+ * Returns the group that contains the given code point, or undefined if no
+ * group does.
+ */
+export const getGlyphGroup = (codePoint: number): GlyphGroup | undefined =>
+  groupByCodePoint.get(codePoint);
+
+/**
+ * Returns the names of the groups needed to render the characters in `text`,
+ * in the order they appear in `glyphGroups`. Characters that aren't in any
+ * group are ignored.
+ */
+export const glyphGroupsForText = (text: string): string[] => {
+  const needed = new Set<GlyphGroup>();
+  for (const char of text) {
+    const group = groupByCodePoint.get(char.codePointAt(0) as number);
+    if (group) {
+      needed.add(group);
+    }
+  }
+  return glyphGroups
+    .filter((group) => needed.has(group))
+    .map((group) => group.name);
+};
