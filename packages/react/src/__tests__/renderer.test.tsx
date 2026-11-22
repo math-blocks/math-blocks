@@ -55,10 +55,7 @@ let lmFontData: FontData | null = null;
 
 const stixFontLoader = async (): Promise<FontData> => {
   if (!stixFontData) {
-    const font = await loadFontSubsets(
-      allGroups,
-      readSubset('mathblocks-math-a'),
-    );
+    const font = await loadFontSubsets(allGroups, readSubset('stix-two-math'));
     stixFontData = getFontData(font, 'STIX2');
   }
   return stixFontData;
@@ -68,7 +65,7 @@ const lmFontLoader = async (): Promise<FontData> => {
   if (!lmFontData) {
     const font = await loadFontSubsets(
       allGroups,
-      readSubset('mathblocks-math-b'),
+      readSubset('latin-modern-math'),
     );
     lmFontData = getFontData(font, 'LM-Math');
   }
@@ -917,7 +914,7 @@ describe("placeholders for characters the font can't draw", () => {
   // Only the base subset of STIX, so characters in other groups render as
   // placeholders.
   const loadBaseOnly = async (): Promise<FontData> => {
-    const font = await loadFontSubsets([], readSubset('mathblocks-math-a'));
+    const font = await loadFontSubsets([], readSubset('stix-two-math'));
     return getFontData(font, 'STIX2');
   };
 

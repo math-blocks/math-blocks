@@ -33,14 +33,17 @@ ASSETS = os.path.join(ROOT, 'assets')
 GROUPS_FILE = os.path.join(ROOT, 'packages', 'opentype', 'src', 'glyph-groups.json')
 OUT_DIR = os.path.join(ASSETS, 'subsets')
 
-# Source font file in assets/ -> (letter used in the subset's name, source name).
+# Source font file in assets/ -> (folder in assets/subsets/, letter used in
+# the subset's font name, source name). The folders are named after the source
+# fonts so they're easy to find; the fonts inside are renamed (see the module
+# docstring), so their names don't use the source names.
 FONTS = {
-    'STIX2Math.otf': ('A', 'STIX Two Math'),
-    'latinmodern-math.otf': ('B', 'Latin Modern Math'),
-    'texgyrebonum-math.otf': ('C', 'TeX Gyre Bonum Math'),
-    'texgyrepagella-math.otf': ('D', 'TeX Gyre Pagella Math'),
-    'texgyreschola-math.otf': ('E', 'TeX Gyre Schola Math'),
-    'texgyretermes-math.otf': ('F', 'TeX Gyre Termes Math'),
+    'STIX2Math.otf': ('stix-two-math', 'A', 'STIX Two Math'),
+    'latinmodern-math.otf': ('latin-modern-math', 'B', 'Latin Modern Math'),
+    'texgyrebonum-math.otf': ('tex-gyre-bonum-math', 'C', 'TeX Gyre Bonum Math'),
+    'texgyrepagella-math.otf': ('tex-gyre-pagella-math', 'D', 'TeX Gyre Pagella Math'),
+    'texgyreschola-math.otf': ('tex-gyre-schola-math', 'E', 'TeX Gyre Schola Math'),
+    'texgyretermes-math.otf': ('tex-gyre-termes-math', 'F', 'TeX Gyre Termes Math'),
 }
 
 # Name table entries that identify the font. They're all replaced; everything
@@ -157,8 +160,8 @@ def build(out_dir):
     groups = load_groups()
     options = subset_options()
     written = []
-    for source, (letter, source_name) in FONTS.items():
-        font_dir = os.path.join(out_dir, f'mathblocks-math-{letter.lower()}')
+    for source, (folder, letter, source_name) in FONTS.items():
+        font_dir = os.path.join(out_dir, folder)
         os.makedirs(font_dir, exist_ok=True)
         for group, code_points in groups:
             # recalcTimestamp=False keeps head.modified, so rebuilds are identical.

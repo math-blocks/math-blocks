@@ -5,7 +5,7 @@ import vm from 'vm';
 import { fromBaseUrl, loadFontSubsets } from '../loader';
 import { ASSETS } from '../test-util';
 
-const SUBSET_DIR = path.join(ASSETS, 'subsets', 'mathblocks-math-a');
+const SUBSET_DIR = path.join(ASSETS, 'subsets', 'stix-two-math');
 
 // Reads subset files from disk, recording which groups were requested.
 const diskLoader = (): {
@@ -99,11 +99,9 @@ describe('fromBaseUrl', () => {
     const fetchMock = jest.fn().mockResolvedValue(response);
     global.fetch = fetchMock;
 
-    const load = fromBaseUrl('/fonts/mathblocks-math-a/');
+    const load = fromBaseUrl('/fonts/stix-two-math/');
     await expect(load('calculus')).resolves.toBe(response);
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/fonts/mathblocks-math-a/calculus.otf',
-    );
+    expect(fetchMock).toHaveBeenCalledWith('/fonts/stix-two-math/calculus.otf');
   });
 
   test('throws for a failed response', async () => {

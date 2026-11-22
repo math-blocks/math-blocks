@@ -25,12 +25,12 @@ const ASSETS = path.join(__dirname, '../../../../assets');
 
 // Keep in sync with FONTS in scripts/subset-fonts.py.
 const FONTS: readonly { readonly source: string; readonly subset: string }[] = [
-  { source: 'STIX2Math.otf', subset: 'mathblocks-math-a' },
-  { source: 'latinmodern-math.otf', subset: 'mathblocks-math-b' },
-  { source: 'texgyrebonum-math.otf', subset: 'mathblocks-math-c' },
-  { source: 'texgyrepagella-math.otf', subset: 'mathblocks-math-d' },
-  { source: 'texgyreschola-math.otf', subset: 'mathblocks-math-e' },
-  { source: 'texgyretermes-math.otf', subset: 'mathblocks-math-f' },
+  { source: 'STIX2Math.otf', subset: 'stix-two-math' },
+  { source: 'latinmodern-math.otf', subset: 'latin-modern-math' },
+  { source: 'texgyrebonum-math.otf', subset: 'tex-gyre-bonum-math' },
+  { source: 'texgyrepagella-math.otf', subset: 'tex-gyre-pagella-math' },
+  { source: 'texgyreschola-math.otf', subset: 'tex-gyre-schola-math' },
+  { source: 'texgyretermes-math.otf', subset: 'tex-gyre-termes-math' },
 ];
 
 const loadFont = (...segments: readonly string[]): Promise<Font> =>
