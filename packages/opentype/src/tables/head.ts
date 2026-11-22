@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { ByteSource } from '../byte-source';
 
 export type HeaderTable = {
   readonly majorVersion: number; // uint16
@@ -21,7 +21,7 @@ export type HeaderTable = {
   readonly glyphDataFormat: number; // int16
 };
 
-export const parseHead = async (blob: Blob): Promise<HeaderTable> => {
+export const parseHead = async (blob: ByteSource): Promise<HeaderTable> => {
   const buffer = await blob.arrayBuffer();
   const view = new DataView(buffer);
 

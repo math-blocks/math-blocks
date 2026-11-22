@@ -1,5 +1,3 @@
-import { Blob } from 'buffer';
-
 import { combineFonts } from './combined-font';
 import { glyphGroups } from './glyph-groups';
 import { parse } from './parser';
@@ -59,7 +57,7 @@ export const loadFontSubsets = async (
   const fonts = await Promise.all(
     names.map(async (name): Promise<[string, Font]> => {
       const buffer = await toArrayBuffer(await loadGroup(name));
-      return [name, await parse(new Blob([buffer]))];
+      return [name, await parse(buffer)];
     }),
   );
   return combineFonts(Object.fromEntries(fonts));

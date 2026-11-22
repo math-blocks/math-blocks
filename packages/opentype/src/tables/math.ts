@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { ByteSource } from '../byte-source';
 
 import type {
   MathValueRecord,
@@ -11,7 +11,7 @@ import type {
 } from './math-types';
 
 const parseConstants = async (
-  blob: Blob,
+  blob: ByteSource,
   start: number,
   end: number,
   unitsPerEm: number,
@@ -92,7 +92,7 @@ const parseConstants = async (
 };
 
 const parseCovergeTable = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
 ): Promise<number[]> => {
   const buffer = await blob.slice(offset, offset + 4).arrayBuffer();
@@ -203,7 +203,7 @@ type MathGlyphInfo = {
 };
 
 const parseMathGlyphInfo = async (
-  blob: Blob,
+  blob: ByteSource,
   start: number,
   end: number,
 ): Promise<MathGlyphInfo> => {
@@ -251,7 +251,7 @@ const parseMathGlyphInfo = async (
 };
 
 const parseVariants = async (
-  blob: Blob,
+  blob: ByteSource,
   start: number,
   end: number,
 ): Promise<MathVariants> => {
@@ -328,7 +328,7 @@ export type MathTable = {
 };
 
 export const parseMATH = async (
-  blob: Blob,
+  blob: ByteSource,
   unitsPerEm: number,
 ): Promise<MathTable> => {
   // TODO: check that tableRecord.tableTag === "MATH" before proceeding

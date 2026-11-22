@@ -1,4 +1,4 @@
-import { Blob } from 'buffer';
+import type { ByteSource } from '../byte-source';
 
 type EncodingRecord = {
   readonly platformID: number; // uint16
@@ -13,7 +13,7 @@ type CmapHeader = {
 };
 
 const parseEncodingRecords = async (
-  blob: Blob,
+  blob: ByteSource,
   offset: number,
   numTables: number,
 ): Promise<EncodingRecord[]> => {
@@ -37,7 +37,7 @@ const parseEncodingRecords = async (
   return result;
 };
 
-const parseCmapHeader = async (blob: Blob): Promise<CmapHeader> => {
+const parseCmapHeader = async (blob: ByteSource): Promise<CmapHeader> => {
   let buffer, view;
 
   buffer = await blob.slice(0, 4).arrayBuffer();
@@ -84,7 +84,7 @@ const getGlyphIndexMap = (
 };
 
 export const parseCmap = async (
-  blob: Blob,
+  blob: ByteSource,
 ): Promise<Record<number, number>> => {
   const cmap = await parseCmapHeader(blob);
 
