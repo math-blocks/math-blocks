@@ -25,9 +25,19 @@ holds the outline of each glyph once, instead of each SVG storing its own copy.
 ```
 
 Without a provider, and when rendering on the server, each SVG keeps its own
-`<defs>`, so it works on its own. An SVG copied out of a page that uses the
-provider contains only `<use>` references. The hidden `<svg>` must be in the
-same document tree as the renderers: IDs don't resolve across a shadow root.
+`<defs>`, so it works on its own. The hidden `<svg>` must be in the same
+document tree as the renderers: IDs don't resolve across a shadow root.
+
+An SVG rendered under the provider contains only `<use>` references, so to
+copy, download or draw one as an image, pass it to `getStandaloneSvg`. It
+returns a copy with the definitions that SVG uses inlined:
+
+```tsx
+const svg = getStandaloneSvg(svgRef.current);
+const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  svg.outerHTML,
+)}`;
+```
 
 ## MathKeypad
 

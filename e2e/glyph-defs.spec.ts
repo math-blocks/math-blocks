@@ -293,4 +293,45 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
 
     expect(await others()).toEqual(before);
   });
+
+  test('getStandaloneSvg makes a copy that works as an image', async ({
+    page,
+  }) => {
+    // An <img> is its own document and can't see the page's definitions, so
+    // it shows whether a copy carries what it needs.
+    const imageOfProblem1 = async (query: string): Promise<Buffer> => {
+      await openWorksheet(page, query);
+      await page
+        .getByRole('button', { name: 'Show problem 1 as an image' })
+        .click();
+      const img = page.getByRole('img', { name: 'Problem 1' });
+      await expect
+        .poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth))
+        .toBeGreaterThan(0);
+      return img.screenshot();
+    };
+
+    const own = await imageOfProblem1('?shared=0');
+    const shared = await imageOfProblem1('');
+    expect(shared.equals(own)).toBe(true);
+
+    // The rendered SVG's own markup, without the definitions inlined, draws
+    // nothing as an image: its <use> elements point outside it.
+    await page.evaluate(() => {
+      const svg = document.querySelector('ol svg') as SVGSVGElement;
+      const raw = document.createElement('img');
+      raw.alt = 'Problem 1 without definitions';
+      raw.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+        svg.outerHTML,
+      )}`;
+      document.body.appendChild(raw);
+    });
+    const raw = page.getByRole('img', {
+      name: 'Problem 1 without definitions',
+    });
+    await expect
+      .poll(() => raw.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0);
+    expect((await raw.screenshot()).equals(shared)).toBe(false);
+  });
 });

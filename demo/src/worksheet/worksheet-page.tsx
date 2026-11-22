@@ -2,7 +2,9 @@
 // MathRenderer, and a few MathEditors for answers. Every SVG shares one set of
 // glyph definitions through GlyphDefsProvider. With `?shared=0` in the URL,
 // the page renders without the provider, so each SVG has its own <defs>; the
-// e2e tests compare the two.
+// e2e tests compare the two. "Show problem 1 as an image" draws the first
+// problem in an <img>, which can't see the page's definitions, from the copy
+// getStandaloneSvg makes.
 import * as React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -11,6 +13,7 @@ import {
   GlyphDefsProvider,
   MathEditor,
   MathRenderer,
+  getStandaloneSvg,
 } from '@math-blocks/react';
 import * as Tex from '@math-blocks/tex';
 
@@ -32,29 +35,54 @@ const PROBLEMS = Array.from({ length: 40 }, (_, i) =>
 
 const EDITORS = 3;
 
-const Worksheet: React.FunctionComponent = () => (
-  <div style={{ fontFamily: 'sans-serif', margin: 16 }}>
-    <h1>Worksheet</h1>
-    <ol style={{ columns: 2 }}>
-      {PROBLEMS.map((tex) => (
-        <li key={tex} style={{ marginBottom: 12 }}>
-          <MathRenderer row={Tex.parse(tex)} fontSize={24} />
-        </li>
+const Worksheet: React.FunctionComponent = () => {
+  const firstProblem = React.useRef<SVGSVGElement>(null);
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+
+  const showAsImage = (): void => {
+    if (firstProblem.current) {
+      const svg = getStandaloneSvg(firstProblem.current);
+      setImageUrl(
+        `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.outerHTML)}`,
+      );
+    }
+  };
+
+  return (
+    <div style={{ fontFamily: 'sans-serif', margin: 16 }}>
+      <h1>Worksheet</h1>
+      <ol style={{ columns: 2 }}>
+        {PROBLEMS.map((tex, i) => (
+          <li key={tex} style={{ marginBottom: 12 }}>
+            <MathRenderer
+              ref={i === 0 ? firstProblem : undefined}
+              row={Tex.parse(tex)}
+              fontSize={24}
+            />
+          </li>
+        ))}
+      </ol>
+      <h2>Answers</h2>
+      {Array.from({ length: EDITORS }, (_, i) => (
+        <div key={i} style={{ marginBottom: 8 }}>
+          <MathEditor
+            readonly={false}
+            row={Tex.parse(`x=${i + 1}`)}
+            fontSize={24}
+            style={{ minWidth: 300 }}
+          />
+        </div>
       ))}
-    </ol>
-    <h2>Answers</h2>
-    {Array.from({ length: EDITORS }, (_, i) => (
-      <div key={i} style={{ marginBottom: 8 }}>
-        <MathEditor
-          readonly={false}
-          row={Tex.parse(`x=${i + 1}`)}
-          fontSize={24}
-          style={{ minWidth: 300 }}
-        />
-      </div>
-    ))}
-  </div>
-);
+      <h2>Export</h2>
+      <button onClick={showAsImage}>Show problem 1 as an image</button>
+      {imageUrl && (
+        <div>
+          <img src={imageUrl} alt="Problem 1" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const WorksheetPage: React.FunctionComponent = () => {
   const fontData = useFont('stix-two-math');

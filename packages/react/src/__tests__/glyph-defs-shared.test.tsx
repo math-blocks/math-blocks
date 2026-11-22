@@ -10,7 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
-import { hydrateRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import { act, fireEvent, render } from '@testing-library/react';
 import { Blob } from 'buffer';
 
@@ -22,7 +22,7 @@ import { parse as parseTex } from '@math-blocks/tex';
 import MathEditor from '../math-editor';
 import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
-import { GlyphDefsProvider } from '../glyph-defs';
+import { GlyphDefsProvider, getStandaloneSvg } from '../glyph-defs';
 import { expandGlyphUses, readGlyphDefs } from '../test-util';
 
 // In jsdom, 'react-dom/server' resolves to React's browser build, which needs
@@ -293,5 +293,85 @@ describe('GlyphDefsProvider', () => {
       expandGlyphUses(svg.outerHTML, defs);
     }
     container.remove();
+  });
+});
+
+describe('getStandaloneSvg', () => {
+  test('copies the shared definitions an SVG uses into the copy', () => {
+    const { container } = render(
+      <FontDataContext.Provider value={fontData}>
+        <GlyphDefsProvider>{renderers(EXPRESSIONS)}</GlyphDefsProvider>
+      </FontDataContext.Provider>,
+    );
+    const defs = sharedDefs(container);
+
+    for (const svg of mathSvgs(container)) {
+      const before = svg.outerHTML;
+      const copy = getStandaloneSvg(svg as SVGSVGElement);
+
+      // Self-contained: expanding it needs no shared definitions, and every
+      // definition in it is used. It draws what the original draws.
+      expect(expandGlyphUses(copy.outerHTML)).toEqual(
+        expandGlyphUses(svg.outerHTML, defs),
+      );
+      // One definition per glyph it uses, not the whole page's.
+      expect(copy.querySelectorAll('defs > path')).toHaveLength(
+        new Set(hrefs(svg)).size,
+      );
+      // The rendered SVG is unchanged.
+      expect(svg.outerHTML).toEqual(before);
+    }
+  });
+
+  test('returns a plain copy of an SVG with its own definitions', () => {
+    const { container } = render(
+      <FontDataContext.Provider value={fontData}>
+        {renderers(EXPRESSIONS)}
+      </FontDataContext.Provider>,
+    );
+
+    for (const svg of mathSvgs(container)) {
+      expect(getStandaloneSvg(svg as SVGSVGElement).outerHTML).toEqual(
+        svg.outerHTML,
+      );
+    }
+  });
+
+  test('finds definitions in the shadow root the SVG is in', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const shadow = host.attachShadow({ mode: 'open' });
+    const container = document.createElement('div');
+    shadow.appendChild(container);
+
+    // This is React's own createRoot, not Testing Library's render, which
+    // can't render into a shadow root.
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      createRoot(container).render(
+        <FontDataContext.Provider value={fontData}>
+          <GlyphDefsProvider>{renderers(['x+1'])}</GlyphDefsProvider>
+        </FontDataContext.Provider>,
+      );
+    });
+
+    const [svg] = mathSvgs(container);
+    expect(svg.querySelector('defs')).toBeNull();
+    // Throws if a <use> in the copy has no definition.
+    expandGlyphUses(getStandaloneSvg(svg as SVGSVGElement).outerHTML);
+    host.remove();
+  });
+
+  test('leaves the references of a detached SVG as they are', () => {
+    const { container } = render(
+      <FontDataContext.Provider value={fontData}>
+        <GlyphDefsProvider>{renderers(['x+1'])}</GlyphDefsProvider>
+      </FontDataContext.Provider>,
+    );
+    const [svg] = mathSvgs(container);
+    const detached = svg.cloneNode(true) as SVGSVGElement;
+
+    const copy = getStandaloneSvg(detached);
+    expect(copy.outerHTML).toEqual(detached.outerHTML);
   });
 });

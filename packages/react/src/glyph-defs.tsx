@@ -189,3 +189,53 @@ export const useIsClient = (): boolean =>
 // useLayoutEffect on the server, where effects don't run anyway.
 export const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
+/**
+ * Returns a copy of a rendered SVG that works on its own, for copying,
+ * downloading or drawing as an image. Under a GlyphDefsProvider, an SVG's
+ * glyphs are <use> elements that reference definitions in the provider's
+ * hidden <svg>; the copy gets a <defs> holding a copy of each definition it
+ * references. The rendered SVG itself isn't changed.
+ *
+ * An SVG that already has its own definitions, because it was rendered
+ * without a provider or on the server, comes back as a plain copy. A <use>
+ * whose definition can't be found is left as it is.
+ *
+ * Serialize the result with `outerHTML` or XMLSerializer.
+ */
+export const getStandaloneSvg = (svg: SVGSVGElement): SVGSVGElement => {
+  const copy = svg.cloneNode(true) as SVGSVGElement;
+  // Definitions are looked up where the SVG is: its document, or the shadow
+  // root it's in. A detached SVG has nowhere to look.
+  const root = svg.getRootNode();
+  const findById = (id: string): Element | null =>
+    root instanceof Document || root instanceof ShadowRoot
+      ? root.getElementById(id)
+      : null;
+
+  // Definitions already inside the SVG travel with the copy.
+  const own = new Set(
+    Array.from(svg.querySelectorAll('[id]'), (element) => element.id),
+  );
+  const missing = new Set<string>();
+  for (const use of Array.from(copy.querySelectorAll('use'))) {
+    const href = use.getAttribute('href') ?? '';
+    const id = href.startsWith('#') ? href.slice(1) : '';
+    if (id && !own.has(id)) {
+      missing.add(id);
+    }
+  }
+
+  const defs = Array.from(missing)
+    .map(findById)
+    .filter((def): def is Element => def !== null)
+    .map((def) => def.cloneNode(true));
+  if (defs.length > 0) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const defsElement = svg.ownerDocument.createElementNS(ns, 'defs');
+    defsElement.append(...defs);
+    copy.prepend(defsElement);
+  }
+
+  return copy;
+};
