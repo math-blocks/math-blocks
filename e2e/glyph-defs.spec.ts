@@ -233,6 +233,56 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
     expect(errors).toEqual([]);
   });
 
+  // Checking the page once can miss a gap that lasts a single frame, so record
+  // every frame from the start: a glyph's definition must be in place by the
+  // first frame that shows its <use>.
+  test('never shows a glyph before its definition', async ({ page }) => {
+    await page.addInitScript(() => {
+      const frames: number[] = [];
+      Object.assign(window, { glyphDefFrames: frames });
+      const check = (): void => {
+        const svgs = Array.from(document.querySelectorAll('svg'));
+        const defIds = new Set(
+          svgs
+            .filter((svg) => svg.getAttribute('aria-hidden'))
+            .flatMap((svg) =>
+              Array.from(svg.querySelectorAll('defs > path')).map((p) => p.id),
+            ),
+        );
+        const hrefs = svgs
+          .filter((svg) => !svg.getAttribute('aria-hidden'))
+          .flatMap((svg) =>
+            Array.from(svg.querySelectorAll('use')).map((use) =>
+              (use.getAttribute('href') ?? '').slice(1),
+            ),
+          );
+        if (hrefs.length > 0) {
+          frames.push(hrefs.filter((href) => !defIds.has(href)).length);
+        }
+        requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    });
+    await openWorksheet(page);
+    await expect(page.locator('svg:not([aria-hidden]) use')).not.toHaveCount(0);
+    // Let a few more frames go by after the math appears.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as unknown as { glyphDefFrames: number[] }).glyphDefFrames
+              .length,
+        ),
+      )
+      .toBeGreaterThan(10);
+
+    const frames = await page.evaluate(
+      () => (window as unknown as { glyphDefFrames: number[] }).glyphDefFrames,
+    );
+    // Each entry is the number of unresolved hrefs in one frame.
+    expect(frames.filter((broken) => broken > 0)).toEqual([]);
+  });
+
   test('draws exactly what per-SVG definitions draw', async ({ page }) => {
     await openWorksheet(page, '?shared=0');
     const own = await page.screenshot({ fullPage: true });

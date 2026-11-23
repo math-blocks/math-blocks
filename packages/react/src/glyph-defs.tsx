@@ -60,18 +60,19 @@ export type GlyphPath = {
 /**
  * The glyph definitions shared by every renderer under a GlyphDefsProvider.
  *
- * It's an external store rather than React state, so that adding a glyph only
- * re-renders the hidden <svg> that holds the definitions, never the renderers
- * and editors that use them. Definitions are never removed: the glyphs a page
- * can use are bounded by its fonts, and keeping them avoids tracking which
- * renderers still use each one.
+ * It lives outside React state, and only the hidden <svg> that holds the
+ * definitions subscribes to it, so adding a glyph re-renders that <svg> and
+ * never the renderers and editors that use it. Definitions are never removed:
+ * the glyphs a page can use are bounded by its fonts, and keeping them avoids
+ * tracking which renderers still use each one.
  */
 export class GlyphRegistry {
   readonly prefix: string;
   readonly fontNamer = new FontNamer();
   private readonly paths = new Map<string, string>();
-  // Replaced, not mutated, whenever a definition is added, as
-  // useSyncExternalStore requires.
+  // Replaced, not mutated, whenever a definition is added, so the hidden <svg>
+  // can tell from the reference alone whether anything changed and skip
+  // re-rendering when nothing did.
   // eslint-disable-next-line functional/prefer-readonly-type
   private snapshot: readonly GlyphPath[] = [];
   private readonly listeners = new Set<() => void>();
@@ -106,7 +107,6 @@ export class GlyphRegistry {
 }
 
 const NO_PATHS: readonly GlyphPath[] = [];
-const getServerSnapshot = (): readonly GlyphPath[] => NO_PATHS;
 
 export const GlyphRegistryContext = React.createContext<GlyphRegistry | null>(
   null,
@@ -127,11 +127,20 @@ const SharedGlyphDefs = ({
 }: {
   readonly registry: GlyphRegistry;
 }): React.ReactElement => {
-  const paths = React.useSyncExternalStore(
-    registry.subscribe,
-    registry.getSnapshot,
-    getServerSnapshot,
-  );
+  // Starts empty, like the server's markup, so hydration matches.
+  const [paths, setPaths] = React.useState(NO_PATHS);
+  // Not useSyncExternalStore: it subscribes in a passive effect, which runs
+  // after the browser paints. On the first render, the renderers add their
+  // definitions in layout effects before that, so the page would paint one
+  // frame of <use> elements with nothing to point at. This subscribes in a
+  // layout effect instead, and the provider renders this component after its
+  // children, so this effect runs after theirs and picks up what they added.
+  // Updating state in a layout effect re-renders before the browser paints.
+  useIsomorphicLayoutEffect(() => {
+    const update = (): void => setPaths(registry.getSnapshot());
+    update();
+    return registry.subscribe(update);
+  }, [registry]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -173,8 +182,9 @@ export const GlyphDefsProvider = ({
   );
   return (
     <GlyphRegistryContext.Provider value={registry}>
-      <SharedGlyphDefs registry={registry} />
       {children}
+      {/* After the children; see SharedGlyphDefs. */}
+      <SharedGlyphDefs registry={registry} />
     </GlyphRegistryContext.Provider>
   );
 };
