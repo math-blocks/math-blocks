@@ -1,4 +1,3 @@
-import type { TwoOrMore } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 const { NodeType } = Semantic;
@@ -141,7 +140,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     case NodeType.GreaterThan:
     case NodeType.GreaterThanOrEquals:
     case NodeType.Equals: {
-      const args = expr.args as TwoOrMore<Semantic.types.Node>;
+      const args = expr.args;
       let operation = ' = ';
       if (expr.type === NodeType.LessThan) {
         operation = ' < ';
@@ -177,7 +176,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
       return `(${print(expr.arg)})`;
     }
     case 'Sequence': {
-      return `${expr.args.map((arg) => print(arg)).join(', ')}`;
+      return expr.args.map((arg) => print(arg)).join(', ');
     }
     default: {
       throw new Error(`print doesn't handle ${expr.type} nodes yet`);

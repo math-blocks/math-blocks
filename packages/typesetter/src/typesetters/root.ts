@@ -17,8 +17,10 @@ export const typesetRoot = (
     // always use ScriptScript for root indicies.
     mathStyle: MathStyle.ScriptScript,
   };
-  const degree = typesetChild(0, degreeContext) as Mutable<HBox> | null;
-  const radicand = typesetChild(1, context) as Mutable<HBox> | null;
+  // Annotate rather than assert: tsgolint's no-unnecessary-type-assertion
+  // ignores `readonly`, so it reports `as Mutable<HBox>` as unnecessary.
+  const degree: Mutable<HBox> | null = typesetChild(0, degreeContext);
+  const radicand: Mutable<HBox> | null = typesetChild(1, context);
 
   if (!radicand) {
     throw new Error('Radicand must be defined');

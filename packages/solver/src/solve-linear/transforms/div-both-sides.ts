@@ -57,7 +57,7 @@ export const divByCoeff = (
   }
 
   // TODO: add a check to make sure this is true
-  const args = before.args as TwoOrMore<Semantic.types.Node>;
+  const args = before.args;
 
   let opType = before.type;
   if (coeff.type === NodeType.Neg) {
@@ -74,7 +74,7 @@ export const divByCoeff = (
 
   const after = Semantic.builders.numRel(
     args.map((arg) => {
-      const result = Semantic.builders.div(arg as Semantic.types.Node, coeff);
+      const result = Semantic.builders.div(arg, coeff);
       result.source = 'divBothSides';
       return result;
     }) as unknown as TwoOrMore<Semantic.types.Node>,

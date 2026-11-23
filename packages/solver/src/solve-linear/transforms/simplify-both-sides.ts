@@ -1,4 +1,3 @@
-import type { TwoOrMore } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 import { simplify } from '../../simplify/simplify';
@@ -7,7 +6,7 @@ import type { Step } from '../../types';
 export function simplifyBothSides(
   before: Semantic.types.NumericRelation,
 ): Step | void {
-  const args = before.args as TwoOrMore<Semantic.types.Node>;
+  const args = before.args;
   const left = simplify(args[0]);
   const right = simplify(args[1]);
 

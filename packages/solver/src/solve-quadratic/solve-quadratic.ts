@@ -52,7 +52,7 @@ export function solveQuadratic(
 
   const solutions: types.Node[] = [];
   for (const equation of relations) {
-    const step = solveLinear(equation as types.Eq, ident);
+    const step = solveLinear(equation, ident);
     if (!step) {
       return undefined;
     }

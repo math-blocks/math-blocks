@@ -53,12 +53,14 @@ export const typesetLimits = (
     });
     const output = [inner, typesetSubsup(typesetChild, subsup, context, inner)];
 
-    return Layout.makeStaticHBox(output, context) as Mutable<HBox>;
+    return Layout.makeStaticHBox(output, context);
   }
 
   const childContext = childContextForLimits(context);
-  const lowerBox = typesetChild(0, childContext) as Mutable<HBox> | null;
-  const upperBox = typesetChild(1, childContext) as Mutable<HBox> | null;
+  // Annotate rather than assert: tsgolint's no-unnecessary-type-assertion
+  // ignores `readonly`, so it reports `as Mutable<HBox>` as unnecessary.
+  const lowerBox: Mutable<HBox> | null = typesetChild(0, childContext);
+  const upperBox: Mutable<HBox> | null = typesetChild(1, childContext);
 
   if (!lowerBox) {
     throw new Error('Lower limit should always be defined');
@@ -98,7 +100,7 @@ export const typesetLimits = (
 
     const output = [inner, typesetSubsup(typesetChild, subsup, context, inner)];
 
-    return Layout.makeStaticHBox(output, context) as Mutable<HBox>;
+    return Layout.makeStaticHBox(output, context);
   } else {
     // TODO: figure out what the path should be for `inner`
     inner = typesetNode(node.inner, path, {

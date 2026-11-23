@@ -23,7 +23,7 @@ describe('solveProblem', () => {
   it('should simplify numeric expressions', () => {
     const problem: Problem = {
       type: 'SimplifyExpression',
-      expression: parse('3x-2x') as Semantic.types.Node,
+      expression: parse('3x-2x'),
     };
     const result = solveProblem(problem)!;
 
