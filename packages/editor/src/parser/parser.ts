@@ -530,8 +530,8 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 export const parse = (input: CharRow): Semantic.types.Node => {
   const tokenRow = Lexer.lexRow(input);
   // The Semantic types have more restrictions on where certain node types can appear.
-  // TODO: add a function that checks that the result of editorParser.parse()
-  // follows those restrictions.
+  // TODO(#862): check that the result of editorParser.parse() follows those
+  // restrictions.
   const result = editorParser.parse(tokenRow.children);
 
   return removeExcessParens(result);
