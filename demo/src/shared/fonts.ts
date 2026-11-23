@@ -101,6 +101,7 @@ export const useFont = (folder: FontFolder): FontData | null => {
   }, [folder]);
 
   if (error) {
+    // oxlint-disable-next-line typescript/only-throw-error -- rethrows whatever loadFont() rejected with, so an error boundary sees it.
     throw error;
   }
 

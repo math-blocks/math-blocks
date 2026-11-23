@@ -26,7 +26,7 @@ describe('#getHint', () => {
   it('should work with expressions', () => {
     const problem: Solver.Problem = {
       type: 'SimplifyExpression',
-      expression: Testing.parse('2x + 3x') as Semantic.types.Node,
+      expression: Testing.parse('2x + 3x'),
     };
 
     const hint = getHint(problem);
@@ -37,7 +37,7 @@ describe('#getHint', () => {
   it("should throw if there's nothing left to do", () => {
     const problem: Solver.Problem = {
       type: 'SimplifyExpression',
-      expression: Testing.parse('x') as Semantic.types.Node,
+      expression: Testing.parse('x'),
     };
 
     expect(() => getHint(problem)).toThrowErrorMatchingInlineSnapshot(

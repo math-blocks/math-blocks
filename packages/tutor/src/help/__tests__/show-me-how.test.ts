@@ -26,7 +26,7 @@ describe('#showMeHow', () => {
   it('should work with expressions', () => {
     const problem: Solver.Problem = {
       type: 'SimplifyExpression',
-      expression: Testing.parse('2x + 3x') as Semantic.types.Node,
+      expression: Testing.parse('2x + 3x'),
     };
 
     const result = showMeHow(problem);

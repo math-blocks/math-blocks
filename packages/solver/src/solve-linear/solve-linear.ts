@@ -172,7 +172,7 @@ export function solveLinear(
         return;
       }
       substeps.push(step);
-      rel = step.after as types.NumericRelation;
+      rel = step.after;
 
       const simpStep = simplifyBothSides(rel);
       if (simpStep) {
@@ -201,7 +201,7 @@ export function solveLinear(
         return;
       }
       substeps.push(step);
-      rel = step.after as types.NumericRelation;
+      rel = step.after;
 
       const simpStep = simplifyBothSides(rel);
       if (simpStep) {

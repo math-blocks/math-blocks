@@ -56,7 +56,7 @@ export function solveSystem(
 
   const [ident1, expr1] =
     sol1.args[0].type === 'Identifier'
-      ? [sol1.args[0] as types.Identifier, sol1.args[1]]
+      ? [sol1.args[0], sol1.args[1]]
       : [sol1.args[1] as types.Identifier, sol1.args[0]];
 
   const eqn2Subbed = util.traverse(eqn2, {
@@ -96,7 +96,7 @@ export function solveSystem(
 
   const [ident2, expr2] =
     sol2.args[0].type === 'Identifier'
-      ? [sol2.args[0] as types.Identifier, sol2.args[1]]
+      ? [sol2.args[0], sol2.args[1]]
       : [sol2.args[1] as types.Identifier, sol2.args[0]];
 
   const sol1Subbed = util.traverse(sol1, {
@@ -117,7 +117,7 @@ export function solveSystem(
     substitution: expr2,
   });
 
-  const step3: Mutable<Step> | void = simplify(sol1Subbed)!;
+  const step3: Mutable<Step> | void = simplify(sol1Subbed);
   if (step3) {
     step3.section = true;
     substeps.push(step3);

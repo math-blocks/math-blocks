@@ -1,3 +1,4 @@
+import { clone } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
@@ -43,7 +44,7 @@ export function mulToPow(
       newFactors.push(key);
     } else {
       // Clone the key to prevent issues when modifying the AST
-      const base = JSON.parse(JSON.stringify(key));
+      const base = clone(key);
       newFactors.push(
         Semantic.builders.pow(base, Semantic.builders.number(String(val))),
       );

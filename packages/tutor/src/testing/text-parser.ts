@@ -304,5 +304,5 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 export const parse = (input: string): Semantic.types.Node => {
   const tokens = lex(input);
   const result = textParser.parse(tokens);
-  return removeExcessParens(result as Semantic.types.Node);
+  return removeExcessParens(result);
 };

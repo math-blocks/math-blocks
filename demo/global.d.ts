@@ -4,5 +4,8 @@ declare module '*.module.css' {
 }
 
 declare module '*.otf' {
-  export default string;
+  // The URL of the font file. (`export default string;` would export a value
+  // named `string`, which doesn't exist, so imports were typed as an error.)
+  const url: string;
+  export default url;
 }

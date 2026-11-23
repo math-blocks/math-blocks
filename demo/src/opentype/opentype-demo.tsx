@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { GlyphMetrics, parse } from '@math-blocks/opentype';
 import type { Mutable } from 'utility-types';
-import type { Blob } from 'buffer';
 
 import type { Font, Glyph, Path, Command } from '@math-blocks/opentype';
 
@@ -110,12 +109,12 @@ const OpenTypeDemo: React.FC = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(stix2);
       const blob = await res.blob();
-      const font = await parse(blob as Blob);
+      const font = await parse(blob);
       console.log(font);
       setFont(font);
     };
 
-    loadFont();
+    void loadFont();
   }, []);
 
   if (font) {

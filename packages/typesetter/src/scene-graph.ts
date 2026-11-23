@@ -412,18 +412,17 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
     });
   });
 
-  if (cancelRegion !== null && layer === 'content') {
+  // TypeScript doesn't see the assignments in the forEach callbacks above, so
+  // it narrows `cancelRegion` to `null` here. Widen it again.
+  const lastCancelRegion = cancelRegion as CancelRegion | null;
+  if (lastCancelRegion !== null && layer === 'content') {
     const thickness = fontSize * font.math.constants.fractionRuleThickness;
     children.push({
       type: 'line',
-      // @ts-expect-error: TypeScript doesn't understand forEach loops
-      x1: cancelRegion.xMin,
-      // @ts-expect-error: TypeScript doesn't understand forEach loops
-      y1: cancelRegion.yMax,
-      // @ts-expect-error: TypeScript doesn't understand forEach loops
-      x2: cancelRegion.xMax,
-      // @ts-expect-error: TypeScript doesn't understand forEach loops
-      y2: cancelRegion.yMin,
+      x1: lastCancelRegion.xMin,
+      y1: lastCancelRegion.yMax,
+      x2: lastCancelRegion.xMax,
+      y2: lastCancelRegion.yMin,
       thickness: thickness,
       style: {},
     });

@@ -70,7 +70,9 @@ describe('glyph definitions', () => {
 
     const hrefs = getHrefs(svg);
     expect(hrefs).toHaveLength(8);
-    expect(Object.values(countBy(hrefs)).sort()).toEqual([2, 3, 3]);
+    expect(Object.values(countBy(hrefs)).sort((a, b) => a - b)).toEqual([
+      2, 3, 3,
+    ]);
     for (const href of hrefs) {
       expect(defIds).toContain(href);
     }

@@ -4,7 +4,7 @@ import type { Mutable } from 'utility-types';
 import * as Layout from '../layout';
 import { MathStyle } from '../enums';
 
-import type { Context, Node, HBox, VBox, Kern } from '../types';
+import type { Context, Node, HBox, VBox } from '../types';
 
 const childContextForSubsup = (context: Context): Context => {
   const { mathStyle } = context;
@@ -194,8 +194,8 @@ export const typesetSubsup = (
       kernSize += supBox.depth - maxDepth;
     }
 
-    upList.push(Layout.makeKern(kernSize) as Mutable<Kern>);
-    upList.push(supBox as Mutable<HBox>);
+    upList.push(Layout.makeKern(kernSize));
+    upList.push(supBox);
   }
 
   if (subBox) {

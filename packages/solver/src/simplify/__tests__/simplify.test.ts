@@ -1101,7 +1101,7 @@ describe('simplify', () => {
       // const ast = parse('2*(3/2)(x)');
       const ast = parse('(2)((3/2)(x)+(1/2))');
 
-      const step = simplify(ast)!;
+      const step = simplify(ast);
 
       print(step.after); // ?
     });

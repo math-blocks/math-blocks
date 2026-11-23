@@ -94,6 +94,7 @@ describe('loadFontSubsets', () => {
 
   test('names the subset when the loader throws something other than an Error', async () => {
     await expect(
+      // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- this test needs a rejection that isn't an Error.
       loadFontSubsets([], () => Promise.reject('offline')),
     ).rejects.toThrow('Couldn\'t load the "base" font subset: offline');
   });
