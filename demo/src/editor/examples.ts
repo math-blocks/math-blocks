@@ -139,12 +139,15 @@ const addingFractions = builders.row([
   builders.char('y'),
 ]);
 
+// The lines below use @ts-expect-error, which types the expressions as errors.
+/* oxlint-disable typescript/no-unsafe-member-access -- see above */
 // @ts-expect-error: ignore readonly
 addingFractions.children[2].style.color = 'teal';
 // @ts-expect-error: we don't both refining the type since we know what it is
 addingFractions.children[2].children[0].style.color = 'orange';
 // @ts-expect-error: we don't both refining the type since we know what it is
 addingFractions.children[2].children[0].children[0].style.color = 'pink';
+/* oxlint-enable typescript/no-unsafe-member-access */
 
 const matrix = builders.row([
   builders.char('A'),
