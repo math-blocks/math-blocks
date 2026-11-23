@@ -78,6 +78,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: build
         run: pnpm build
+      - name: check published types
+        run: pnpm check-dist-types
 
   typecheck:
     permissions:

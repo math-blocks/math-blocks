@@ -1,3 +1,4 @@
+import type { TwoOrMore } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 import { simplify } from '../../simplify/simplify';

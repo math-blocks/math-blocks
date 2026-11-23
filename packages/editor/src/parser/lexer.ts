@@ -7,6 +7,7 @@
  * - symbols
  */
 import { UnreachableCaseError } from '@math-blocks/core';
+import type { OneOrMore } from '@math-blocks/core';
 
 import * as types from '../char/types';
 

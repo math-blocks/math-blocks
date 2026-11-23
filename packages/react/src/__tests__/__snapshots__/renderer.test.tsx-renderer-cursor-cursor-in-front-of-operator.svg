@@ -7,15 +7,15 @@
     </defs>
     <g fill="currentColor" stroke="none" transform="translate(0,0)">
         <g transform="translate(0,46.2)" id="3">
-            <rect type="rect" x="29.2" y="-46.2" width="1" height="60" class="blink" stroke="none"></rect>
+            <rect x="29.2" y="-46.2" width="1" height="60" class="blink" stroke="none"></rect>
             <g transform="translate(29.7,0)" id="1"></g>
         </g>
         <g transform="translate(0,46.2)" id="3">
-            <use id="0" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(0, 0) scale(0.06, -0.06)"></use>
+            <use id="0" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(0,0) scale(0.06,-0.06)"></use>
             <g transform="translate(29.7,0)" id="1">
-                <use style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-102" transform="translate(15, 0) scale(0.06, -0.06)"></use>
+                <use aria-hidden="true" href="#mbR0-STIX2-102" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use id="2" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-287" transform="translate(102.9, 0) scale(0.06, -0.06)"></use>
+            <use id="2" aria-hidden="true" href="#mbR0-STIX2-287" transform="translate(102.9,0) scale(0.06,-0.06)"></use>
         </g>
     </g>
 </svg>

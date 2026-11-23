@@ -1,3 +1,4 @@
+import type { TwoOrMore } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 const { NodeType } = Semantic;

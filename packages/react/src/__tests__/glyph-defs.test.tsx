@@ -131,12 +131,31 @@ describe('glyph definitions', () => {
     const row = Editor.builders.row([
       Editor.builders.char('x'),
       { ...Editor.builders.char('y'), style: { color: 'red' } },
+      Editor.builders.char('z', true),
     ]);
     const svg = toMarkup(<MathRenderer row={row} />);
+    const uses = svg.match(/<use [^>]*>/g) ?? [];
 
-    expect(svg).toMatch(/<use fill="red" [^>]*style="opacity:1"/);
+    expect(uses).toHaveLength(3);
+    expect(uses[1]).toMatch(/^<use fill="red" /);
+    // Only the pending glyph is dimmed; the others get no inline style.
+    expect(uses[0]).not.toMatch(/style=/);
+    expect(uses[1]).not.toMatch(/style=/);
+    expect(uses[2]).toMatch(/style="opacity:0.5"/);
     // Definitions carry only an ID and the outline.
     expect(svg).not.toMatch(/<path id="[^"]+" d="[^"]*" /);
+  });
+
+  test('translations are rounded to a thousandth of a pixel', () => {
+    const svg = toMarkup(<MathRenderer row={parseTex('\\frac{1}{3}+x^2')} />);
+    const translations = svg.match(/translate\([^)]*\)/g) ?? [];
+
+    expect(translations.length).toBeGreaterThan(0);
+    for (const translation of translations) {
+      expect(translation).toMatch(
+        /^translate\(-?\d+(\.\d{1,3})?,-?\d+(\.\d{1,3})?\)$/,
+      );
+    }
   });
 
   test('placeholders draw their own "?" and get no definition', () => {

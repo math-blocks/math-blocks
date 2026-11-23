@@ -270,6 +270,9 @@ importers:
 
   packages/solver:
     dependencies:
+      '@math-blocks/core':
+        specifier: workspace:^
+        version: link:../core
       '@math-blocks/semantic':
         specifier: workspace:^
         version: link:../semantic

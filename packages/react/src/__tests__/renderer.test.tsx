@@ -698,6 +698,30 @@ describe('renderer', () => {
     });
   });
 
+  describe('pending characters', () => {
+    // Typing "(" in the editor inserts a delimited node whose ")" is pending
+    // until the user types it, and pending glyphs are drawn dimmed.
+    test('pending right paren', async () => {
+      const fontData = await stixFontLoader();
+      const node = row([
+        Editor.builders.delimited(
+          [glyph('x'), glyph('+'), glyph('1')],
+          glyph('('),
+          glyph(')', true),
+        ),
+      ]);
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={node}
+            fontSize={60}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+  });
+
   describe('cursor', () => {
     test('cursor in the middle', async () => {
       const Cursor = await fixtureToComponent(fixtures.Cursor);
@@ -924,6 +948,18 @@ describe("placeholders for characters the font can't draw", () => {
     expect(
       <FontDataContext.Provider value={fontData}>
         <MathRenderer row={Tex.parse(tex)} fontSize={60} />
+      </FontDataContext.Provider>,
+    ).toMatchSVGSnapshot();
+  });
+
+  // A pending character the font can't draw: the placeholder is dimmed the
+  // same way a pending glyph is.
+  test('pending', async () => {
+    const fontData = await loadBaseOnly();
+    const node = row([glyph('x'), glyph('+'), glyph('\u03B8', true)]);
+    expect(
+      <FontDataContext.Provider value={fontData}>
+        <MathRenderer row={node} fontSize={60} />
       </FontDataContext.Provider>,
     ).toMatchSVGSnapshot();
   });
