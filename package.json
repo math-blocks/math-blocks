@@ -38,6 +38,7 @@
     "mini-css-extract-plugin": "^1.3.8",
     "oxfmt": "0.79.0",
     "oxlint": "1.94.0",
+    "oxlint-tsgolint": "7.0.2008",
     "postcss": "^8.3.9",
     "react-hot-loader": "^4.12.18",
     "react-is": "^17.0.1",
@@ -68,7 +69,7 @@
     "test:debug": "vitest run --inspect-brk --no-file-parallelism",
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "lint": "oxlint --report-unused-disable-directives",
+    "lint": "oxlint --type-aware --report-unused-disable-directives",
     "clean": "rm -rf packages/*/out .buildcache",
     "sloc": "sloc packages demo tools -e '(out|dist)'",
     "format": "oxfmt",
@@ -88,7 +89,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "oxlint --report-unused-disable-directives --no-error-on-unmatched-pattern",
+      "oxlint --type-aware --report-unused-disable-directives --no-error-on-unmatched-pattern",
       "oxfmt --no-error-on-unmatched-pattern"
     ],
     "*.{js,jsx,cjs,mjs,mts,cts,css,yaml,yml,json,md,html}": "oxfmt --no-error-on-unmatched-pattern"
