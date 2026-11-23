@@ -8,7 +8,7 @@ import {
 import type { FontData } from '@math-blocks/opentype';
 
 // The URL of every subset in assets/subsets/, keyed by "<folder>/<group>".
-// Vite copies the files into the build, so this works with `yarn start` and in
+// Vite copies the files into the build, so this works with `pnpm start` and in
 // the deployed demo.
 const subsetUrls: Record<string, string> = Object.fromEntries(
   Object.entries(
