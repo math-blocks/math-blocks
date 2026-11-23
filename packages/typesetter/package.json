@@ -9,7 +9,21 @@
     "bugs": "https://github.com/math-blocks/math-blocks/issues",
     "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/typesetter#readme",
     "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "dist"
     ],

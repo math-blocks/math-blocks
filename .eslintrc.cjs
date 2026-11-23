@@ -80,6 +80,7 @@ module.exports = {
       './packages/**/tsconfig.json',
       './demo/tsconfig.json',
       './e2e/tsconfig.json',
+      './tsconfig.tsdown.json',
     ],
   },
   settings: { react: { version: 'detect' } },

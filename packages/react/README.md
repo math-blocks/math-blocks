@@ -2,6 +2,23 @@
 
 A set of React components for rendering and editing math expressions.
 
+## Styles
+
+`MathEditor` and `MathKeypad` are styled by a stylesheet that ships with the
+package. The components don't load it themselves, so import it once in your
+app, for example next to where you render them:
+
+```js
+import '@math-blocks/react/index.css';
+```
+
+Without it, the editor has no border or focus outline and the keypad isn't laid
+out as a grid. `MathRenderer` doesn't need the stylesheet.
+
+The class names in the stylesheet are generated and can change between
+releases, so don't target them from your own CSS. To restyle `MathEditor`, pass
+it a `className` or `style` prop.
+
 ## MathRenderer
 
 ## MathEditor
