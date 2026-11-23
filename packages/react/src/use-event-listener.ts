@@ -9,11 +9,8 @@ export default function useEventListener(
 ): void {
   useEffect(
     () => {
-      // Make sure element supports addEventListener
-      // On the element
-      // oxlint-disable-next-line typescript/unbound-method -- only checks that the method exists; it's called on `element` below.
-      const isSupported = element?.addEventListener;
-      if (!isSupported) return;
+      // Make sure element supports addEventListener.
+      if (element == null || !('addEventListener' in element)) return;
 
       // Listen in the capture phase so the editor's handlers run before the
       // page's own key handlers, and can call e.stopPropagation() to keep
