@@ -13,26 +13,6 @@ import {
   useIsomorphicLayoutEffect,
 } from './glyph-defs';
 
-const Line = ({
-  id,
-  style,
-  thickness,
-  ...props
-}: SceneGraph.Line): React.ReactElement => {
-  return (
-    <line
-      {...props}
-      stroke={style.stroke || 'currentColor'}
-      strokeWidth={thickness}
-      strokeLinecap="butt"
-    />
-  );
-};
-
-const Rect = ({ fill, id, ...props }: SceneGraph.Rect): React.ReactElement => {
-  return <rect {...props} fill={fill} stroke="none" />;
-};
-
 const svgPathFromFontPath = (path: OpenType.Path): string => {
   let result = '';
 
@@ -75,7 +55,7 @@ const getPath = (font: OpenType.Font, glyphID: number): string => {
 
 // Glyph IDs are only unique within a font, so definitions are keyed by font
 // plus glyph ID. FontNamer gives each font a readable name for the IDs.
-type GlyphDefsContextValue = {
+type GlyphDefIds = {
   // The prefix for the IDs of the glyph definitions this SVG uses: its own,
   // or the GlyphDefsProvider's. It comes from React's useId() so that two
   // renderers, or two providers, on the same page can't collide.
@@ -84,10 +64,23 @@ type GlyphDefsContextValue = {
   readonly fontNames: ReadonlyMap<OpenType.Font, string>;
 };
 
-const GlyphDefsContext = React.createContext<GlyphDefsContextValue>({
-  prefix: '',
-  fontNames: new Map(),
-});
+// Translations are in pixels, so rounding them to a thousandth of a pixel
+// changes nothing visible and keeps values like 68.01599999999999 out of the
+// markup. Scales aren't rounded: a glyph's scale is about 0.01-0.1, where
+// rounding would change its size.
+const round = (value: number): number => Math.round(value * 1000) / 1000;
+
+const translate = (x: number, y: number): string =>
+  `translate(${round(x)},${round(y)})`;
+
+// Glyph outlines are in font units with y pointing up; this places one at
+// (x, y) in the scene, scaled to its size.
+const glyphTransform = (x: number, y: number, scale: number): string =>
+  `${translate(x, y)} scale(${scale},${-scale})`;
+
+// Only pending glyphs are dimmed. Every other glyph gets no style at all,
+// rather than an inline `opacity: 1`.
+const PENDING_STYLE: React.CSSProperties = { opacity: 0.5 };
 
 const getGlyphKey = (
   glyph: SceneGraph.Glyph['glyph'],
@@ -147,17 +140,22 @@ const getGlyphDefs = (
   return [...defs.values()];
 };
 
+// The scene is drawn by plain functions that return elements, rather than one
+// component per node, so React creates a fiber for each SVG element and none
+// for wrappers around them. Each function passes its element exactly the
+// attributes it needs. See
+// https://github.com/math-blocks/math-blocks/issues/849.
+
+const elementId = (id: number | undefined): string | undefined =>
+  typeof id !== 'undefined' ? String(id) : undefined;
+
 // Draws a glyph the font couldn't provide as a rounded box with a "?" in it.
-const PlaceholderGlyph = ({
-  x,
-  y,
-  glyph,
-  style,
-  placeholder,
-}: SceneGraph.Glyph & {
-  readonly placeholder: OpenType.GlyphMetrics;
-}): React.ReactElement => {
-  const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
+const drawPlaceholderGlyph = (
+  node: SceneGraph.Glyph,
+  placeholder: OpenType.GlyphMetrics,
+  key: string,
+): React.ReactElement => {
+  const { x, y, glyph, style } = node;
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
   const strokeWidth = glyph.size * font.math.constants.fractionRuleThickness;
@@ -177,8 +175,9 @@ const PlaceholderGlyph = ({
 
   return (
     <g
-      id={id}
-      style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
+      key={key}
+      id={elementId(glyph.id)}
+      style={glyph.pending ? PENDING_STYLE : undefined}
       aria-hidden="true"
     >
       <rect
@@ -194,20 +193,21 @@ const PlaceholderGlyph = ({
       <path
         fill={style.fill}
         d={getPath(font, glyph.glyphID)}
-        transform={`translate(${markX}, ${markY}) scale(${markScale}, -${markScale})`}
+        transform={glyphTransform(markX, markY, markScale)}
       />
     </g>
   );
 };
 
-const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
-  const { x, y, glyph, style } = props;
-  const { prefix, fontNames } = React.useContext(GlyphDefsContext);
+const drawGlyph = (
+  node: SceneGraph.Glyph,
+  key: string,
+  ids: GlyphDefIds,
+): React.ReactElement => {
+  const { x, y, glyph, style } = node;
   if (glyph.placeholder) {
-    return <PlaceholderGlyph {...props} placeholder={glyph.placeholder} />;
+    return drawPlaceholderGlyph(node, glyph.placeholder, key);
   }
-
-  const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
 
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
@@ -217,28 +217,22 @@ const Glyph = (props: SceneGraph.Glyph): React.ReactElement => {
   // fill and opacity set here apply to the referenced path.
   return (
     <use
+      key={key}
       fill={style.fill}
-      id={id}
-      style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
+      id={elementId(glyph.id)}
+      style={glyph.pending ? PENDING_STYLE : undefined}
       aria-hidden="true"
-      href={`#${getGlyphDefId(prefix, getGlyphKey(glyph, fontNames))}`}
-      transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+      href={`#${getGlyphDefId(ids.prefix, getGlyphKey(glyph, ids.fontNames))}`}
+      transform={glyphTransform(x, y, scale)}
     />
   );
 };
 
-const InterpolatedGlyph = ({
-  x,
-  y,
-  interpolatedGlyph,
-  amount,
-  style,
-}: SceneGraph.InterpolatedGlyph): React.ReactElement => {
-  const id =
-    typeof interpolatedGlyph.id !== 'undefined'
-      ? String(interpolatedGlyph.id)
-      : undefined;
-
+const drawInterpolatedGlyph = (
+  node: SceneGraph.InterpolatedGlyph,
+  key: string,
+): React.ReactElement => {
+  const { x, y, interpolatedGlyph, amount, style } = node;
   const { font } = interpolatedGlyph.fontData; // glyph1 and glyph2 should have the same font
   const scale = interpolatedGlyph.size / font.head.unitsPerEm; // glyph1 and glyph2 should have the same size
 
@@ -251,53 +245,80 @@ const InterpolatedGlyph = ({
   // them in <text> elements.
   return (
     <path
+      key={key}
       fill={style.fill}
-      id={id}
-      style={{ opacity: interpolatedGlyph.pending ? 0.5 : 1.0 }}
+      id={elementId(interpolatedGlyph.id)}
+      style={interpolatedGlyph.pending ? PENDING_STYLE : undefined}
       aria-hidden="true"
       d={svgPathFromFontPath(path)}
-      transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+      transform={glyphTransform(x, y, scale)}
     />
   );
 };
 
-const Group = ({
-  x,
-  y,
-  children,
-  style,
-  id,
-}: SceneGraph.Group): React.ReactElement => {
-  const _id = typeof id !== 'undefined' ? String(id) : undefined;
+const drawLine = (node: SceneGraph.Line, key: string): React.ReactElement => (
+  <line
+    key={key}
+    x1={node.x1}
+    y1={node.y1}
+    x2={node.x2}
+    y2={node.y2}
+    className={node.className}
+    stroke={node.style.stroke || 'currentColor'}
+    strokeWidth={node.thickness}
+    strokeLinecap="butt"
+  />
+);
 
-  return (
-    <g
-      transform={`translate(${x},${y})`}
-      style={{ color: style.stroke }}
-      id={_id}
-    >
-      {children.map((child, i) => {
-        const key = child.key || `${i}`;
-        return <Node {...child} key={key} />;
-      })}
-    </g>
-  );
-};
+// A rect's `style` is a fill and stroke given as CSS, which the hitboxes use.
+// Every rect is drawn without an outline stroke of its own.
+const drawRect = (node: SceneGraph.Rect, key: string): React.ReactElement => (
+  <rect
+    key={key}
+    x={node.x}
+    y={node.y}
+    width={node.width}
+    height={node.height}
+    style={node.style}
+    className={node.className}
+    fill={node.fill}
+    stroke="none"
+  />
+);
 
-const Node = (props: SceneGraph.Node): React.ReactElement => {
-  switch (props.type) {
+const drawGroup = (
+  node: SceneGraph.Group,
+  key: string | undefined,
+  ids: GlyphDefIds,
+): React.ReactElement => (
+  <g
+    key={key}
+    transform={translate(node.x, node.y)}
+    style={node.style.stroke ? { color: node.style.stroke } : undefined}
+    id={elementId(node.id)}
+  >
+    {node.children.map((child, i) => drawNode(child, child.key || `${i}`, ids))}
+  </g>
+);
+
+const drawNode = (
+  node: SceneGraph.Node,
+  key: string,
+  ids: GlyphDefIds,
+): React.ReactElement => {
+  switch (node.type) {
     case 'char':
-      return <Glyph {...props} />;
+      return drawGlyph(node, key, ids);
     case 'interpolated':
-      return <InterpolatedGlyph {...props} />;
+      return drawInterpolatedGlyph(node, key);
     case 'group':
-      return <Group {...props} />;
+      return drawGroup(node, key, ids);
     case 'line':
-      return <Line {...props} />;
+      return drawLine(node, key);
     case 'rect':
-      return <Rect {...props} />;
+      return drawRect(node, key);
     default:
-      throw new UnreachableCaseError(props);
+      throw new UnreachableCaseError(node);
   }
 };
 
@@ -346,41 +367,37 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
     );
   });
 
+  const ids: GlyphDefIds = { prefix, fontNames };
+
   return (
-    <GlyphDefsContext.Provider value={{ prefix, fontNames }}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox={viewBox}
-        width={width + CURSOR_WIDTH}
-        height={height}
-        style={style}
-        ref={ref}
-      >
-        {!shared && glyphDefs.length > 0 && (
-          <defs>
-            {glyphDefs.map(({ key, d }) => (
-              <path key={key} id={getGlyphDefId(prefix, key)} d={d} />
-            ))}
-          </defs>
-        )}
-        <g
-          fill="currentColor"
-          stroke="none"
-          transform={`translate(0,${yAdjust})`}
-        >
-          <Group {...scene.selection} />
-          {/**
-           * We set 'fill' and stroke to 'currentColor' so that the base
-           * color is whatever the current CSS 'color' property is set up.
-           * Individual nodes within the scene can override their style's
-           * color and the render above will set the fill and/or stroke in
-           * rendered SVG element appropriately.
-           */}
-          <Group {...scene.content} />
-        </g>
-        {showHitboxes && <Group {...scene.hitboxes} />}
-      </svg>
-    </GlyphDefsContext.Provider>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={viewBox}
+      width={width + CURSOR_WIDTH}
+      height={height}
+      style={style}
+      ref={ref}
+    >
+      {!shared && glyphDefs.length > 0 && (
+        <defs>
+          {glyphDefs.map(({ key, d }) => (
+            <path key={key} id={getGlyphDefId(prefix, key)} d={d} />
+          ))}
+        </defs>
+      )}
+      <g fill="currentColor" stroke="none" transform={translate(0, yAdjust)}>
+        {drawGroup(scene.selection, undefined, ids)}
+        {/**
+         * We set 'fill' and stroke to 'currentColor' so that the base
+         * color is whatever the current CSS 'color' property is set up.
+         * Individual nodes within the scene can override their style's
+         * color and the render above will set the fill and/or stroke in
+         * rendered SVG element appropriately.
+         */}
+        {drawGroup(scene.content, undefined, ids)}
+      </g>
+      {showHitboxes && drawGroup(scene.hitboxes, undefined, ids)}
+    </svg>
   );
 });
 
