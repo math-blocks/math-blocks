@@ -106,7 +106,6 @@ export class GlyphRegistry {
 }
 
 const NO_PATHS: readonly GlyphPath[] = [];
-const getServerSnapshot = (): readonly GlyphPath[] => NO_PATHS;
 
 export const GlyphRegistryContext = React.createContext<GlyphRegistry | null>(
   null,
@@ -127,11 +126,20 @@ const SharedGlyphDefs = ({
 }: {
   readonly registry: GlyphRegistry;
 }): React.ReactElement => {
-  const paths = React.useSyncExternalStore(
-    registry.subscribe,
-    registry.getSnapshot,
-    getServerSnapshot,
-  );
+  // Starts empty, like the server's markup, so hydration matches.
+  const [paths, setPaths] = React.useState(NO_PATHS);
+  // Not useSyncExternalStore: it subscribes in a passive effect, which runs
+  // after the browser paints. On the first render, the renderers add their
+  // definitions in layout effects before that, so the page would paint one
+  // frame of <use> elements with nothing to point at. This subscribes in a
+  // layout effect instead, and the provider renders this component after its
+  // children, so this effect runs after theirs and picks up what they added.
+  // Updating state in a layout effect re-renders before the browser paints.
+  useIsomorphicLayoutEffect(() => {
+    const update = (): void => setPaths(registry.getSnapshot());
+    update();
+    return registry.subscribe(update);
+  }, [registry]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -173,8 +181,9 @@ export const GlyphDefsProvider = ({
   );
   return (
     <GlyphRegistryContext.Provider value={registry}>
-      <SharedGlyphDefs registry={registry} />
       {children}
+      {/* After the children; see SharedGlyphDefs. */}
+      <SharedGlyphDefs registry={registry} />
     </GlyphRegistryContext.Provider>
   );
 };
