@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    // Check the packages' .d.ts files too. This is the point of the check.
+    "skipLibCheck": false,
+    "target": "ES2018",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react",
+    "esModuleInterop": true,
+    // Don't pull in every @types package from the repo root.
+    "types": []
+  }
+}

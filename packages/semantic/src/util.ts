@@ -3,6 +3,7 @@
  * with semantic nodes.
  */
 import Fraction from 'fraction.js';
+import type { OneOrMore } from '@math-blocks/core';
 
 import * as types from './types';
 import { NodeType } from './enums';

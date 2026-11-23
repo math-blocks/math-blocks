@@ -1,3 +1,4 @@
+import type { OneOrMore } from '@math-blocks/core';
 import { types, builders, util, NodeType } from '@math-blocks/semantic';
 
 import { getCoeff } from '../../solve-linear/util';
