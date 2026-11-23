@@ -36,10 +36,9 @@
     "json-schema-to-typescript": "^9.1.1",
     "lint-staged": "^10.2.11",
     "mini-css-extract-plugin": "^1.3.8",
+    "oxfmt": "0.79.0",
     "oxlint": "1.94.0",
     "postcss": "^8.3.9",
-    "prettier": "^2.3.1",
-    "pretty-quick": "^4.0.0",
     "react-hot-loader": "^4.12.18",
     "react-is": "^17.0.1",
     "sloc": "^0.2.1",
@@ -73,7 +72,8 @@
     "lint": "oxlint --report-unused-disable-directives",
     "clean": "rm -rf packages/*/out .buildcache",
     "sloc": "sloc packages demo tools -e '(out|dist)'",
-    "format": "prettier . --write"
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "classnames": "^2.3.1",
@@ -90,8 +90,9 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "oxlint --report-unused-disable-directives --no-error-on-unmatched-pattern",
-      "pretty-quick"
-    ]
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.{js,jsx,cjs,mjs,mts,cts,css,yaml,yml,json,md,html}": "oxfmt --no-error-on-unmatched-pattern"
   },
   "typeCoverage": {
     "atLeast": 95,
