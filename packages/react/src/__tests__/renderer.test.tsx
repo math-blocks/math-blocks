@@ -3,7 +3,6 @@ import path from 'path';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import format from 'xml-formatter';
-import type { Story, StoryContext } from '@storybook/react';
 import { diffChars } from 'diff';
 
 import * as Core from '@math-blocks/core';
@@ -19,7 +18,7 @@ import * as Tex from '@math-blocks/tex';
 import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
-import * as stories from '../stories/2-math-renderer.stories';
+import * as fixtures from './renderer-fixtures';
 import { FontDataContext } from '../font-data-context';
 import * as TestUtil from '../test-util';
 
@@ -29,9 +28,8 @@ const reducer = Editor.getReducer(macros);
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 // The tests render with the font subsets in assets/subsets/, all groups
-// combined, which must render exactly like the original fonts. We can't use
-// the same loader as the stories since theirs relies on the bundler's file
-// loader, which we don't have access to here.
+// combined, which must render exactly like the original fonts. They're read
+// from disk since there's no bundler to load them as URLs here.
 const readSubset =
   (subset: string) =>
   async (group: string): Promise<ArrayBuffer> => {
@@ -72,27 +70,14 @@ const lmFontLoader = async (): Promise<FontData> => {
   return lmFontData;
 };
 
-const storyToComponent = async function <T>(
-  story: Story<T>,
+const fixtureToComponent = async (
+  Fixture: React.FC<{ readonly fontData: FontData }>,
   loader = stixFontLoader,
-): Promise<React.FC> {
-  const loaded = await loader();
+): Promise<React.FC> => {
+  const fontData = await loader();
 
-  return () => {
-    // @ts-expect-error: this type is wrong
-    const context: StoryContext = {
-      id: '',
-      kind: '',
-      name: '',
-      parameters: {},
-      args: {},
-      argTypes: {},
-      globals: {},
-      loaded: loaded,
-    };
-    // @ts-expect-error: story expects T instead of Partial<T> | undefined
-    return story(story.args, context);
-  };
+  const WithFontData: React.FC = () => <Fixture fontData={fontData} />;
+  return WithFontData;
 };
 
 declare module 'vitest' {
@@ -188,19 +173,22 @@ describe('renderer', () => {
   });
 
   test('equation', async () => {
-    const Equation = await storyToComponent(stories.Equation);
+    const Equation = await fixtureToComponent(fixtures.Equation);
     expect(<Equation />).toMatchSVGSnapshot();
   });
 
   describe('latin modern', () => {
     test('equation', async () => {
-      const Equation = await storyToComponent(stories.Equation, lmFontLoader);
+      const Equation = await fixtureToComponent(
+        fixtures.Equation,
+        lmFontLoader,
+      );
       expect(<Equation />).toMatchSVGSnapshot();
     });
 
     test('tall delimiters, root, and fraction', async () => {
-      const TallDelimiters = await storyToComponent(
-        stories.TallDelimiters,
+      const TallDelimiters = await fixtureToComponent(
+        fixtures.TallDelimiters,
         lmFontLoader,
       );
       expect(<TallDelimiters />).toMatchSVGSnapshot();
@@ -215,16 +203,16 @@ describe('renderer', () => {
       ['latin modern', lmFontLoader],
     ])('%s', (_fontname, fontloader) => {
       test('with degree (dynamic)', async () => {
-        const RadicalWithDegreeDynamic = await storyToComponent(
-          stories.RadicalWithDegreeDynamic,
+        const RadicalWithDegreeDynamic = await fixtureToComponent(
+          fixtures.RadicalWithDegreeDynamic,
           fontloader,
         );
         expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
       });
 
       test('with large degree (dynamic)', async () => {
-        const RadicalWithLargeDegreeDynamic = await storyToComponent(
-          stories.RadicalWithLargeDegreeDynamic,
+        const RadicalWithLargeDegreeDynamic = await fixtureToComponent(
+          fixtures.RadicalWithLargeDegreeDynamic,
           fontloader,
         );
         expect(<RadicalWithLargeDegreeDynamic />).toMatchSVGSnapshot();
@@ -240,16 +228,16 @@ describe('renderer', () => {
       ['latin modern', lmFontLoader],
     ])('%s', (_fontname, fontloader) => {
       test('stress test (dynamic)', async () => {
-        const SubscriptSuperscriptStressTest = await storyToComponent(
-          stories.SubscriptSuperscriptStressTest,
+        const SubscriptSuperscriptStressTest = await fixtureToComponent(
+          fixtures.SubscriptSuperscriptStressTest,
           fontloader,
         );
         expect(<SubscriptSuperscriptStressTest />).toMatchSVGSnapshot();
       });
 
       test('on tall delimiters (dynamic)', async () => {
-        const ScriptsOnTallDelimiters = await storyToComponent(
-          stories.ScriptsOnTallDelimiters,
+        const ScriptsOnTallDelimiters = await fixtureToComponent(
+          fixtures.ScriptsOnTallDelimiters,
           fontloader,
         );
         expect(<ScriptsOnTallDelimiters />).toMatchSVGSnapshot();
@@ -534,15 +522,15 @@ describe('renderer', () => {
 
   describe('fractions', () => {
     test('colorized', async () => {
-      const ColorizedFraction = await storyToComponent(
-        stories.ColorizedFraction,
+      const ColorizedFraction = await fixtureToComponent(
+        fixtures.ColorizedFraction,
       );
       expect(<ColorizedFraction />).toMatchSVGSnapshot();
     });
 
     test('quadratic', async () => {
-      const QuadraticEquation = await storyToComponent(
-        stories.QuadraticEquation,
+      const QuadraticEquation = await fixtureToComponent(
+        fixtures.QuadraticEquation,
       );
       expect(<QuadraticEquation />).toMatchSVGSnapshot();
     });
@@ -550,7 +538,7 @@ describe('renderer', () => {
 
   describe('subsup', () => {
     test('pythagoras', async () => {
-      const Pythagoras = await storyToComponent(stories.Pythagoras);
+      const Pythagoras = await fixtureToComponent(fixtures.Pythagoras);
       expect(<Pythagoras />).toMatchSVGSnapshot();
     });
 
@@ -583,52 +571,54 @@ describe('renderer', () => {
 
   describe('limits', () => {
     test('lim (display)', async () => {
-      const Limit = await storyToComponent(stories.Limit);
+      const Limit = await fixtureToComponent(fixtures.Limit);
       expect(<Limit />).toMatchSVGSnapshot();
     });
 
     test('lim (inline)', async () => {
-      const InlineLimit = await storyToComponent(stories.InlineLimit);
+      const InlineLimit = await fixtureToComponent(fixtures.InlineLimit);
       expect(<InlineLimit />).toMatchSVGSnapshot();
     });
 
     test('sum (display)', async () => {
-      const Summation = await storyToComponent(stories.Summation);
+      const Summation = await fixtureToComponent(fixtures.Summation);
       expect(<Summation />).toMatchSVGSnapshot();
     });
 
     test('sum (inline)', async () => {
-      const InlineSummation = await storyToComponent(stories.InlineSummation);
+      const InlineSummation = await fixtureToComponent(
+        fixtures.InlineSummation,
+      );
       expect(<InlineSummation />).toMatchSVGSnapshot();
     });
 
     test('integral (display)', async () => {
-      const Integral = await storyToComponent(stories.Integral);
+      const Integral = await fixtureToComponent(fixtures.Integral);
       expect(<Integral />).toMatchSVGSnapshot();
     });
 
     test('integral (inline)', async () => {
-      const InlineIntegral = await storyToComponent(stories.InlineIntegral);
+      const InlineIntegral = await fixtureToComponent(fixtures.InlineIntegral);
       expect(<InlineIntegral />).toMatchSVGSnapshot();
     });
   });
 
   describe('tall delimiters', () => {
     test('no cursor, no selection', async () => {
-      const TallDelimiters = await storyToComponent(stories.TallDelimiters);
+      const TallDelimiters = await fixtureToComponent(fixtures.TallDelimiters);
       expect(<TallDelimiters />).toMatchSVGSnapshot();
     });
 
     test('with cursor', async () => {
-      const TallDelimitersWithCursor = await storyToComponent(
-        stories.TallDelimitersWithCursor,
+      const TallDelimitersWithCursor = await fixtureToComponent(
+        fixtures.TallDelimitersWithCursor,
       );
       expect(<TallDelimitersWithCursor />).toMatchSVGSnapshot();
     });
 
     test('with selection', async () => {
-      const TallDelimitersWithSelection = await storyToComponent(
-        stories.TallDelimitersWithSelection,
+      const TallDelimitersWithSelection = await fixtureToComponent(
+        fixtures.TallDelimitersWithSelection,
       );
       expect(<TallDelimitersWithSelection />).toMatchSVGSnapshot();
     });
@@ -710,7 +700,7 @@ describe('renderer', () => {
 
   describe('cursor', () => {
     test('cursor in the middle', async () => {
-      const Cursor = await storyToComponent(stories.Cursor);
+      const Cursor = await fixtureToComponent(fixtures.Cursor);
       expect(<Cursor />).toMatchSVGSnapshot();
     });
 
@@ -739,28 +729,30 @@ describe('renderer', () => {
 
   describe('selection', () => {
     test('selection in the middle', async () => {
-      const Selection = await storyToComponent(stories.Selection);
+      const Selection = await fixtureToComponent(fixtures.Selection);
       expect(<Selection />).toMatchSVGSnapshot();
     });
   });
 
   describe('cancelling', () => {
     test('multiple selections side-by-side, frac, radicand', async () => {
-      const Cancelling = await storyToComponent(stories.Cancelling);
+      const Cancelling = await fixtureToComponent(fixtures.Cancelling);
       expect(<Cancelling />).toMatchSVGSnapshot();
     });
   });
 
   describe('tables', () => {
     test('3x3 bracket matrix', async () => {
-      const Matrix = await storyToComponent(stories.Matrix);
+      const Matrix = await fixtureToComponent(fixtures.Matrix);
       expect(<Matrix />).toMatchSVGSnapshot();
     });
   });
 
   describe('macro', () => {
     test('in progress macro', async () => {
-      const InProgressMacro = await storyToComponent(stories.InProgressMacro);
+      const InProgressMacro = await fixtureToComponent(
+        fixtures.InProgressMacro,
+      );
       expect(<InProgressMacro />).toMatchSVGSnapshot();
     });
   });

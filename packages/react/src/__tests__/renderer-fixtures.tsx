@@ -1,71 +1,24 @@
+// Fixtures for the snapshot tests in renderer.test.tsx. Each one renders a
+// MathRenderer with the font data the test loads.
 import * as React from 'react';
-import type { Story } from '@storybook/react';
-import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
-import * as Semantic from '@math-blocks/semantic';
 import * as Typesetter from '@math-blocks/typesetter';
-import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
 
-// @ts-expect-error: TypeScript doesn't know about this path
-import stixPath from '../../../../assets/STIX2Math.otf';
-
-// @ts-expect-error: TypeScript doesn't know about this path
-import lmPath from '../../../../assets/latinmodern-math.otf';
-
 const { row, char: glyph, frac, limits, root, subsup, macro } = Editor.builders;
 const { applyColorMapToEditorNode } = Editor.transforms;
 const reducer = Editor.getReducer(macros);
 
-const stixFontLoader = async (): Promise<FontData> => {
-  const res = await fetch(stixPath);
-  const blob = await res.blob();
-  const font = await parse(blob as Blob);
-  return getFontData(font, 'STIX2');
-};
-
-const lmFontLoader = async (): Promise<FontData> => {
-  const res = await fetch(lmPath);
-  const blob = await res.blob();
-  const font = await parse(blob as Blob);
-  return getFontData(font, 'LM-Math');
-};
-
-export default {
-  title: 'MathRenderer',
-  component: MathRenderer,
-  loaders: [stixFontLoader],
-};
-
-type EmptyProps = Record<string, never>;
+type FixtureProps = { readonly fontData: FontData };
 
 const style = { background: 'white' };
 
-export const Small: Story<EmptyProps> = (args, { loaded: fontData }) => {
-  // TODO: write a function to convert a Semantic AST into an Editor AST
-  const math = row([
-    glyph('2'),
-    glyph('x'),
-    glyph('+'),
-    glyph('5'),
-    glyph('='),
-    glyph('1'),
-    glyph('0'),
-  ]);
-  const fontSize = 20;
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-
-export const Equation: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Equation: React.FC<FixtureProps> = ({ fontData }) => {
   // TODO: how to convert
   const math = row([
     glyph('2'),
@@ -78,52 +31,13 @@ export const Equation: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const LatinModernEquation: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
-  // TODO: how to convert
-  const math = row([
-    glyph('2'),
-    glyph('x'),
-    glyph('+'),
-    glyph('5'),
-    glyph('='),
-    glyph('1'),
-    glyph('0'),
-  ]);
-  const fontSize = 60;
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-LatinModernEquation.loaders = [lmFontLoader];
-
-export const LatinModernRootAndFraction: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
-  const math = row([
-    root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
-  ]);
-  const fontSize = 60;
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-LatinModernRootAndFraction.loaders = [lmFontLoader];
-
-export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Cursor: React.FC<FixtureProps> = ({ fontData }) => {
   const math = row([
     glyph('2'),
     glyph('x'),
@@ -140,7 +54,7 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         selection={selection}
@@ -153,7 +67,7 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Selection: React.FC<FixtureProps> = ({ fontData }) => {
   const math = row([
     glyph('2'),
     glyph('x'),
@@ -170,7 +84,7 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         selection={selection}
@@ -183,7 +97,7 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const Pythagoras: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Pythagoras: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const pythagoras = row([
     glyph('a'),
@@ -197,7 +111,7 @@ export const Pythagoras: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={pythagoras}
         style={style}
@@ -208,10 +122,7 @@ export const Pythagoras: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const QuadraticEquation: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const QuadraticEquation: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     glyph('x'),
@@ -235,13 +146,13 @@ export const QuadraticEquation: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Limit: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(row([glyph('l'), glyph('i'), glyph('m')]), [
@@ -253,7 +164,7 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -264,7 +175,7 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const InlineLimit: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const InlineLimit: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(row([glyph('l'), glyph('i'), glyph('m')]), [
@@ -276,7 +187,7 @@ export const InlineLimit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -288,7 +199,7 @@ export const InlineLimit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const Summation: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Summation: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -300,16 +211,13 @@ export const Summation: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const InlineSummation: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const InlineSummation: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -321,7 +229,7 @@ export const InlineSummation: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -332,7 +240,7 @@ export const InlineSummation: Story<EmptyProps> = (
   );
 };
 
-export const Integral: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Integral: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -346,16 +254,13 @@ export const Integral: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const InlineIntegral: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const InlineIntegral: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -369,7 +274,7 @@ export const InlineIntegral: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -380,10 +285,7 @@ export const InlineIntegral: Story<EmptyProps> = (
   );
 };
 
-export const ColorizedFraction: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const ColorizedFraction: React.FC<FixtureProps> = ({ fontData }) => {
   const fontSize = 60;
   const colorMap = new Map<number, string>();
   const fracNode = frac([glyph('1')], [glyph('2'), Editor.util.sup('i')]);
@@ -399,151 +301,13 @@ export const ColorizedFraction: Story<EmptyProps> = (
   const math = row([fracNodeWithColor]);
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const ColorizedSum: Story<EmptyProps> = (args, { loaded: fontData }) => {
-  const editNode = Editor.util.row('8+10+12+14');
-
-  const semNode = Editor.parse(editNode) as Semantic.types.Add;
-
-  const num10 = semNode.args[1];
-  const num12 = semNode.args[2];
-
-  const colorMap = new Map<number, string>();
-  if (num10.loc && num12.loc) {
-    // Only do this if the indicies of the args differ by one
-    const loc = {
-      ...num10.loc,
-      start: num10.loc.start,
-      end: num12.loc.end,
-    };
-
-    for (let i = loc.start; i < loc.end; i++) {
-      colorMap.set(editNode.children[i].id, 'darkCyan');
-    }
-  }
-
-  const fontSize = 60;
-  const math = applyColorMapToEditorNode(
-    editNode,
-    colorMap,
-  ) as Editor.types.CharRow;
-
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-
-export const SimpleSemanticColoring: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
-  const editNode = Editor.builders.row([
-    Editor.builders.delimited(
-      Editor.util.row('11+x').children,
-      Editor.builders.char('('),
-      Editor.builders.char(')'),
-    ),
-    Editor.builders.delimited(
-      Editor.util.row('12\u2212y').children,
-      Editor.builders.char('('),
-      Editor.builders.char(')'),
-    ),
-  ]);
-
-  const colorMap = new Map<number, string>();
-
-  const semNode = Editor.parse(editNode) as Semantic.types.Mul;
-  const secondTerm = semNode.args[1] as Semantic.types.Add;
-  const num12 = secondTerm.args[0];
-  const sum0 = semNode.args[0];
-
-  if (num12.loc) {
-    for (let i = num12.loc.start; i < num12.loc.end; i++) {
-      colorMap.set(
-        // @ts-expect-error: we know the structure
-        editNode.children[1].children[0].children[i].id,
-        'darkCyan',
-      );
-    }
-  }
-  if (sum0.loc) {
-    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-      colorMap.set(
-        // @ts-expect-error: we know the structure
-        editNode.children[0].children[0].children[i].id,
-        'orange',
-      );
-    }
-  }
-
-  const fontSize = 60;
-  const math = applyColorMapToEditorNode(
-    editNode,
-    colorMap,
-  ) as Editor.types.CharRow;
-
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-
-export const NestedSemanticColoring: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
-  const editNode = Editor.builders.row([Editor.util.frac('11+x', '12\u2212y')]);
-
-  const semNode = Editor.parse(editNode) as Semantic.types.Div;
-  const denominator = semNode.args[1] as Semantic.types.Add;
-
-  const num12 = denominator.args[0];
-  const sum0 = semNode.args[0];
-
-  const colorMap = new Map<number, string>();
-  let node;
-  if (num12.loc) {
-    node = Editor.util.nodeAtPath(editNode, num12.loc.path);
-    for (let i = num12.loc.start; i < num12.loc.end; i++) {
-      if (Editor.util.hasChildren(node)) {
-        colorMap.set(node.children[i].id, 'darkCyan');
-      }
-    }
-  }
-  if (sum0.loc) {
-    node = Editor.util.nodeAtPath(editNode, sum0.loc.path);
-    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-      if (Editor.util.hasChildren(node)) {
-        colorMap.set(node.children[i].id, 'orange');
-      }
-    }
-  }
-
-  const fontSize = 60;
-  const math = applyColorMapToEditorNode(
-    editNode,
-    colorMap,
-  ) as Editor.types.CharRow;
-
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />
-    </FontDataContext.Provider>
-  );
-};
-
-export const TallDelimiters: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const TallDelimiters: React.FC<FixtureProps> = ({ fontData }) => {
   const editNode = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -557,16 +321,15 @@ export const TallDelimiters: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer row={editNode} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
 
-export const TallDelimitersWithCursor: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const TallDelimitersWithCursor: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const math = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -592,7 +355,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={state.row}
         selection={state.selection}
@@ -605,10 +368,9 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
   );
 };
 
-export const TallDelimitersWithSelection: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const TallDelimitersWithSelection: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const math = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -631,7 +393,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={state.row}
         selection={state.selection}
@@ -644,95 +406,15 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
   );
 };
 
-export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
-  const math = row([frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]);
-
-  let state: Editor.State = {
-    row: math,
-    selecting: false,
-    selection: {
-      anchor: { path: [], offset: 0 },
-      focus: { path: [], offset: 0 },
-    },
-  };
-
-  state = reducer(state, { type: 'ArrowLeft' });
-  state = reducer(state, { type: 'ArrowLeft' });
-
-  const fontSize = 60;
-
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer
-        row={state.row}
-        style={style}
-        fontSize={fontSize}
-        showCursor={true}
-        renderMode={Typesetter.RenderMode.Dynamic}
-        mathStyle={Typesetter.MathStyle.Text}
-      />
-    </FontDataContext.Provider>
-  );
-};
-
-export const SelectionSize: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
-  const math = row([
-    frac(
-      [glyph('1')],
-      [
-        Editor.builders.delimited(
-          [glyph('1'), glyph('+'), glyph('y')],
-          glyph('('),
-          glyph(')'),
-        ),
-      ],
-    ),
-  ]);
-
-  let state: Editor.State = {
-    row: math,
-    selecting: false,
-    selection: {
-      anchor: { path: [], offset: 0 },
-      focus: { path: [], offset: 0 },
-    },
-  };
-
-  state = reducer(state, { type: 'ArrowLeft' });
-  state = reducer(state, { type: 'ArrowLeft' });
-  state = { ...state, selecting: true };
-  state = reducer(state, { type: 'ArrowLeft' });
-  state = reducer(state, { type: 'ArrowLeft' });
-
-  const fontSize = 60;
-
-  return (
-    <FontDataContext.Provider value={fontData as FontData}>
-      <MathRenderer
-        row={state.row}
-        style={style}
-        fontSize={fontSize}
-        showCursor={true}
-        renderMode={Typesetter.RenderMode.Dynamic}
-        mathStyle={Typesetter.MathStyle.Text}
-      />
-    </FontDataContext.Provider>
-  );
-};
-
-export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const RadicalWithDegreeDynamic: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const editNode = Editor.builders.row([root([glyph('3')], [glyph('x')])]);
 
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -743,10 +425,9 @@ export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
   );
 };
 
-export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const RadicalWithLargeDegreeDynamic: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const editNode = Editor.builders.row([
     frac(
       [glyph('1')],
@@ -757,7 +438,7 @@ export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -768,10 +449,9 @@ export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
   );
 };
 
-export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const SubscriptSuperscriptStressTest: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const editNode = Editor.builders.row([
     glyph('x'),
     subsup(
@@ -789,7 +469,7 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -800,10 +480,9 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
   );
 };
 
-export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const ScriptsOnTallDelimiters: React.FC<FixtureProps> = ({
+  fontData,
+}) => {
   const editNode = Editor.builders.row([
     glyph('x'),
     glyph('+'),
@@ -820,7 +499,7 @@ export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -831,7 +510,7 @@ export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
   );
 };
 
-export const Cancelling: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Cancelling: React.FC<FixtureProps> = ({ fontData }) => {
   const editNode = Editor.builders.row([
     glyph('x'),
     glyph('y'),
@@ -857,7 +536,7 @@ export const Cancelling: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -868,7 +547,7 @@ export const Cancelling: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
+export const Matrix: React.FC<FixtureProps> = ({ fontData }) => {
   const matrix = Editor.builders.row([
     Editor.builders.char('A'),
     Editor.builders.char('='),
@@ -905,7 +584,7 @@ export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={matrix}
         style={style}
@@ -916,10 +595,7 @@ export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
   );
 };
 
-export const InProgressMacro: Story<EmptyProps> = (
-  args,
-  { loaded: fontData },
-) => {
+export const InProgressMacro: React.FC<FixtureProps> = ({ fontData }) => {
   const math = Editor.builders.row([
     glyph('x'),
     glyph('+'),
@@ -931,7 +607,7 @@ export const InProgressMacro: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData as FontData}>
+    <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
         style={style}
