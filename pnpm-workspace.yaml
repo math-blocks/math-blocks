@@ -16,9 +16,7 @@ onlyBuiltDependencies:
 # isn't needed, so skip them without a warning.
 ignoredBuiltDependencies:
   - '@parcel/watcher'
-  - core-js
   - core-js-pure
-  - es5-ext
 
 # The Git hooks that husky 3 installs run `node_modules/run-node/run-node`
 # from the repo root. run-node is a dependency of husky, so pnpm only puts it
