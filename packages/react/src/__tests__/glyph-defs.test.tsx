@@ -196,19 +196,17 @@ describe('glyph definitions', () => {
         node.type === 'char'
           ? node
           : node.type === 'group'
-          ? node.children.map(findChar).find(Boolean)
-          : undefined;
+            ? node.children.map(findChar).find(Boolean)
+            : undefined;
       const char = findChar(scene.content);
       if (!char) {
         throw new Error("no glyph for 'x'");
       }
-      const chars = fonts.map(
-        (data, i): Typesetter.SceneGraph.Glyph => ({
-          ...char,
-          x: i * 40,
-          glyph: { ...char.glyph, fontData: data },
-        }),
-      );
+      const chars = fonts.map((data, i): Typesetter.SceneGraph.Glyph => ({
+        ...char,
+        x: i * 40,
+        glyph: { ...char.glyph, fontData: data },
+      }));
       return toMarkup(
         <SceneRenderer
           scene={{ ...scene, content: { ...scene.content, children: chars } }}
