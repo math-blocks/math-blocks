@@ -33,11 +33,8 @@ jobs:
       - name: pnpm install
         run: pnpm install --frozen-lockfile
 
-      - name: build-tsc
-        run: pnpm build-tsc
-
-      - name: build-lib
-        run: pnpm build-lib
+      - name: build
+        run: pnpm build
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets

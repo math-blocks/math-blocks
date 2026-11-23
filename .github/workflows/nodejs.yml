@@ -57,7 +57,7 @@ jobs:
       - name: lint
         run: pnpm lint
 
-  build-lib:
+  build:
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -76,10 +76,10 @@ jobs:
           cache: pnpm
       - name: pnpm install
         run: pnpm install --frozen-lockfile
-      - name: build-lib
-        run: pnpm build-lib
+      - name: build
+        run: pnpm build
 
-  build-tsc:
+  typecheck:
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -98,8 +98,8 @@ jobs:
           cache: pnpm
       - name: pnpm install
         run: pnpm install --frozen-lockfile
-      - name: build-tsc
-        run: pnpm build-tsc
+      - name: typecheck
+        run: pnpm typecheck
 
   test:
     permissions:

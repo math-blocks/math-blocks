@@ -80,12 +80,12 @@
     "xml2js": "^0.4.23"
   },
   "scripts": {
-    "prepublishOnly": "pnpm build-lib",
+    "prepublishOnly": "pnpm build",
     "codechecks": "codechecks",
-    "build": "vite build",
-    "build-ci": "vite build --base=/math-blocks/",
-    "build-lib": "tsdown",
-    "build-tsc": "tsc -b -v tsconfig.json",
+    "build": "tsdown",
+    "build-demo": "vite build",
+    "build-demo-ci": "vite build --base=/math-blocks/",
+    "typecheck": "tsc -b -v --emitDeclarationOnly tsconfig.json",
     "type-coverage": "type-coverage",
     "start": "vite",
     "test": "jest",
