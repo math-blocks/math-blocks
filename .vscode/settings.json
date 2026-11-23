@@ -10,6 +10,8 @@
         "**/out": true
     },
     "editor.tabSize": 2,
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#b4c9e3",
         "activityBar.background": "#b4c9e3",
