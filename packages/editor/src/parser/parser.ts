@@ -1,4 +1,5 @@
 import { UnreachableCaseError } from '@math-blocks/core';
+import type { OneOrMore } from '@math-blocks/core';
 import * as Parser from '@math-blocks/parser';
 import * as Semantic from '@math-blocks/semantic';
 import type { Mutable } from 'utility-types';

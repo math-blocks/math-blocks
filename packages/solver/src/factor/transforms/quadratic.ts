@@ -1,5 +1,6 @@
 import Fraction from 'fraction.js';
 
+import type { OneOrMore } from '@math-blocks/core';
 import { types, builders, util } from '@math-blocks/semantic';
 
 import type { Step } from '../../types';

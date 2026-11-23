@@ -7,6 +7,7 @@ import type { Node, NodeTypes, NumericRelation } from './types';
 import { NodeType } from './enums';
 import { SourceLocation } from './types';
 import { getId } from '@math-blocks/core';
+import type { TwoOrMore } from '@math-blocks/core';
 
 const builders = {
   identifier: (name: string, subscript?: Node, loc?: SourceLocation): NodeTypes['Identifier'] => ({

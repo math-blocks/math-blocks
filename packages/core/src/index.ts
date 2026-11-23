@@ -16,3 +16,5 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
 export function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
+
+export type { OneOrMore, TwoOrMore } from './types';
