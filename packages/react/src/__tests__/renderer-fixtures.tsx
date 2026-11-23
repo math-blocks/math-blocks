@@ -18,7 +18,7 @@ type FixtureProps = { readonly fontData: FontData };
 
 const style = { background: 'white' };
 
-export const Equation: React.FC<FixtureProps> = ({ fontData }) => {
+export const Equation = ({ fontData }: FixtureProps): React.ReactElement => {
   // TODO: how to convert
   const math = row([
     glyph('2'),
@@ -37,7 +37,7 @@ export const Equation: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Cursor: React.FC<FixtureProps> = ({ fontData }) => {
+export const Cursor = ({ fontData }: FixtureProps): React.ReactElement => {
   const math = row([
     glyph('2'),
     glyph('x'),
@@ -67,7 +67,7 @@ export const Cursor: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Selection: React.FC<FixtureProps> = ({ fontData }) => {
+export const Selection = ({ fontData }: FixtureProps): React.ReactElement => {
   const math = row([
     glyph('2'),
     glyph('x'),
@@ -97,7 +97,7 @@ export const Selection: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Pythagoras: React.FC<FixtureProps> = ({ fontData }) => {
+export const Pythagoras = ({ fontData }: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const pythagoras = row([
     glyph('a'),
@@ -122,7 +122,9 @@ export const Pythagoras: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const QuadraticEquation: React.FC<FixtureProps> = ({ fontData }) => {
+export const QuadraticEquation = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     glyph('x'),
@@ -152,7 +154,7 @@ export const QuadraticEquation: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Limit: React.FC<FixtureProps> = ({ fontData }) => {
+export const Limit = ({ fontData }: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(row([glyph('l'), glyph('i'), glyph('m')]), [
@@ -175,7 +177,7 @@ export const Limit: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const InlineLimit: React.FC<FixtureProps> = ({ fontData }) => {
+export const InlineLimit = ({ fontData }: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(row([glyph('l'), glyph('i'), glyph('m')]), [
@@ -199,7 +201,7 @@ export const InlineLimit: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Summation: React.FC<FixtureProps> = ({ fontData }) => {
+export const Summation = ({ fontData }: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -217,7 +219,9 @@ export const Summation: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const InlineSummation: React.FC<FixtureProps> = ({ fontData }) => {
+export const InlineSummation = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -240,7 +244,7 @@ export const InlineSummation: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Integral: React.FC<FixtureProps> = ({ fontData }) => {
+export const Integral = ({ fontData }: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -260,7 +264,9 @@ export const Integral: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const InlineIntegral: React.FC<FixtureProps> = ({ fontData }) => {
+export const InlineIntegral = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const math = row([
     limits(
@@ -285,7 +291,9 @@ export const InlineIntegral: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const ColorizedFraction: React.FC<FixtureProps> = ({ fontData }) => {
+export const ColorizedFraction = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const fontSize = 60;
   const colorMap = new Map<number, string>();
   const fracNode = frac([glyph('1')], [glyph('2'), Editor.util.sup('i')]);
@@ -307,7 +315,9 @@ export const ColorizedFraction: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const TallDelimiters: React.FC<FixtureProps> = ({ fontData }) => {
+export const TallDelimiters = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -327,9 +337,9 @@ export const TallDelimiters: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const TallDelimitersWithCursor: React.FC<FixtureProps> = ({
+export const TallDelimitersWithCursor = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const math = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -368,9 +378,9 @@ export const TallDelimitersWithCursor: React.FC<FixtureProps> = ({
   );
 };
 
-export const TallDelimitersWithSelection: React.FC<FixtureProps> = ({
+export const TallDelimitersWithSelection = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const math = Editor.builders.row([
     Editor.builders.delimited(
       [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])],
@@ -406,9 +416,9 @@ export const TallDelimitersWithSelection: React.FC<FixtureProps> = ({
   );
 };
 
-export const RadicalWithDegreeDynamic: React.FC<FixtureProps> = ({
+export const RadicalWithDegreeDynamic = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([root([glyph('3')], [glyph('x')])]);
 
   const fontSize = 60;
@@ -425,9 +435,9 @@ export const RadicalWithDegreeDynamic: React.FC<FixtureProps> = ({
   );
 };
 
-export const RadicalWithLargeDegreeDynamic: React.FC<FixtureProps> = ({
+export const RadicalWithLargeDegreeDynamic = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([
     frac(
       [glyph('1')],
@@ -449,9 +459,9 @@ export const RadicalWithLargeDegreeDynamic: React.FC<FixtureProps> = ({
   );
 };
 
-export const SubscriptSuperscriptStressTest: React.FC<FixtureProps> = ({
+export const SubscriptSuperscriptStressTest = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([
     glyph('x'),
     subsup(
@@ -480,9 +490,9 @@ export const SubscriptSuperscriptStressTest: React.FC<FixtureProps> = ({
   );
 };
 
-export const ScriptsOnTallDelimiters: React.FC<FixtureProps> = ({
+export const ScriptsOnTallDelimiters = ({
   fontData,
-}) => {
+}: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([
     glyph('x'),
     glyph('+'),
@@ -510,7 +520,7 @@ export const ScriptsOnTallDelimiters: React.FC<FixtureProps> = ({
   );
 };
 
-export const Cancelling: React.FC<FixtureProps> = ({ fontData }) => {
+export const Cancelling = ({ fontData }: FixtureProps): React.ReactElement => {
   const editNode = Editor.builders.row([
     glyph('x'),
     glyph('y'),
@@ -547,7 +557,7 @@ export const Cancelling: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const Matrix: React.FC<FixtureProps> = ({ fontData }) => {
+export const Matrix = ({ fontData }: FixtureProps): React.ReactElement => {
   const matrix = Editor.builders.row([
     Editor.builders.char('A'),
     Editor.builders.char('='),
@@ -595,7 +605,9 @@ export const Matrix: React.FC<FixtureProps> = ({ fontData }) => {
   );
 };
 
-export const InProgressMacro: React.FC<FixtureProps> = ({ fontData }) => {
+export const InProgressMacro = ({
+  fontData,
+}: FixtureProps): React.ReactElement => {
   const math = Editor.builders.row([
     glyph('x'),
     glyph('+'),

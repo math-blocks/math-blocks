@@ -71,12 +71,14 @@ const lmFontLoader = async (): Promise<FontData> => {
 };
 
 const fixtureToComponent = async (
-  Fixture: React.FC<{ readonly fontData: FontData }>,
+  Fixture: (props: { readonly fontData: FontData }) => React.ReactElement,
   loader = stixFontLoader,
-): Promise<React.FC> => {
+): Promise<() => React.ReactElement> => {
   const fontData = await loader();
 
-  const WithFontData: React.FC = () => <Fixture fontData={fontData} />;
+  const WithFontData = (): React.ReactElement => (
+    <Fixture fontData={fontData} />
+  );
   return WithFontData;
 };
 
