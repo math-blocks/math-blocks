@@ -60,18 +60,19 @@ export type GlyphPath = {
 /**
  * The glyph definitions shared by every renderer under a GlyphDefsProvider.
  *
- * It's an external store rather than React state, so that adding a glyph only
- * re-renders the hidden <svg> that holds the definitions, never the renderers
- * and editors that use them. Definitions are never removed: the glyphs a page
- * can use are bounded by its fonts, and keeping them avoids tracking which
- * renderers still use each one.
+ * It lives outside React state, and only the hidden <svg> that holds the
+ * definitions subscribes to it, so adding a glyph re-renders that <svg> and
+ * never the renderers and editors that use it. Definitions are never removed:
+ * the glyphs a page can use are bounded by its fonts, and keeping them avoids
+ * tracking which renderers still use each one.
  */
 export class GlyphRegistry {
   readonly prefix: string;
   readonly fontNamer = new FontNamer();
   private readonly paths = new Map<string, string>();
-  // Replaced, not mutated, whenever a definition is added, as
-  // useSyncExternalStore requires.
+  // Replaced, not mutated, whenever a definition is added, so the hidden <svg>
+  // can tell from the reference alone whether anything changed and skip
+  // re-rendering when nothing did.
   // eslint-disable-next-line functional/prefer-readonly-type
   private snapshot: readonly GlyphPath[] = [];
   private readonly listeners = new Set<() => void>();
