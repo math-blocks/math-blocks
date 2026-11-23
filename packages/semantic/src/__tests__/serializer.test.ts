@@ -199,7 +199,7 @@ describe('serializer', () => {
         () => '',
       );
     }).toThrowErrorMatchingInlineSnapshot(
-      `"we don't handle serializing 'ElementOf' nodes yet"`,
+      `[Error: we don't handle serializing 'ElementOf' nodes yet]`,
     );
   });
 

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 // GlyphDefsProvider: every renderer and editor inside it shares one hidden
 // <svg> of glyph definitions. See
@@ -8,11 +8,14 @@
 // for Testing Library's queries to find.
 /* eslint-disable testing-library/no-node-access, testing-library/no-container, testing-library/render-result-naming-convention */
 import fs from 'fs';
+import { createRequire } from 'module';
 import path from 'path';
 import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { act, fireEvent, render } from '@testing-library/react';
-import { Blob } from 'buffer';
+// In the jsdom environment, Vitest resolves 'buffer' to the npm polyfill, which
+// has no Blob, so ask for Node's module.
+import { Blob } from 'node:buffer';
 
 import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
@@ -27,9 +30,8 @@ import { expandGlyphUses, readGlyphDefs } from '../test-util';
 
 // In jsdom, 'react-dom/server' resolves to React's browser build, which needs
 // TextEncoder, and jsdom doesn't provide one. The Node build works the same.
-const ReactDOMServer: typeof import('react-dom/server') = jest.requireActual(
-  'react-dom/server.node',
-);
+const require = createRequire(import.meta.url);
+const ReactDOMServer: typeof import('react-dom/server') = require('react-dom/server.node');
 
 const ASSETS = path.join(__dirname, '../../../../assets');
 
@@ -45,11 +47,11 @@ beforeAll(async () => {
 
 beforeEach(() => {
   // MathEditor logs every key press and mouse up.
-  jest.spyOn(console, 'log').mockImplementation(() => undefined);
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 const EXPRESSIONS = [
@@ -277,7 +279,7 @@ describe('GlyphDefsProvider', () => {
     const container = document.createElement('div');
     container.innerHTML = ReactDOMServer.renderToString(tree);
     document.body.appendChild(container);
-    const error = jest.spyOn(console, 'error').mockImplementation(() => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {
       // Fails below if hydration reported a mismatch.
     });
 

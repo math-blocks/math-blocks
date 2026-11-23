@@ -95,24 +95,24 @@ const storyToComponent = async function <T>(
   };
 };
 
-declare global {
+declare module 'vitest' {
   /* eslint-disable */
-  namespace jest {
-    interface Matchers<R, T> {
-      toMatchSVGSnapshot(): R;
-    }
+  interface Matchers<T = any> {
+    toMatchSVGSnapshot(): void;
   }
 }
 
 // Based on code from https://github.com/jest-community/jest-snapshots-svg/blob/master/src/index.ts
 expect.extend({
   toMatchSVGSnapshot(element: React.ReactElement) {
-    // getState isn't in the d.ts for Jest, this is ok though.
-    const state = (expect as any).getState();
+    const state = expect.getState() as any;
     const currentTest = state.testPath as string;
     const currentTestName = state.currentTestName as string;
 
+    // Vitest joins the names of the describe blocks and the test with " > ",
+    // Jest joined them with " ". Keep the snapshot file names Jest gave them.
     const testFile = currentTestName
+      .replace(/ > /g, ' ')
       .replace(/\s+/g, '-')
       .replace(/\//g, '-')
       .toLowerCase();
@@ -182,7 +182,7 @@ describe('renderer', () => {
   beforeEach(() => {
     // Mock getId() so that we can have stable ids between tests.
     let i = 0;
-    jest.spyOn(Core, 'getId').mockImplementation(() => {
+    vi.spyOn(Core, 'getId').mockImplementation(() => {
       return i++;
     });
   });
@@ -208,11 +208,12 @@ describe('renderer', () => {
   });
 
   describe('radicals', () => {
-    describe.each`
-      fontname          | fontloader
-      ${'stix'}         | ${stixFontLoader}
-      ${'latin modern'} | ${lmFontLoader}
-    `('$fontname', ({ fontloader }) => {
+    // Vitest quotes strings interpolated with $name, so use %s to keep the
+    // names (and the snapshot file names) the same as with Jest.
+    describe.each([
+      ['stix', stixFontLoader],
+      ['latin modern', lmFontLoader],
+    ])('%s', (_fontname, fontloader) => {
       test('with degree (dynamic)', async () => {
         const RadicalWithDegreeDynamic = await storyToComponent(
           stories.RadicalWithDegreeDynamic,
@@ -232,11 +233,12 @@ describe('renderer', () => {
   });
 
   describe('subscript and superscripts', () => {
-    describe.each`
-      fontname          | fontloader
-      ${'stix'}         | ${stixFontLoader}
-      ${'latin modern'} | ${lmFontLoader}
-    `('$fontname', ({ fontloader }) => {
+    // Vitest quotes strings interpolated with $name, so use %s to keep the
+    // names (and the snapshot file names) the same as with Jest.
+    describe.each([
+      ['stix', stixFontLoader],
+      ['latin modern', lmFontLoader],
+    ])('%s', (_fontname, fontloader) => {
       test('stress test (dynamic)', async () => {
         const SubscriptSuperscriptStressTest = await storyToComponent(
           stories.SubscriptSuperscriptStressTest,

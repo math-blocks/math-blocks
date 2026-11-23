@@ -316,48 +316,50 @@ describe('Parser', () => {
   test('matrix (inconsistent column count)', () => {
     expect(() => {
       parse('\\begin{bmatrix}a&b\\\\c\\end{bmatrix}');
-    }).toThrowErrorMatchingInlineSnapshot(`"inconsistent number of columns"`);
+    }).toThrowErrorMatchingInlineSnapshot(
+      `[Error: inconsistent number of columns]`,
+    );
   });
 
   test('matrix (missing \\end)', () => {
     expect(() =>
       parse('\\begin{bmatrix}a&b\\\\c&d'),
-    ).toThrowErrorMatchingInlineSnapshot(`"expected \\end"`);
+    ).toThrowErrorMatchingInlineSnapshot(`[Error: expected \\end]`);
   });
 
   test('matrix (mismatched begin/end)', () => {
     expect(() =>
       parse('\\begin{bmatrix}a&b\\\\c&d\\end{pmatrix}'),
-    ).toThrowErrorMatchingInlineSnapshot(`"mismatched begin/end"`);
+    ).toThrowErrorMatchingInlineSnapshot(`[Error: mismatched begin/end]`);
   });
 
   test('matrix (unknown matrix type)', () => {
     expect(() =>
       parse('\\begin{kmatrix}a&b\\\\c&d\\end{kmatrix}'),
-    ).toThrowErrorMatchingInlineSnapshot(`"unknown matrix type"`);
+    ).toThrowErrorMatchingInlineSnapshot(`[Error: unknown matrix type]`);
   });
 
   test('unexpected rbrace', () => {
     expect(() => parse('}')).toThrowErrorMatchingInlineSnapshot(
-      `"unexpected rbrace"`,
+      `[Error: unexpected rbrace]`,
     );
   });
 
   test('no right delimiter', () => {
     expect(() => parse('\\left(a+b')).toThrowErrorMatchingInlineSnapshot(
-      `"no right delimiter"`,
+      `[Error: no right delimiter]`,
     );
   });
 
   test('unknown command', () => {
     expect(() => parse('\\foo')).toThrowErrorMatchingInlineSnapshot(
-      `"unknown command: foo"`,
+      `[Error: unknown command: foo]`,
     );
   });
 
   test('unexpected right delimiter', () => {
     expect(() => parse('\\right)')).toThrowErrorMatchingInlineSnapshot(
-      `"unexpected right delimiter"`,
+      `[Error: unexpected right delimiter]`,
     );
   });
 });

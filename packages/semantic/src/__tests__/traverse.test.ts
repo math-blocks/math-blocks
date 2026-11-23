@@ -9,8 +9,8 @@ describe('traverse', () => {
       type: NodeType.Number,
       value: '123',
     };
-    const enter = jest.fn();
-    const exit = jest.fn();
+    const enter = vi.fn();
+    const exit = vi.fn();
 
     traverse(num, { enter, exit });
 
@@ -37,7 +37,7 @@ describe('traverse', () => {
         },
       ],
     };
-    const enter = jest.fn();
+    const enter = vi.fn();
 
     traverse(add, { enter });
 
@@ -62,7 +62,7 @@ describe('traverse', () => {
         value: '3',
       },
     };
-    const enter = jest.fn();
+    const enter = vi.fn();
 
     traverse(power, { enter });
 
@@ -83,7 +83,7 @@ describe('traverse', () => {
         end: 2,
       },
     };
-    const enter = jest.fn();
+    const enter = vi.fn();
 
     traverse(num, { enter });
 
@@ -237,7 +237,7 @@ describe('traverseNumeric', () => {
 
   it('visits nodes stored in non-array properties', () => {
     const pow: types.Pow = { id: 3, type: NodeType.Power, base: x, exp: three };
-    const enter = jest.fn();
+    const enter = vi.fn();
 
     traverseNumeric(pow, { enter });
 

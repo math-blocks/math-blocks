@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 // Glyph definitions with several editors and renderers on one page: each SVG
 // keeps its own <defs>, and editing one editor changes only that editor's
@@ -11,7 +11,9 @@ import fs from 'fs';
 import path from 'path';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { Blob } from 'buffer';
+// In the jsdom environment, Vitest resolves 'buffer' to the npm polyfill, which
+// has no Blob, so ask for Node's module.
+import { Blob } from 'node:buffer';
 
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
@@ -32,11 +34,11 @@ beforeAll(async () => {
 
 beforeEach(() => {
   // MathEditor logs every key press and mouse up.
-  jest.spyOn(console, 'log').mockImplementation(() => undefined);
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 type SvgStats = {

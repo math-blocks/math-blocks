@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import * as React from 'react';
 import userEvent from '@testing-library/user-event';
@@ -46,7 +46,7 @@ const TestComp = (props: Props) => {
 
 describe('MathKeypad', () => {
   test("it should trigger a 'keydown' event", async () => {
-    const mockKeyDown = jest.fn();
+    const mockKeyDown = vi.fn();
 
     render(
       <div>
@@ -63,7 +63,7 @@ describe('MathKeypad', () => {
 
   test("'+ bmatrix' should trigger 'InsertMatrix' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -79,7 +79,7 @@ describe('MathKeypad', () => {
 
   test("'+ pmatrix' should trigger 'InsertMatrix' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -97,7 +97,7 @@ describe('MathKeypad', () => {
   // the focus behavior once.
   test("clicking '+ bmatrix' doesn't unfocus input", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -110,7 +110,7 @@ describe('MathKeypad', () => {
 
   test("'+ row above' should trigger 'AddRow' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -123,7 +123,7 @@ describe('MathKeypad', () => {
 
   test("'+ row below' should trigger 'AddRow' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -136,7 +136,7 @@ describe('MathKeypad', () => {
 
   test("'+ col left' should trigger 'AddColumn' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -152,7 +152,7 @@ describe('MathKeypad', () => {
 
   test("'+ col right' should trigger 'AddColumn' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -168,7 +168,7 @@ describe('MathKeypad', () => {
 
   test("'- row' should trigger 'DeleteRow' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
@@ -183,7 +183,7 @@ describe('MathKeypad', () => {
 
   test("'- col' should trigger 'DeleteColumn' editing event", async () => {
     // Arrange
-    const editMock = jest.fn();
+    const editMock = vi.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
