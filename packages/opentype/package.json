@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/opentype",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/math-blocks/math-blocks.git",
@@ -15,5 +15,8 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "devDependencies": {
+        "utility-types": "^3.10.0"
     }
 }

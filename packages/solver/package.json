@@ -17,11 +17,12 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/semantic": "^0.1.2",
+        "@math-blocks/semantic": "workspace:^",
         "fraction.js": "^4.0.12"
     },
     "devDependencies": {
-        "@math-blocks/editor": "^0.0.15",
-        "@math-blocks/tex": "^0.1.2"
+        "@math-blocks/editor": "workspace:^",
+        "@math-blocks/tex": "workspace:^",
+        "utility-types": "^3.10.0"
     }
 }

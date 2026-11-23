@@ -17,11 +17,11 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.13",
-        "@math-blocks/semantic": "^0.1.2",
-        "@math-blocks/solver": "^0.0.15"
+        "@math-blocks/core": "workspace:^",
+        "@math-blocks/semantic": "workspace:^",
+        "@math-blocks/solver": "workspace:^"
     },
     "devDependencies": {
-        "@math-blocks/parser": "^0.0.15"
+        "@math-blocks/parser": "workspace:^"
     }
 }

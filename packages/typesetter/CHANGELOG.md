@@ -1,5 +1,21 @@
 # @math-blocks/typesetter
 
+## 0.0.16
+
+### Patch Changes
+
+- 2ea1981: Add `glyphGroupsForRow`, which returns the glyph groups needed to typeset an editor tree, including characters the typesetter draws that aren't in the tree as characters, such as accents, the radical sign and math-italic letters.
+- 5a45037: Draw characters the font can't draw, for example because their glyph group isn't loaded, as a placeholder instead of throwing. `Context` gets an optional `recordMissingGlyph` callback that's told about each one, and `Glyph` layout nodes get an optional `placeholder` field.
+- Updated dependencies [737c673]
+- Updated dependencies [bcbd9ca]
+- Updated dependencies [7566931]
+- Updated dependencies [5a45037]
+- Updated dependencies [5a45037]
+- Updated dependencies [feccdbb]
+- Updated dependencies [dbeebb1]
+- Updated dependencies [755afc9]
+  - @math-blocks/opentype@0.0.15
+
 ## 0.0.15
 
 ### Patch Changes
