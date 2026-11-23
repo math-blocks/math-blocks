@@ -3,6 +3,8 @@ import path from 'path';
 import vm from 'vm';
 
 import { fromBaseUrl, loadFontSubsets } from '../loader';
+import { parseDirectory } from '../parser';
+import { fromArrayBuffer } from '../byte-source';
 import { ASSETS } from '../test-util';
 
 const SUBSET_DIR = path.join(ASSETS, 'subsets', 'stix-two-math');
@@ -80,10 +82,51 @@ describe('loadFontSubsets', () => {
     expect(loader.requested).toEqual([]);
   });
 
-  test('passes on errors from the loader', async () => {
+  test('names the subset when the loader fails', async () => {
+    const offline = new Error('offline');
+    const result = loadFontSubsets([], () => Promise.reject(offline));
+
+    await expect(result).rejects.toThrow(
+      'Couldn\'t load the "base" font subset: offline',
+    );
+    await expect(result).rejects.toHaveProperty('cause', offline);
+  });
+
+  test('names the subset when the loader throws something other than an Error', async () => {
     await expect(
-      loadFontSubsets([], () => Promise.reject(new Error('offline'))),
-    ).rejects.toThrow('offline');
+      loadFontSubsets([], () => Promise.reject('offline')),
+    ).rejects.toThrow('Couldn\'t load the "base" font subset: offline');
+  });
+
+  test('names the subset that fails to parse', async () => {
+    // Hides every cmap encoding record in the calculus subset, so parse
+    // can't find a character map in it. The base subset is left alone.
+    const loader = diskLoader();
+    const load = async (group: string): Promise<ArrayBuffer> => {
+      const buffer = await loader.load(group);
+      if (group !== 'calculus') {
+        return buffer;
+      }
+      const dir = await parseDirectory(fromArrayBuffer(buffer));
+      const view = new DataView(buffer);
+      const cmapOffset = dir.tableRecords['cmap'].offset;
+      for (let i = 0; i < view.getUint16(cmapOffset + 2); i++) {
+        view.setUint16(cmapOffset + 4 + i * 8, 0xffff); // platformID
+      }
+      return buffer;
+    };
+
+    const result = loadFontSubsets(['calculus'], load);
+
+    await expect(result).rejects.toThrow(
+      'Couldn\'t parse the "calculus" font subset: No Unicode cmap subtable.',
+    );
+    await expect(result).rejects.toHaveProperty(
+      'cause',
+      expect.objectContaining({
+        message: expect.stringMatching(/^No Unicode cmap subtable\./),
+      }),
+    );
   });
 });
 
@@ -110,7 +153,25 @@ describe('fromBaseUrl', () => {
       .mockResolvedValue({ ok: false, status: 404, statusText: 'Not Found' });
 
     await expect(fromBaseUrl('/fonts')('calculus')).rejects.toThrow(
-      'Couldn\'t load the "calculus" font subset from /fonts/calculus.otf: 404 Not Found',
+      "Couldn't fetch /fonts/calculus.otf: 404 Not Found",
+    );
+  });
+
+  test('loadFontSubsets names the subset that failed to fetch', async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) =>
+      url.endsWith('/calculus.otf')
+        ? { ok: false, status: 404, statusText: 'Not Found' }
+        : {
+            ok: true,
+            arrayBuffer: () => diskLoader().load('base'),
+          },
+    );
+
+    await expect(
+      loadFontSubsets(['calculus'], fromBaseUrl('/fonts')),
+    ).rejects.toThrow(
+      'Couldn\'t load the "calculus" font subset: ' +
+        "Couldn't fetch /fonts/calculus.otf: 404 Not Found",
     );
   });
 });

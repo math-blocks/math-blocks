@@ -24,10 +24,27 @@ const toArrayBuffer = async (data: FontFileData): Promise<ArrayBuffer> =>
     ? data.arrayBuffer()
     : (data as ArrayBuffer);
 
+// Wraps an error from loading or parsing a subset so that its message names
+// the subset. The original error is kept as `cause`.
+const subsetError = (
+  step: 'load' | 'parse',
+  group: string,
+  error: unknown,
+): Error => {
+  const message = error instanceof Error ? error.message : String(error);
+  return new Error(`Couldn't ${step} the "${group}" font subset: ${message}`, {
+    cause: error,
+  });
+};
+
 /**
  * Loads the font subsets for the given glyph groups and combines them into a
  * CombinedFont. The "base" group is always loaded, whether or not it's listed.
  * Groups are loaded in parallel.
+ *
+ * If a subset fails to load or parse, the returned promise rejects with an
+ * error whose message names the subset, such as `Couldn't parse the
+ * "calculus" font subset: …`. The original error is its `cause`.
  *
  * `loadGroup` fetches a group's subset file. This function doesn't do any
  * networking itself; use `fromBaseUrl` for subsets hosted in one folder, or
@@ -56,8 +73,17 @@ export const loadFontSubsets = async (
   const names = [...new Set([glyphGroups[0].name, ...groups])];
   const fonts = await Promise.all(
     names.map(async (name): Promise<[string, Font]> => {
-      const buffer = await toArrayBuffer(await loadGroup(name));
-      return [name, await parse(buffer)];
+      let buffer: ArrayBuffer;
+      try {
+        buffer = await toArrayBuffer(await loadGroup(name));
+      } catch (error) {
+        throw subsetError('load', name, error);
+      }
+      try {
+        return [name, await parse(buffer)];
+      } catch (error) {
+        throw subsetError('parse', name, error);
+      }
     }),
   );
   return combineFonts(Object.fromEntries(fonts));
@@ -73,9 +99,9 @@ export const fromBaseUrl = (baseUrl: string): LoadGroup => {
     const url = `${base}/${group}.otf`;
     const response = await fetch(url);
     if (!response.ok) {
+      // loadFontSubsets adds the subset's name to the message.
       throw new Error(
-        `Couldn't load the "${group}" font subset from ${url}: ` +
-          `${response.status} ${response.statusText}`,
+        `Couldn't fetch ${url}: ${response.status} ${response.statusText}`,
       );
     }
     return response;

@@ -137,14 +137,17 @@ test.describe('editor', () => {
     await page.goto('#/editor');
 
     await expect(page.getByText('Unexpected Application Error!')).toBeVisible();
-    // The message is the browser's own for a failed fetch().
+    // loadFontSubsets names the subset, then gives the browser's own message
+    // for a failed fetch().
     const fetchFailed = {
       chromium: 'Failed to fetch',
       firefox: 'NetworkError when attempting to fetch resource.',
       webkit: 'Load failed',
     }[browserName];
     await expect(
-      page.getByRole('heading', { name: fetchFailed }),
+      page.getByRole('heading', {
+        name: `Couldn't load the "calculus" font subset: ${fetchFailed}`,
+      }),
     ).toBeVisible();
   });
 
