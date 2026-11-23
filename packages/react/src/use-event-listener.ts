@@ -14,8 +14,10 @@ export default function useEventListener(
       const isSupported = element?.addEventListener;
       if (!isSupported) return;
 
-      // This allows us to call e.stopPropagation() before StoryBook
-      // steals the focus when '/' is pressed.
+      // Listen in the capture phase so the editor's handlers run before the
+      // page's own key handlers, and can call e.stopPropagation() to keep
+      // keys the editor uses (e.g. '/' for fractions) from also triggering
+      // page shortcuts, such as a '/' shortcut that focuses a search box.
       const options = { capture: true };
 
       // Add event listener

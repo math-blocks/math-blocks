@@ -149,8 +149,8 @@ export const MathEditor = (props: Props): React.ReactNode => {
           }
         }
 
-        // Prevent StoryBook from capturing '/' and shifting focus to
-        // its search field.
+        // Keep the page from also handling a key the editor used, e.g. a
+        // '/' shortcut that would move focus to a search box.
         e.stopPropagation();
       }
     },

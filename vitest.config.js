@@ -25,7 +25,6 @@ export default defineConfig({
         '**/out/**',
         '**/dist/**',
         '**/__tests__/**',
-        '**/stories/**',
         '**/*.d.ts',
         '**/test-util.ts',
         // Test-only helpers for parsing and printing plain-text math.
