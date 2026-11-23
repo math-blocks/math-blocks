@@ -57,6 +57,12 @@ const parseCmapHeader = async (blob: ByteSource): Promise<CmapHeader> => {
   };
 };
 
+const hex = (code: number): string =>
+  `U+${code.toString(16).toUpperCase().padStart(4, '0')}`;
+
+// The largest Unicode code point. Characters in cmap groups can't go past it.
+const MAX_CODE_POINT = 0x10ffff;
+
 type MapGroup = {
   readonly startCharCode: number; // uint32
   readonly endCharCode: number; // uint32
@@ -93,11 +99,26 @@ const parseMapGroups = async (
   const groups: MapGroup[] = [];
   for (let i = 0; i < numGroups; i++) {
     const offset = HEADER_SIZE + i * GROUP_SIZE;
-    groups.push({
+    const group = {
       startCharCode: view.getUint32(offset + 0),
       endCharCode: view.getUint32(offset + 4),
       glyphID: view.getUint32(offset + 8),
-    });
+    };
+    // Checked before expanding any group, because a corrupt endCharCode (up
+    // to 0xFFFFFFFF) would otherwise loop for billions of iterations.
+    if (
+      group.startCharCode > group.endCharCode ||
+      group.endCharCode > MAX_CODE_POINT
+    ) {
+      const range = `${hex(group.startCharCode)}..${hex(group.endCharCode)}`;
+      throw new Error(
+        `Malformed cmap format ${format} subtable: group ${i} (${range}) ` +
+          (group.startCharCode > group.endCharCode
+            ? 'ends before it starts'
+            : `goes past ${hex(MAX_CODE_POINT)}`),
+      );
+    }
+    groups.push(group);
   }
 
   const result: Record<number, number> = {};
@@ -116,9 +137,6 @@ const parseMapGroups = async (
 
   return result;
 };
-
-const hex = (code: number): string =>
-  `U+${code.toString(16).toUpperCase().padStart(4, '0')}`;
 
 // Format 4: segment mapping to delta values. Only covers the BMP.
 // https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-4-segment-mapping-to-delta-values

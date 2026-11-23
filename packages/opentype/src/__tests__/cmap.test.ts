@@ -268,6 +268,62 @@ describe('parseCmap', () => {
     );
   });
 
+  describe('malformed groups in formats 12 and 13', () => {
+    const cmapWith = (format: 12 | 13, group: Group): Blob =>
+      buildCmap([
+        {
+          platformID: 3,
+          encodingID: 10,
+          subtable: buildGroupSubtable(format, [
+            { startCharCode: 0x41, endCharCode: 0x41, glyphID: 1 },
+            group,
+          ]),
+        },
+      ]);
+
+    // Before the range check, this group made parseCmap loop over about
+    // four billion code points.
+    test('throws on a group that goes past U+10FFFF', async () => {
+      const blob = cmapWith(13, {
+        startCharCode: 0x42,
+        endCharCode: 0xffffffff,
+        glyphID: 2,
+      });
+
+      await expect(parseCmap(blob)).rejects.toThrow(
+        'Malformed cmap format 13 subtable: group 1 (U+0042..U+FFFFFFFF) ' +
+          'goes past U+10FFFF',
+      );
+    });
+
+    test('throws on a group that ends before it starts', async () => {
+      const blob = cmapWith(12, {
+        startCharCode: 0x50,
+        endCharCode: 0x4f,
+        glyphID: 2,
+      });
+
+      await expect(parseCmap(blob)).rejects.toThrow(
+        'Malformed cmap format 12 subtable: group 1 (U+0050..U+004F) ' +
+          'ends before it starts',
+      );
+    });
+
+    test('accepts a group that ends at U+10FFFF', async () => {
+      const blob = cmapWith(12, {
+        startCharCode: 0x10fffe,
+        endCharCode: 0x10ffff,
+        glyphID: 2,
+      });
+
+      expect(await parseCmap(blob)).toEqual({
+        0x41: 1,
+        0x10fffe: 2,
+        0x10ffff: 3,
+      });
+    });
+  });
+
   describe('choosing a subtable', () => {
     // Each record maps 'A' to a different glyph, so the result shows which
     // record parseCmap read.
