@@ -39,11 +39,12 @@ const loadSubset = async (
 ): Promise<Response> => {
   const url = subsetUrls[`${folder}/${group}`];
   if (!url) {
-    throw new Error(`No "${group}" subset in assets/subsets/${folder}/`);
+    // loadFontSubsets adds the subset's name to these messages.
+    throw new Error(`Not found in assets/subsets/${folder}/`);
   }
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Couldn't load ${url}: ${response.status}`);
+    throw new Error(`Couldn't fetch ${url}: ${response.status}`);
   }
   return response;
 };
