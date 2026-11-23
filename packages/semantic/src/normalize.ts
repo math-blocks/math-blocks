@@ -8,7 +8,7 @@ export const print = (ast: Node): string => {
     case 'Identifier':
       return ast.name;
     case 'Number':
-      return `${ast.value}`;
+      return ast.value;
     case 'Neg': {
       const type = ast.subtraction ? 'neg.sub' : 'neg';
       return `(${type} ${print(ast.arg)})`;
@@ -37,7 +37,7 @@ export const print = (ast: Node): string => {
       return `(${ast.type} ${print(ast.arg)})`;
     case 'Mul': {
       const type = ast.implicit ? 'mul.imp' : 'mul.exp';
-      return `(${type} ${ast.args.map(print)})`;
+      return `(${type} ${ast.args.map(print).join(',')})`;
     }
     // These nodes are commutative
     case 'Add':

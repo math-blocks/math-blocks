@@ -56,13 +56,13 @@ const print = (
   }
   switch (ast.type) {
     case 'Number': {
-      return `${ast.value}`;
+      return ast.value;
     }
     case 'Identifier': {
       if (ast.subscript) {
         return `(ident ${ast.name} ${print(ast.subscript, serialize, indent)})`;
       } else {
-        return `${ast.name}`;
+        return ast.name;
       }
     }
     case 'Neg': {

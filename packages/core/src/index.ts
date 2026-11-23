@@ -5,7 +5,7 @@ export const getId = (() => {
 
 export class UnreachableCaseError extends Error {
   constructor(val: never) {
-    super(`Unreachable case: ${val}`);
+    super(`Unreachable case: ${String(val)}`);
   }
 }
 
@@ -14,7 +14,7 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
 }
 
 export function clone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj)) as T;
 }
 
 export type { OneOrMore, TwoOrMore } from './types';

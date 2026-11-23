@@ -292,13 +292,17 @@ export const traverse = (
   }
 
   const newValues: Record<string, types.Node | types.Node[]> = {};
-  for (const [key, value] of Object.entries(node)) {
+  for (const [key, value] of Object.entries(node) as [string, unknown][]) {
     if (Array.isArray(value)) {
       // All arrays in the tree except for Location.path contain nodes.
       // Since we never pass a Location as an arg to traverse we should
       // be okey without doing additional checks.
-      newValues[key] = value.map((child) => traverse(child, callbacks));
-    } else if (value?.hasOwnProperty('type')) {
+      newValues[key] = (value as types.Node[]).map((child) =>
+        traverse(child, callbacks),
+      );
+    } else if (
+      (value as types.Node | null | undefined)?.hasOwnProperty('type')
+    ) {
       newValues[key] = traverse(value as types.Node, callbacks);
     }
   }
@@ -330,13 +334,17 @@ export const traverseNumeric = (
   }
 
   const newValues: Record<string, types.Node | types.Node[]> = {};
-  for (const [key, value] of Object.entries(node)) {
+  for (const [key, value] of Object.entries(node) as [string, unknown][]) {
     if (Array.isArray(value)) {
       // All arrays in the tree except for Location.path contain nodes.
       // Since we never pass a Location as an arg to traverse we should
       // be okey without doing additional checks.
-      newValues[key] = value.map((child) => traverseNumeric(child, callbacks));
-    } else if (value?.hasOwnProperty('type')) {
+      newValues[key] = (value as types.Node[]).map((child) =>
+        traverseNumeric(child, callbacks),
+      );
+    } else if (
+      (value as types.Node | null | undefined)?.hasOwnProperty('type')
+    ) {
       newValues[key] = traverseNumeric(value as types.Node, callbacks);
     }
   }
