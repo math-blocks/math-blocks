@@ -31,7 +31,13 @@ for (const name of fs.readdirSync(packagesDir)) {
   fs.symlinkSync(pkgDir, path.join(scopeDir, name), 'junction');
 }
 
-const tsc = createRequire(import.meta.url).resolve('typescript/bin/tsc');
+// Find tsc through typescript's package.json "bin" field. TypeScript 7's
+// "exports" doesn't expose bin/tsc, so it can't be resolved directly.
+const tsPackageJson = createRequire(import.meta.url).resolve(
+  'typescript/package.json',
+);
+const { bin } = JSON.parse(fs.readFileSync(tsPackageJson, 'utf8'));
+const tsc = path.resolve(path.dirname(tsPackageJson), bin.tsc);
 let failed = false;
 
 for (const config of ['tsconfig.bundler.json', 'tsconfig.node16.json']) {
