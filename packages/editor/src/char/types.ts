@@ -14,7 +14,6 @@ export type Style = {
 
 type Common = {
   readonly id: number;
-  // eslint-disable-next-line functional/prefer-readonly-type
   style: Readonly<Style>;
 };
 

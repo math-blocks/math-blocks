@@ -10,7 +10,7 @@ const { NodeType } = Semantic;
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
   node: Semantic.types.Neg,
-  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step<Semantic.types.Node>[],
 ): readonly Semantic.types.Node[] | undefined => {
   const add = node.arg;
   const mulNegOne = Semantic.builders.mul(
@@ -30,7 +30,7 @@ const distSub = (
 // a - b -> a + -b
 const subToNeg = (
   before: Semantic.types.Node,
-  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step<Semantic.types.Node>[],
 ): Semantic.types.Node => {
   if (Semantic.util.isSubtraction(before)) {
     const after = Semantic.builders.neg(before.arg, false);
@@ -50,7 +50,7 @@ const subToNeg = (
 const negToSub = (
   before: Semantic.types.Node,
   index: number,
-  substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step[],
 ): Semantic.types.Node => {
   if (before.type === NodeType.Neg && !before.subtraction && index > 0) {
     const after = Semantic.builders.neg(before.arg, true);
@@ -69,7 +69,7 @@ const negToSub = (
 // a(b + c) -> ab + ac
 const distMulRight = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step<Semantic.types.Node>[],
 ): readonly Semantic.types.Node[] | undefined => {
   // TODO: handle distribution of more than two polynomials
   if (node.args.length === 2) {
@@ -130,7 +130,7 @@ const distMulRight = (
 // (a + b)c -> ac + bc
 const distMulLeft = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step<Semantic.types.Node>[],
 ): readonly Semantic.types.Node[] | undefined => {
   if (node.args.length === 2) {
     if (node.args[0].type === NodeType.Add) {
@@ -192,7 +192,7 @@ const distMulLeft = (
 // how a student would usually write it.
 const distMul = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+  substeps: Step<Semantic.types.Node>[],
 ): readonly Semantic.types.Node[] | undefined =>
   distMulLeft(node, substeps) ?? distMulRight(node, substeps);
 

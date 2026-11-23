@@ -73,7 +73,7 @@ type EOL = SimpleToken<TokenKind.EOL>;
 
 export type Token =
   | Identifier
-  | Number // eslint-disable-line @typescript-eslint/ban-types
+  | Number // oxlint-disable-line typescript/ban-types
   | Plus
   | Minus
   | PlusMinus

@@ -12,11 +12,11 @@ const { NodeType } = Semantic;
 expect.extend({ toEqualEditorNode });
 
 declare module 'vitest' {
-  /* eslint-disable */
+  /* oxlint-disable */
   interface Matchers<T = any> {
     toEqualEditorNode(actual: types.CharNode): void;
   }
-  /* eslint-enable */
+  /* oxlint-enable */
 }
 
 describe('print', () => {

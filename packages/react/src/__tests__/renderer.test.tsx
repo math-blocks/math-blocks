@@ -83,7 +83,7 @@ const fixtureToComponent = async (
 };
 
 declare module 'vitest' {
-  /* eslint-disable */
+  /* oxlint-disable */
   interface Matchers<T = any> {
     toMatchSVGSnapshot(): void;
   }

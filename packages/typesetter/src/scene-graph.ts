@@ -494,7 +494,7 @@ const processVBox = (box: types.VBox, loc: Point, context: Context): Group => {
         pen.y += height;
         // TODO: see if we can get rid of this check in the future
         if (Number.isNaN(pen.y)) {
-          // eslint-disable-next-line no-debugger
+          // oxlint-disable-next-line no-debugger
           debugger;
         }
 

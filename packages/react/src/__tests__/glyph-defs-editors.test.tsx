@@ -6,7 +6,6 @@
 // SVG. See https://github.com/math-blocks/math-blocks/issues/758.
 // The tests inspect SVG markup (<defs>, <use>), which has no roles or labels
 // for Testing Library's queries to find.
-/* eslint-disable testing-library/no-node-access, testing-library/no-container */
 import fs from 'fs';
 import path from 'path';
 import React from 'react';

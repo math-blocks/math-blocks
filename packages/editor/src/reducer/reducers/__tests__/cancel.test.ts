@@ -1,4 +1,3 @@
-/* eslint-disable jest-dom/prefer-to-have-style */
 import * as b from '../../../char/builders';
 
 import { toEqualEditorNode } from '../../../test-util';

@@ -6,7 +6,6 @@
 // https://github.com/math-blocks/math-blocks/issues/758.
 // The tests inspect SVG markup (<defs>, <use>), which has no roles or labels
 // for Testing Library's queries to find.
-/* eslint-disable testing-library/no-node-access, testing-library/no-container, testing-library/render-result-naming-convention */
 import fs from 'fs';
 import { createRequire } from 'module';
 import path from 'path';
@@ -348,7 +347,6 @@ describe('getStandaloneSvg', () => {
 
     // This is React's own createRoot, not Testing Library's render, which
     // can't render into a shadow root.
-    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       createRoot(container).render(
         <FontDataContext.Provider value={fontData}>

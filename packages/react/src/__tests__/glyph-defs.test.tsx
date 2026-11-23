@@ -2,7 +2,6 @@
 // and draws every occurrence with <use>. See
 // https://github.com/math-blocks/math-blocks/issues/758.
 // These tests render to markup strings, not with @testing-library/react.
-/* eslint-disable testing-library/render-result-naming-convention */
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
