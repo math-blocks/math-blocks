@@ -39,7 +39,7 @@ export const frac = (state: State): State => {
 
   let index = focus.offset - 1;
   const focusRow = PathUtils.getNodeAtPath(row, focus.path);
-  while (focusRow && focusRow.type === 'row' && index >= 0) {
+  while (focusRow?.type === 'row' && index >= 0) {
     const child = focusRow.children[index];
 
     if (child.type === 'char' && isOperator(child)) {

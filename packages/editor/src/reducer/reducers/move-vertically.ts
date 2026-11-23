@@ -126,6 +126,9 @@ const getNewSelection = (
       /* istanbul ignore next */
       throw new Error('Move Vertically - subsup - Not implemented');
     }
+    default:
+      // Other parents can't be navigated vertically, so look further up.
+      break;
   }
 
   // Recurses up the tree to find a parent that can be navigated to.

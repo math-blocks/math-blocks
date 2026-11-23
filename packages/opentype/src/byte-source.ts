@@ -18,5 +18,5 @@ export type ByteSource = {
 export const fromArrayBuffer = (buffer: ArrayBuffer): ByteSource => ({
   size: buffer.byteLength,
   slice: (start, end) => fromArrayBuffer(buffer.slice(start, end)),
-  arrayBuffer: async () => buffer,
+  arrayBuffer: () => Promise.resolve(buffer),
 });

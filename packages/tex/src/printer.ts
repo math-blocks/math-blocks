@@ -46,7 +46,7 @@ export const print = (node: types.CharNode, options: Options = {}): string => {
         return `\\${node.accent}{${_print(node.children[0])}}`;
       }
       case NodeType.Macro: {
-        return `${_print(node.children[0])}`;
+        return _print(node.children[0]);
       }
       case NodeType.Table: {
         return '';

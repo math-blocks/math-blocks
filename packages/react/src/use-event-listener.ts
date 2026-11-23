@@ -11,6 +11,7 @@ export default function useEventListener(
     () => {
       // Make sure element supports addEventListener
       // On the element
+      // oxlint-disable-next-line typescript/unbound-method -- only checks that the method exists; it's called on `element` below.
       const isSupported = element?.addEventListener;
       if (!isSupported) return;
 
