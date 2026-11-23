@@ -1,4 +1,7 @@
 module.exports = {
+  // Don't merge in configs from directories above the repo, e.g. when it's
+  // checked out as a git worktree inside another clone.
+  root: true,
   extends: [
     'plugin:import/typescript',
     'plugin:jest-dom/recommended',
@@ -10,7 +13,7 @@ module.exports = {
   plugins: [
     'functional',
     'import',
-    'jest',
+    '@vitest',
     'react-hooks',
     'react',
     'workspaces',
@@ -54,8 +57,8 @@ module.exports = {
     'no-prototype-builtins': 'off',
     // TODO: add 'main' fields to all package.json files before re-enabling
     // "import/no-unused-modules": ["error", {"unusedExports": true}],
-    'jest/no-focused-tests': 'error',
-    'jest/no-identical-title': 'error',
+    '@vitest/no-focused-tests': 'error',
+    '@vitest/no-identical-title': 'error',
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'react/prop-types': 'off',
@@ -65,7 +68,7 @@ module.exports = {
     'workspaces/require-dependency': 'error',
   },
   env: {
-    jest: true,
+    '@vitest/env': true,
     es6: true,
     browser: true,
     node: true,

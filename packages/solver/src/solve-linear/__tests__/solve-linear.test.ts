@@ -669,8 +669,6 @@ describe('solveLinear', () => {
     const result = solveLinear(parseNumRel(input), builders.identifier('x'))!;
     expect(print(result.after)).toEqual(expected);
   });
-
-  describe('bail-out cases', () => {});
 });
 
 describe('isSolvedFor', () => {

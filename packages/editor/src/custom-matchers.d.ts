@@ -1,8 +1,8 @@
-/// <reference types="jest" />
+import type * as types from './char/types';
 
-declare namespace jest {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Matchers<R, T> {
-    toEqualEditorNodes(actual: readonly types.Node[]): R;
+declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  interface Matchers<T = any> {
+    toEqualEditorNodes(actual: readonly types.CharNode[]): void;
   }
 }

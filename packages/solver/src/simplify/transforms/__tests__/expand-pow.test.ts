@@ -47,7 +47,7 @@ describe('expandPow', () => {
   test('does nothing if distribute does nothing', () => {
     // `distribute` always handles a product of two sums today, so stub it to
     // check that we don't return a half-expanded (x + 1)(x + 1).
-    const spy = jest
+    const spy = vi
       .spyOn(Distribute, 'distribute')
       .mockReturnValueOnce(undefined);
 

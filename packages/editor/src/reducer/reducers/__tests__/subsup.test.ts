@@ -139,7 +139,6 @@ describe('subsup', () => {
     });
   });
 
-  describe('with selection', () => {
-    // TODO: write tests once this behavioe is implemented
-  });
+  // TODO: test 'with selection' once this behavior is implemented. Vitest
+  // fails on an empty describe block, so there isn't one here yet.
 });
