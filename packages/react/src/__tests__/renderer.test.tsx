@@ -134,6 +134,9 @@ expect.extend({
 
     // TODO: format the output
     const output = ReactDOMServer.renderToStaticMarkup(element);
+    // Throws if a <use> references a missing glyph definition or if a
+    // definition is never used.
+    TestUtil.expandGlyphUses(output);
     const svgText = format(
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output,
     ).replace(/\r\n/g, '\n');

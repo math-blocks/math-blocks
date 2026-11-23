@@ -1,0 +1,28 @@
+packages:
+  - 'packages/*'
+
+# pnpm 10 doesn't run dependencies' install scripts unless they're listed here.
+onlyBuiltDependencies:
+  # Checks that its platform-specific binary is installed (used by Vite).
+  - esbuild
+  # Checks that its platform-specific binary is installed (used by
+  # @swc-node/register).
+  - '@swc/core'
+  # Installs the Git hooks, including the pre-commit hook that runs
+  # lint-staged.
+  - husky
+
+# These install scripts only print a message or build a native fallback that
+# isn't needed, so skip them without a warning.
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - core-js
+  - core-js-pure
+  - es5-ext
+
+# The Git hooks that husky 3 installs run `node_modules/run-node/run-node`
+# from the repo root. run-node is a dependency of husky, so pnpm only puts it
+# in node_modules/.pnpm, and every hook (pre-commit, prepare-commit-msg, ...)
+# would fail and abort the commit. Remove this once husky is upgraded.
+publicHoistPattern:
+  - run-node

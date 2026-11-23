@@ -10,6 +10,7 @@ import HandwritingPage from './handwriting/handwriting-page';
 import SolverPage from './solver/solver-page';
 import OpenTypeDemo from './opentype/opentype-demo';
 import SvgPage from './svg/svg-page';
+import WorksheetPage from './worksheet/worksheet-page';
 
 const container = document.createElement('div');
 
@@ -45,6 +46,9 @@ const Homepage = () => {
         </li>
         <li>
           <Link to="/svg">SVG</Link>
+        </li>
+        <li>
+          <Link to="/worksheet">Worksheet (shared glyph definitions)</Link>
         </li>
       </ul>
     </div>
@@ -95,6 +99,10 @@ const router = createHashRouter([
   {
     path: '/svg',
     Component: SvgPage,
+  },
+  {
+    path: '/worksheet',
+    Component: WorksheetPage,
   },
   {
     path: '/*',

@@ -31,7 +31,10 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.13",
+        "@math-blocks/core": "workspace:^",
         "fraction.js": "^4.0.12"
+    },
+    "devDependencies": {
+        "utility-types": "^3.10.0"
     }
 }

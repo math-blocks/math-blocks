@@ -1,5 +1,25 @@
 # @math-blocks/react
 
+## 0.0.17
+
+### Patch Changes
+
+- 9cf4308: `MathRenderer` and `MathEditor` now store each distinct glyph outline once per SVG, in a `<defs>` block, and draw every occurrence of a glyph with `<use>`. Glyphs render in the same place as before, but the markup is smaller when a glyph repeats. Code that reads the rendered SVG and expects one `<path>` per glyph needs to follow each `<use>` to its definition.
+- 5a45037: Draw placeholders for characters the font can't draw, and add an `onMissingGlyph` prop to `MathRenderer` and `MathEditor`. It's called after rendering, once for each missing character, and again only when the set of missing characters changes, so it can safely set state. Rendering either component without a font in `FontDataContext` now fails with a message that says so.
+- 5f91a64: Add `GlyphDefsProvider`. Every `MathRenderer` and `MathEditor` inside it shares one hidden `<svg>` of glyph definitions, so a page with lots of math stores each glyph's outline once instead of once per SVG. Without a provider, and when rendering on the server, SVGs keep their own `<defs>` as before. Also add `getStandaloneSvg`, which copies a rendered SVG with the definitions it uses inlined, for copying, downloading or drawing it as an image.
+- Updated dependencies [737c673]
+- Updated dependencies [bcbd9ca]
+- Updated dependencies [7566931]
+- Updated dependencies [2ea1981]
+- Updated dependencies [5a45037]
+- Updated dependencies [5a45037]
+- Updated dependencies [feccdbb]
+- Updated dependencies [dbeebb1]
+- Updated dependencies [755afc9]
+- Updated dependencies [5a45037]
+  - @math-blocks/opentype@0.0.15
+  - @math-blocks/typesetter@0.0.16
+
 ## 0.0.16
 
 ### Patch Changes

@@ -87,7 +87,7 @@ test('pages that draw math load the STIX subsets, not the full font', async ({
 }) => {
   const fonts = watchFonts(page);
   await page.goto('#/baseline');
-  await expect(page.locator('svg path').first()).toBeAttached();
+  await expect(page.locator('svg use').first()).toBeAttached();
 
   expect(fonts.map(builtName).sort()).toEqual(GROUPS);
 });
@@ -108,7 +108,7 @@ test.describe('editor', () => {
     const fonts = watchFonts(page);
     await page.goto('#/editor');
     const svg = mathEditor(page).locator('svg');
-    await expect(svg.locator('path').first()).toBeAttached();
+    await expect(svg.locator('use').first()).toBeAttached();
     await expect.poll(() => fonts.length).toBe(GROUPS.length);
     const stixFiles = [...fonts];
     const stixSvg = await svg.innerHTML();
@@ -129,13 +129,22 @@ test.describe('editor', () => {
     expect(errors).toEqual([]);
   });
 
-  test('shows an error when a font fails to load', async ({ page }) => {
+  test('shows an error when a font fails to load', async ({
+    page,
+    browserName,
+  }) => {
     await page.route(/calculus-[\w-]{8}\.otf$/, (route) => route.abort());
     await page.goto('#/editor');
 
     await expect(page.getByText('Unexpected Application Error!')).toBeVisible();
+    // The message is the browser's own for a failed fetch().
+    const fetchFailed = {
+      chromium: 'Failed to fetch',
+      firefox: 'NetworkError when attempting to fetch resource.',
+      webkit: 'Load failed',
+    }[browserName];
     await expect(
-      page.getByRole('heading', { name: 'Failed to fetch' }),
+      page.getByRole('heading', { name: fetchFailed }),
     ).toBeVisible();
   });
 
@@ -143,14 +152,15 @@ test.describe('editor', () => {
     const errors = watchErrors(page);
     await page.goto('#/editor');
     const editor = mathEditor(page);
-    await expect(editor.locator('path').first()).toBeAttached();
-    const glyphCount = await editor.locator('path').count();
+    // Each glyph drawn is a <use>; a repeated glyph adds no new <path>.
+    await expect(editor.locator('use').first()).toBeAttached();
+    const glyphCount = await editor.locator('use').count();
 
     await editor.click();
     await page.keyboard.type('+1');
 
     await expect
-      .poll(() => editor.locator('path').count())
+      .poll(() => editor.locator('use').count())
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
