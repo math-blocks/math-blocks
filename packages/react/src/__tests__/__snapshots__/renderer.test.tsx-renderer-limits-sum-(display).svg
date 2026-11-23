@@ -9,49 +9,49 @@
         <path id="mbR0-STIX2-92" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z"></path>
         <path id="mbR0-STIX2-93" d="M 464,160 L 435,160 C 412,100 399,79 346,79L 207,79 L 137,76 L 137,81 L 269,206 C 375,313 432,382 432,471C 432,576 353,644 240,644C 143,644 75,588 44,491L 68,481 C 105,556 149,579 214,579C 291,579 339,531 339,456C 339,351 289,288 190,186L 38,34 L 38,0 L 432,0 Z"></path>
     </defs>
-    <g fill="currentColor" stroke="none" transform="translate(0,0.8100000000000023)">
+    <g fill="currentColor" stroke="none" transform="translate(0,0.81)">
         <g transform="translate(0,64.86)" id="16">
             <g transform="translate(0,0)" id="5">
-                <g transform="translate(11.255999999999997,-45.42)" id="7"></g>
+                <g transform="translate(11.256,-45.42)" id="7"></g>
                 <g transform="translate(0,0)"></g>
                 <g transform="translate(0,31.93)" id="6"></g>
             </g>
             <g transform="translate(62.538,-15.48)" id="13">
                 <g transform="translate(0,-11.04)" id="14"></g>
-                <g transform="translate(0,8.881784197001252e-16)"></g>
-                <g transform="translate(0,63.809999999999995)" id="15">
+                <g transform="translate(0,0)"></g>
+                <g transform="translate(0,63.81)" id="15">
                     <g transform="translate(33.78,0)" id="11">
-                        <g transform="translate(0,-24.839999999999996)" id="12"></g>
+                        <g transform="translate(0,-24.84)" id="12"></g>
                     </g>
                 </g>
             </g>
         </g>
         <g transform="translate(0,64.86)" id="16">
             <g transform="translate(0,0)" id="5">
-                <g transform="translate(11.255999999999997,-45.42)" id="7">
-                    <use id="4" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-131079" transform="translate(0, 0) scale(0.042, -0.042)"></use>
+                <g transform="translate(11.256,-45.42)" id="7">
+                    <use id="4" aria-hidden="true" href="#mbR0-STIX2-131079" transform="translate(0,0) scale(0.042,-0.042)"></use>
                 </g>
                 <g transform="translate(0,0)">
-                    <use id="0" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-65554" transform="translate(13.148999999999997, 0) scale(0.06, -0.06)"></use>
+                    <use id="0" aria-hidden="true" href="#mbR0-STIX2-65554" transform="translate(13.149,0) scale(0.06,-0.06)"></use>
                 </g>
                 <g transform="translate(0,31.93)" id="6">
-                    <use id="1" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-294" transform="translate(0, 0) scale(0.042, -0.042)"></use>
-                    <use id="2" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-107" transform="translate(11.508, 0) scale(0.042, -0.042)"></use>
-                    <use id="3" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-91" transform="translate(41.748, 0) scale(0.042, -0.042)"></use>
+                    <use id="1" aria-hidden="true" href="#mbR0-STIX2-294" transform="translate(0,0) scale(0.042,-0.042)"></use>
+                    <use id="2" aria-hidden="true" href="#mbR0-STIX2-107" transform="translate(11.508,0) scale(0.042,-0.042)"></use>
+                    <use id="3" aria-hidden="true" href="#mbR0-STIX2-91" transform="translate(41.748,0) scale(0.042,-0.042)"></use>
                 </g>
             </g>
             <g transform="translate(62.538,-15.48)" id="13">
                 <g transform="translate(0,-11.04)" id="14">
-                    <use id="8" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-92" transform="translate(9.833999999999998, 0) scale(0.06, -0.06)"></use>
+                    <use id="8" aria-hidden="true" href="#mbR0-STIX2-92" transform="translate(9.834,0) scale(0.06,-0.06)"></use>
                 </g>
-                <g transform="translate(0,8.881784197001252e-16)">
-                    <line type="line" x1="0" y1="0" x2="49.367999999999995" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
+                <g transform="translate(0,0)">
+                    <line x1="0" y1="0" x2="49.367999999999995" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                 </g>
-                <g transform="translate(0,63.809999999999995)" id="15">
-                    <use id="9" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(4.079999999999998, 0) scale(0.06, -0.06)"></use>
+                <g transform="translate(0,63.81)" id="15">
+                    <use id="9" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(4.08,0) scale(0.06,-0.06)"></use>
                     <g transform="translate(33.78,0)" id="11">
-                        <g transform="translate(0,-24.839999999999996)" id="12">
-                            <use id="10" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-294" transform="translate(0, 0) scale(0.042, -0.042)"></use>
+                        <g transform="translate(0,-24.84)" id="12">
+                            <use id="10" aria-hidden="true" href="#mbR0-STIX2-294" transform="translate(0,0) scale(0.042,-0.042)"></use>
                         </g>
                     </g>
                 </g>

@@ -9,23 +9,23 @@
         <path id="mbR0-LM-Math-17" d="M 419,0 L 419,31 L 387,31 C 297,31 294,42 294,79L 294,640 C 294,664 294,666 271,666C 209,602 121,602 89,602L 89,571 C 109,571 168,571 220,597L 220,79 C 220,43 217,31 127,31L 95,31 L 95,0 C 130,3 217,3 257,3C 297,3 384,3 419,0Z"></path>
         <path id="mbR0-LM-Math-16" d="M 460,320 C 460,400 455,480 420,554C 374,650 292,666 250,666C 190,666 117,640 76,547C 44,478 39,400 39,320C 39,245 43,155 84,79C 127,-2 200,-22 249,-22C 303,-22 379,-1 423,94C 455,163 460,241 460,320ZM 377,332 C 377,257 377,189 366,125C 351,30 294,0 249,0C 210,0 151,25 133,121C 122,181 122,273 122,332C 122,396 122,462 130,516C 149,635 224,644 249,644C 282,644 348,626 367,527C 377,471 377,395 377,332Z"></path>
     </defs>
-    <g fill="currentColor" stroke="none" transform="translate(0,0.060000000000002274)">
+    <g fill="currentColor" stroke="none" transform="translate(0,0.06)">
         <g transform="translate(0,39.96)" id="7">
             <g transform="translate(64.32,0)" id="2"></g>
             <g transform="translate(171,0)" id="4"></g>
         </g>
         <g transform="translate(0,39.96)" id="7">
-            <use id="0" style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-18" transform="translate(0, 0) scale(0.06, -0.06)"></use>
-            <use id="1" style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-147" transform="translate(30, 0) scale(0.06, -0.06)"></use>
+            <use id="0" aria-hidden="true" href="#mbR0-LM-Math-18" transform="translate(0,0) scale(0.06,-0.06)"></use>
+            <use id="1" aria-hidden="true" href="#mbR0-LM-Math-147" transform="translate(30,0) scale(0.06,-0.06)"></use>
             <g transform="translate(64.32,0)" id="2">
-                <use style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-11" transform="translate(15, 0) scale(0.06, -0.06)"></use>
+                <use aria-hidden="true" href="#mbR0-LM-Math-11" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use id="3" style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-21" transform="translate(141, 0) scale(0.06, -0.06)"></use>
+            <use id="3" aria-hidden="true" href="#mbR0-LM-Math-21" transform="translate(141,0) scale(0.06,-0.06)"></use>
             <g transform="translate(171,0)" id="4">
-                <use style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-29" transform="translate(15, 0) scale(0.06, -0.06)"></use>
+                <use aria-hidden="true" href="#mbR0-LM-Math-29" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use id="5" style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-17" transform="translate(247.68, 0) scale(0.06, -0.06)"></use>
-            <use id="6" style="opacity:1" aria-hidden="true" href="#mbR0-LM-Math-16" transform="translate(277.68, 0) scale(0.06, -0.06)"></use>
+            <use id="5" aria-hidden="true" href="#mbR0-LM-Math-17" transform="translate(247.68,0) scale(0.06,-0.06)"></use>
+            <use id="6" aria-hidden="true" href="#mbR0-LM-Math-16" transform="translate(277.68,0) scale(0.06,-0.06)"></use>
         </g>
     </g>
 </svg>

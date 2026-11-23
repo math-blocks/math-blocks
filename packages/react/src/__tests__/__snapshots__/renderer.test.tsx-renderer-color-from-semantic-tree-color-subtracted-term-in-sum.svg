@@ -14,16 +14,16 @@
             <g transform="translate(166.14,0)" id="23"></g>
         </g>
         <g transform="translate(0,46.2)" id="26">
-            <use id="14" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-92" transform="translate(0, 0) scale(0.06, -0.06)"></use>
+            <use id="14" aria-hidden="true" href="#mbR0-STIX2-92" transform="translate(0,0) scale(0.06,-0.06)"></use>
             <g transform="translate(29.7,0)" style="color:orange" id="16">
-                <use style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-103" transform="translate(15, 0) scale(0.06, -0.06)"></use>
+                <use aria-hidden="true" href="#mbR0-STIX2-103" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use fill="orange" id="18" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(102.9, 0) scale(0.06, -0.06)"></use>
-            <use fill="orange" id="20" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-309" transform="translate(132.6, 0) scale(0.06, -0.06)"></use>
+            <use fill="orange" id="18" aria-hidden="true" href="#mbR0-STIX2-93" transform="translate(102.9,0) scale(0.06,-0.06)"></use>
+            <use fill="orange" id="20" aria-hidden="true" href="#mbR0-STIX2-309" transform="translate(132.6,0) scale(0.06,-0.06)"></use>
             <g transform="translate(166.14,0)" id="23">
-                <use style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-102" transform="translate(15, 0) scale(0.06, -0.06)"></use>
+                <use aria-hidden="true" href="#mbR0-STIX2-102" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use id="24" style="opacity:1" aria-hidden="true" href="#mbR0-STIX2-94" transform="translate(239.33999999999997, 0) scale(0.06, -0.06)"></use>
+            <use id="24" aria-hidden="true" href="#mbR0-STIX2-94" transform="translate(239.34,0) scale(0.06,-0.06)"></use>
         </g>
     </g>
 </svg>
