@@ -10,6 +10,9 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   platform: 'neutral',
   target: 'es2018',
+  // rolldown-plugin-dts generates the declarations with TypeScript 7 (the
+  // `tsgo` generator), because the TypeScript 7 package has no JavaScript API
+  // for the `tsc` generator.
   dts: true,
   clean: true,
   deps: {
@@ -40,8 +43,14 @@ export default defineConfig({
     // print timing reports on every build.
     bundlerTimings: false,
   },
-  // @tsdown/css compiles each *.module.css file to a module with string
-  // export names (`export { _key0 as "container" }`), which ES2018 doesn't
-  // allow. Rolldown inlines these as a plain object, so the output is fine.
-  suppressWarnings: /Arbitrary module namespace identifier names/,
+  suppressWarnings: [
+    // @tsdown/css compiles each *.module.css file to a module with string
+    // export names (`export { _key0 as "container" }`), which ES2018 doesn't
+    // allow. Rolldown inlines these as a plain object, so the output is fine.
+    /Arbitrary module namespace identifier names/,
+    // On TypeScript 7.0, rolldown-plugin-dts runs the tsgo CLI, and warns once
+    // per package and format that this backend is deprecated in favor of
+    // TypeScript 7.1's API. The output is fine; remove this once we're on 7.1.
+    /The `tsgo` generator on TypeScript 7\.0 is deprecated/,
+  ],
 });

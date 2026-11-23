@@ -3,7 +3,7 @@
     /* Basic Options */
     "incremental": true,
     "target": "ES2018",
-    "module": "ES2020",
+    "module": "ESNext",
     "lib": [
       "esnext",
     ],
@@ -23,14 +23,8 @@
     // "removeComments": true,                /* Do not emit comments to output. */
     // "noEmit": true,                        /* Do not emit outputs. */
     // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
-    "downlevelIteration": true, /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
     "isolatedModules": true, /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
     "resolveJsonModule": true,
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules",
-      }
-    ],
     /* Strict Type-Checking Options */
     "strict": true, /* Enable all strict type-checking options. */
     // "noImplicitAny": true,                 /* Raise error on expressions and declarations with an implied 'any' type. */
@@ -46,13 +40,12 @@
     // "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true,    /* Report errors for fallthrough cases in switch statement. */
     /* Module Resolution Options */
-    "moduleResolution": "node",            /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-    "baseUrl": "../", /* Base directory to resolve non-absolute module names. */
+    "moduleResolution": "bundler", /* Resolve modules the way Vite, Vitest and tsdown do. */
     "paths": {
       "@math-blocks/*": [
-        "./packages/*/src"
+        "./*/src"
       ]
-    }, /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
+    }, /* Map imports to source files. Paths are relative to this file. */
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
     // "typeRoots": ["."],                       /* List of folders to include type definitions from. */
     "types": ["vitest/globals", "@testing-library/jest-dom/vitest", "node"],                         /* Type declaration files to be included in compilation. */

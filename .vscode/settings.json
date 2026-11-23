@@ -1,5 +1,8 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
+    // TypeScript 7 has no tsserver for VS Code's built-in TypeScript support
+    // to use. The TypeScript (Native Preview) extension provides the language
+    // service instead.
+    "typescript.experimental.useTsgo": true,
     "search.exclude": {
         "**/dist": true,
         "**/out": true
