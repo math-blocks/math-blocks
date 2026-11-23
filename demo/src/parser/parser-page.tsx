@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactJson from 'react-json-view';
+import ReactJson from '@microlink/react-json-view';
 import cx from 'classnames';
 
 import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
@@ -103,6 +103,7 @@ const EditorPage: React.FunctionComponent = () => {
               style={{ overflow: 'scroll' }}
               shouldCollapse={(field) => field.name === 'loc'}
               enableClipboard={false}
+              showComma={false}
             />
           ) : error ? (
             <div style={{ color: 'red', fontSize: 18 }}>{error}</div>
@@ -113,6 +114,7 @@ const EditorPage: React.FunctionComponent = () => {
               style={{ overflow: 'scroll' }}
               shouldCollapse={(field) => field.name === 'loc'}
               enableClipboard={false}
+              showComma={false}
             />
           )}
         </VStack>
