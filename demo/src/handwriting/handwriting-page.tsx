@@ -9,9 +9,10 @@ import './handwriting-element';
 // - provide a way to save the data
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // oxlint-disable-next-line typescript/no-namespace
   namespace JSX {
     interface IntrinsicElements {
+      // oxlint-disable-next-line typescript/no-explicit-any
       readonly 'x-handwriting': any;
     }
   }

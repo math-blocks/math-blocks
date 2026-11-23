@@ -3,12 +3,9 @@ import { types, builders, isAccentType } from '@math-blocks/editor';
 import { macros } from './macros';
 
 class Parser {
-  // eslint-disable-next-line functional/prefer-readonly-type
   index: number;
   readonly input: string;
-  // eslint-disable-next-line functional/prefer-readonly-type
   readonly leftDelims: string[];
-  // eslint-disable-next-line functional/prefer-readonly-type
   readonly rightDelims: string[];
 
   constructor(input: string) {

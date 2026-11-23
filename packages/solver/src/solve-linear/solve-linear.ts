@@ -92,7 +92,6 @@ export function solveLinear(
 
   termsToMove.reverse();
 
-  // eslint-disable-next-line no-constant-condition
   for (const termToMove of termsToMove) {
     // Move each term that doesn't contain the variable we're solving
     // for from the left side to the right.

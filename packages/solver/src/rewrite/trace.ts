@@ -48,7 +48,7 @@ export const fromRule = (rule: Rule): Strategy =>
 // across the recursion so that building the result is linear in its length.
 const firstDerivation = (
   trace: Trace,
-  steps: Step[], // eslint-disable-line functional/prefer-readonly-type
+  steps: Step[],
 ): Derivation | undefined => {
   for (const branch of trace) {
     if (branch.type === 'done') {

@@ -149,7 +149,7 @@ export const parseTopDictData = (
       null,
       '-',
     ];
-    // eslint-disable-next-line
+    // oxlint-disable-next-line no-constant-condition
     while (true) {
       const b = data[i++];
       const n1 = b >> 4;

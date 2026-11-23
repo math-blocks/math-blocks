@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* oxlint-disable typescript/ban-types */
 import * as Semantic from '@math-blocks/semantic';
 
 export enum NumberOfSolutions {
