@@ -1,5 +1,26 @@
 # @math-blocks/grader
 
+## 0.3.0
+
+### Minor Changes
+
+- 0dc30d7: Rename `@math-blocks/tutor` to `@math-blocks/grader`. Install `@math-blocks/grader` and update imports from `@math-blocks/tutor`; `@math-blocks/tutor` won't get new releases.
+
+  Breaking: remove `getHint` and `showMeHow`. The package now only exports `checkStep` and its `CheckStepResult` type. `@math-blocks/core` is no longer a dependency.
+
+- 0dc30d7: Build with tsdown instead of Rollup. The package now ships an ES module build (`dist/index.mjs`, typed by `dist/index.d.mts`) alongside the CommonJS build (`dist/index.js`, typed by `dist/index.d.ts`), and adds an `exports` map in `package.json` that picks the right one for `import` and `require`.
+
+  Breaking: the `exports` map only allows importing the package root (and `package.json`). Deep imports into `dist`, such as `@math-blocks/grader/dist/index.js`, no longer resolve. Declaration files for internal modules, tests and stories are no longer published; `dist/index.d.ts` and `dist/index.d.mts` hold the whole public API.
+
+### Patch Changes
+
+- Updated dependencies [274cb55]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [47f0afb]
+  - @math-blocks/semantic@0.2.0
+  - @math-blocks/solver@0.1.0
+
 ## 0.2.0
 
 ### Minor Changes

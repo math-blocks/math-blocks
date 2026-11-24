@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/react",
-    "version": "0.0.17",
+    "version": "0.1.0",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/math-blocks/math-blocks.git",

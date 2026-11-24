@@ -1,5 +1,25 @@
 # @math-blocks/opentype
 
+## 0.1.0
+
+### Minor Changes
+
+- 71b9d02: Build with tsdown instead of Rollup. The package now ships an ES module build (`dist/index.mjs`, typed by `dist/index.d.mts`) alongside the CommonJS build (`dist/index.js`, typed by `dist/index.d.ts`), and adds an `exports` map in `package.json` that picks the right one for `import` and `require`.
+
+  Breaking: the `exports` map only allows importing the package root (and `package.json`). Deep imports into `dist`, such as `@math-blocks/opentype/dist/index.js`, no longer resolve. Declaration files for internal modules, tests and stories are no longer published; `dist/index.d.ts` and `dist/index.d.mts` hold the whole public API.
+
+### Patch Changes
+
+- c162c5f: `parse` reads more fonts' character maps. Besides the Windows (3, 10) and (3, 1) cmap subtables, it now reads the Unicode-platform (0, 4), (0, 6) and (0, 3) subtables, and cmap format 13 (many-to-one range mappings, used by last-resort fonts). It picks the first of (3, 10), (0, 4), (0, 6), (3, 1) and (0, 3) whose subtable is in format 4, 12 or 13. When none is readable, the error lists the records and formats it found.
+
+  `parse` also rejects a format 12 or 13 subtable with a group that ends before it starts or goes past U+10FFFF, with a "Malformed cmap" error. Before, a corrupt group could make `parse` loop for billions of iterations.
+
+- 0f5b5d2: When a subset fails to load or parse, `loadFontSubsets` now rejects with an error that names it, such as `Couldn't parse the "calculus" font subset: No Unicode cmap subtable. …` or `Couldn't load the "calculus" font subset: Failed to fetch`. The original error is the new error's `cause`.
+
+  `fromBaseUrl`'s error for a failed response is now `Couldn't fetch <url>: <status> <statusText>`, since `loadFontSubsets` adds the subset's name.
+
+- 47f0afb: Lint fix from oxlint's type-aware rules: the `ByteSource` that `parse` wraps around an `ArrayBuffer` returns `Promise.resolve(buffer)` instead of using an `async` function. No change in behavior.
+
 ## 0.0.15
 
 ### Patch Changes
