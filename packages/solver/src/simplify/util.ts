@@ -27,7 +27,7 @@ export const isNegative = (node: Semantic.types.Node): boolean => {
 
 export const simplifyMul = (
   node: Semantic.types.Mul, // restrict this to 2 factors
-  steps?: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  steps?: Step[],
 ): Semantic.types.Node => {
   const [a, b] = node.args;
 

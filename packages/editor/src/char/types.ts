@@ -14,7 +14,6 @@ export type Style = {
 
 type Common = {
   readonly id: number;
-  // oxlint-disable-next-line math-blocks/prefer-readonly-type -- the printer sets the style on nodes it creates
   style: Readonly<Style>;
 };
 

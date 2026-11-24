@@ -99,10 +99,7 @@ const getGroups = (terms: readonly types.Node[]): Groups => {
  * @param node
  * @param substeps this argument can be mutated by this function.
  */
-const subToAddNeg = (
-  node: types.Add,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
-): types.Add => {
+const subToAddNeg = (node: types.Add, substeps: Step[]): types.Add => {
   let changed = false;
 
   // step 0: convert subtraction to adding the inverse
@@ -140,7 +137,7 @@ const subToAddNeg = (
 const orderTerms = (
   node: types.Node,
   groups: Groups,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[],
 ): types.Node | undefined => {
   const keys = [...groups.keys()];
 
@@ -199,7 +196,7 @@ const areAdditiveInverses = (left: types.Node, right: types.Node): boolean => {
 const groupTerms = (
   node: types.Node,
   groups: Groups,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[],
 ): types.Node => {
   const newTerms: types.Node[] = [];
   for (const [key, values] of groups.entries()) {
@@ -241,10 +238,7 @@ const groupTerms = (
  * @param node
  * @param substeps this argument will be mutated by this function.
  */
-const evaluteCoeffs = (
-  node: types.Node,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
-): types.Node => {
+const evaluteCoeffs = (node: types.Node, substeps: Step[]): types.Node => {
   const newTerms = util.getTerms(node).map((term) => {
     // What if there was a term that was initial a sum of numbers, we wouldn't?
     // Ideally we'd deal with it first, but we should try to be defensive and
@@ -283,10 +277,7 @@ const evaluteCoeffs = (
  * @param node
  * @param substeps this argument can be mutated by this function.
  */
-const simplifyTerms = (
-  node: types.Node,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
-): types.Node => {
+const simplifyTerms = (node: types.Node, substeps: Step[]): types.Node => {
   let changed = false;
   // TODO: don't mark (-3)(x) -> -(3x) as a chnage since these these two
   // are printed to look exactly the same
@@ -322,10 +313,7 @@ const simplifyTerms = (
  * @param node
  * @param substeps this argument can be mutated by this function.
  */
-const addNegToSub = (
-  node: types.Node,
-  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
-): types.Node => {
+const addNegToSub = (node: types.Node, substeps: Step[]): types.Node => {
   let changed = false;
   const newTerms = util.getTerms(node).map((term, index) => {
     if (term.type === NodeType.Neg && index > 0) {

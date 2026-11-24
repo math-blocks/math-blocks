@@ -20,8 +20,8 @@ export type Common<T extends string> = {
   readonly type: T;
   readonly id: number;
   readonly loc?: SourceLocation;
-  source?: string; // oxlint-disable-line math-blocks/prefer-readonly-type -- set by the solver
-  style?: Style; // oxlint-disable-line math-blocks/prefer-readonly-type -- set to highlight nodes
+  source?: string;
+  style?: Style;
 };
 
 export interface NodeTypes {

@@ -29,14 +29,8 @@ const generateNodeTypes = () => {
   lines.push('  readonly type: T;');
   lines.push('  readonly id: number;');
   lines.push('  readonly loc?: SourceLocation;');
-  // Callers set these on nodes after building them: the solver sets `source`,
-  // and code that highlights nodes sets `style`.
-  lines.push(
-    '  source?: string; // oxlint-disable-line math-blocks/prefer-readonly-type -- set by the solver',
-  );
-  lines.push(
-    '  style?: Style; // oxlint-disable-line math-blocks/prefer-readonly-type -- set to highlight nodes',
-  );
+  lines.push('  source?: string;');
+  lines.push('  style?: Style;');
   lines.push('};');
   lines.push('');
 
