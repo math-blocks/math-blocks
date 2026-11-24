@@ -22,7 +22,7 @@ const { NodeType } = Semantic;
 export function simplifyMul(
   node: Semantic.types.Node,
   path: readonly Semantic.types.Node[],
-): Step<Semantic.types.Node> | void {
+): Step | void {
   if (node.type !== NodeType.Mul) {
     return undefined;
   }

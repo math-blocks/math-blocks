@@ -26,9 +26,7 @@ import { dividePowers } from './transforms/divide-powers';
 
 // TODO: Make simplify configurable so that we can get different behaviours.
 // For instance, someetimes we might not want to allow evaluation of expressions.
-export function simplify(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function simplify(node: Semantic.types.Node): Step | void {
   const tranforms: Transform[] = [
     dropAddIdentity,
 
@@ -57,7 +55,7 @@ export function simplify(
     addNegToSub,
   ];
 
-  const substeps: Step<Semantic.types.Node>[] = [];
+  const substeps: Step[] = [];
 
   const path: Semantic.types.Node[] = [];
   const enter = (node: Semantic.types.Node): void => {
@@ -73,7 +71,7 @@ export function simplify(
     if (Semantic.util.isNumeric(node)) {
       let current: Semantic.types.Node = node;
       for (let i = 0; i < 10; i++) {
-        let step: Step<Semantic.types.Node> | void = undefined;
+        let step: Step | void = undefined;
         for (const transform of tranforms) {
           step = transform(current, path, simplify);
           // Multiple transforms can be applied to the current node.

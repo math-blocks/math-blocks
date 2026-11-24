@@ -26,7 +26,7 @@ const { NodeType } = Semantic;
 export function expandPow(
   node: Semantic.types.Node,
   path: readonly Semantic.types.Node[],
-): Step<Semantic.types.Node> | void {
+): Step | void {
   if (node.type !== NodeType.Power) {
     return;
   }
@@ -44,7 +44,7 @@ export function expandPow(
 
   const mul = Semantic.builders.mul([base, base], true);
 
-  const expandStep: Step<Semantic.types.Node> = {
+  const expandStep: Step = {
     message: 'a power is repeated multiplication',
     before: node,
     after: mul,

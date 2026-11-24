@@ -26,9 +26,13 @@ export const subsup = (state: State, index: 0 | 1): State => {
       // existing superscript/subscript or create a subsuperscript/subscript of
       // it doesn't exist on the existing 'subsup' node.
       const sub: CharRow | null =
-        index === 0 ? nextNode.children[0] || b.row([]) : nextNode.children[0];
+        index === 0
+          ? (nextNode.children[0] ?? b.row([]))
+          : nextNode.children[0];
       const sup: CharRow | null =
-        index === 1 ? nextNode.children[1] || b.row([]) : nextNode.children[1];
+        index === 1
+          ? (nextNode.children[1] ?? b.row([]))
+          : nextNode.children[1];
 
       const newSubsup: CharSubSup = {
         ...nextNode,

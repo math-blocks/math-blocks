@@ -116,6 +116,7 @@
     "typescript/no-redundant-type-constituents": "error",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
     "typescript/no-unnecessary-template-expression": "error",
+    "typescript/no-unnecessary-type-arguments": "error",
     "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unsafe-argument": "error",
     "typescript/no-unsafe-assignment": "error",
@@ -123,6 +124,14 @@
     "typescript/no-unsafe-member-access": "error",
     "typescript/no-unsafe-return": "error",
     "typescript/only-throw-error": "error",
+    // `||` on strings, numbers and booleans deliberately falls back on `''`,
+    // `0` and `false` too, e.g. `stroke || 'currentColor'`.
+    "typescript/prefer-nullish-coalescing": [
+      "error",
+      {
+        "ignorePrimitives": { "string": true, "number": true, "boolean": true }
+      }
+    ],
     "typescript/prefer-optional-chain": "error",
     "typescript/prefer-promise-reject-errors": "error",
     "typescript/prefer-readonly": "error",

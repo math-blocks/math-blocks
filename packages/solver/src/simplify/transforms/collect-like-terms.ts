@@ -8,12 +8,12 @@ import { simplifyMul } from '../util';
 
 import { dropAddIdentity } from './drop-add-identity';
 
-export function collectLikeTerms(node: types.Node): Step<types.Node> | void {
+export function collectLikeTerms(node: types.Node): Step | void {
   if (node.type !== NodeType.Add) {
     return;
   }
 
-  const substeps: Step<types.Node>[] = [];
+  const substeps: Step[] = [];
 
   const newSum = subToAddNeg(node, substeps);
   const groups = getGroups(newSum.args);

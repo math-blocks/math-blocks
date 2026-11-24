@@ -2,7 +2,7 @@ import { types, util, builders, NodeType } from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-export function removePowOne(node: types.Node): Step<types.Node> | void {
+export function removePowOne(node: types.Node): Step | void {
   if (node.type !== NodeType.Power) {
     return;
   }

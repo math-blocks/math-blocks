@@ -12,7 +12,7 @@ const getBase = (node: types.Node): types.Node => {
   return isPower(node) ? node.base : node;
 };
 
-export function multiplyPowers(node: types.Node): Step<types.Node> | void {
+export function multiplyPowers(node: types.Node): Step | void {
   const factors = util.getFactors(node);
 
   if (factors.length < 2) {
@@ -25,7 +25,7 @@ export function multiplyPowers(node: types.Node): Step<types.Node> | void {
   for (const factor of factors) {
     const base = getBase(factor);
     const key = util.normalize(base);
-    const arr = map.get(key) || [];
+    const arr = map.get(key) ?? [];
     arr.push(factor);
     map.set(key, arr);
   }
@@ -33,7 +33,7 @@ export function multiplyPowers(node: types.Node): Step<types.Node> | void {
   // TODO: check if there's any entries in the map with more than one factor
   const newFactors: types.Node[] = [];
   // TODO: add substeps to simplify addition of exponents
-  const substeps: Step<types.Node>[] = [];
+  const substeps: Step[] = [];
 
   const implicit = isMul(node) ? node.implicit : false;
 

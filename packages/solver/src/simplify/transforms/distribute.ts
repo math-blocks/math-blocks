@@ -10,7 +10,7 @@ const { NodeType } = Semantic;
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
   node: Semantic.types.Neg,
-  substeps: Step<Semantic.types.Node>[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
 ): readonly Semantic.types.Node[] | undefined => {
   const add = node.arg;
   const mulNegOne = Semantic.builders.mul(
@@ -30,7 +30,7 @@ const distSub = (
 // a - b -> a + -b
 const subToNeg = (
   before: Semantic.types.Node,
-  substeps: Step<Semantic.types.Node>[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
 ): Semantic.types.Node => {
   if (Semantic.util.isSubtraction(before)) {
     const after = Semantic.builders.neg(before.arg, false);
@@ -69,7 +69,7 @@ const negToSub = (
 // a(b + c) -> ab + ac
 const distMulRight = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
 ): readonly Semantic.types.Node[] | undefined => {
   // TODO: handle distribution of more than two polynomials
   if (node.args.length === 2) {
@@ -130,7 +130,7 @@ const distMulRight = (
 // (a + b)c -> ac + bc
 const distMulLeft = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
 ): readonly Semantic.types.Node[] | undefined => {
   if (node.args.length === 2) {
     if (node.args[0].type === NodeType.Add) {
@@ -192,7 +192,7 @@ const distMulLeft = (
 // how a student would usually write it.
 const distMul = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.Node>[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
+  substeps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- out parameter
 ): readonly Semantic.types.Node[] | undefined =>
   distMulLeft(node, substeps) ?? distMulRight(node, substeps);
 
@@ -214,7 +214,7 @@ const distMul = (
 export function distribute(
   node: Semantic.types.Node,
   path: readonly Semantic.types.Node[],
-): Step<Semantic.types.Node> | void {
+): Step | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -235,7 +235,7 @@ export function distribute(
     return undefined;
   }
 
-  const substeps: Step<Semantic.types.Node>[] = [];
+  const substeps: Step[] = [];
   const nodes = Semantic.util.getTerms(node);
   let changed = false;
   const newNodes = nodes.flatMap((node, outerIndex) => {

@@ -775,7 +775,7 @@ export const findIntersections = (
 ): types.Intersection[] => {
   const result: types.Intersection[] = [];
 
-  translation = translation || {
+  translation ??= {
     x: node.x,
     y: node.y,
   };

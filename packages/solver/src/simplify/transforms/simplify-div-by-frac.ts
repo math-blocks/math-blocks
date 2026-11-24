@@ -15,9 +15,7 @@ const getReciprocal = (
   }
 };
 
-export function simplifyDivByFrac(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function simplifyDivByFrac(node: Semantic.types.Node): Step | void {
   if (node.type !== Semantic.NodeType.Div) {
     return undefined;
   }

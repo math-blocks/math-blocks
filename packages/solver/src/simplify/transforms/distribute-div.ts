@@ -5,9 +5,7 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 // (a + b) / c -> a/c + b/c
-export function distributeDiv(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function distributeDiv(node: Semantic.types.Node): Step | void {
   if (node.type !== NodeType.Div) {
     return undefined;
   }
