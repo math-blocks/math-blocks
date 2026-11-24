@@ -5,9 +5,6 @@ packages:
 onlyBuiltDependencies:
   # Checks that its platform-specific binary is installed (used by Vite).
   - esbuild
-  # Checks that its platform-specific binary is installed (used by
-  # @swc-node/register).
-  - '@swc/core'
 
 # These install scripts only print a message or build a native fallback that
 # isn't needed, so skip them without a warning.

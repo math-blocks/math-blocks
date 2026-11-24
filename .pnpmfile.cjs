@@ -5,17 +5,11 @@
 // - type-coverage-core: the `type-coverage` CI job. Supports TypeScript 7.1's
 //   API, so it can come off this list once the repo is on 7.1.
 // - typedoc: the API docs (typedoc.json). Doesn't support TypeScript 7 yet.
-// - @swc-node/register: runs packages/semantic/src/codegen.ts, and reads the
-//   tsconfig with the TypeScript API.
 //
 // typescript is a peer dependency of these packages, so pnpm would resolve it
 // to the repo's TypeScript 7, and neither `overrides` nor `packageExtensions`
 // changes that. Turn the peer dependency into a regular one instead.
-const USE_TYPESCRIPT_6 = new Set([
-  'type-coverage-core',
-  'typedoc',
-  '@swc-node/register',
-]);
+const USE_TYPESCRIPT_6 = new Set(['type-coverage-core', 'typedoc']);
 
 function readPackage(pkg) {
   if (USE_TYPESCRIPT_6.has(pkg.name)) {
