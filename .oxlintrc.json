@@ -24,7 +24,7 @@
       {
         "patterns": [
           {
-            "regex": "^(\\.\\./)+(packages/(core|editor|opentype|parser|react|semantic|solver|tex|tutor|typesetter)(/.*)?|(core|editor|opentype|parser|react|semantic|solver|tex|tutor|typesetter)/(src|dist)(/.*)?)$",
+            "regex": "^(\\.\\./)+(packages/(core|editor|grader|opentype|parser|react|semantic|solver|tex|typesetter)(/.*)?|(core|editor|grader|opentype|parser|react|semantic|solver|tex|typesetter)/(src|dist)(/.*)?)$",
             "message": "Import other packages by name (@math-blocks/<package>), not by a relative path into their files."
           }
         ]

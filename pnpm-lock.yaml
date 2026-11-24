@@ -135,6 +135,22 @@ importers:
         specifier: ^3.10.0
         version: 3.11.0
 
+  packages/grader:
+    dependencies:
+      '@math-blocks/semantic':
+        specifier: workspace:^
+        version: link:../semantic
+      '@math-blocks/solver':
+        specifier: workspace:^
+        version: link:../solver
+    devDependencies:
+      '@math-blocks/core':
+        specifier: workspace:^
+        version: link:../core
+      '@math-blocks/parser':
+        specifier: workspace:^
+        version: link:../parser
+
   packages/opentype:
     devDependencies:
       utility-types:
@@ -213,22 +229,6 @@ importers:
       '@math-blocks/editor':
         specifier: workspace:^
         version: link:../editor
-
-  packages/tutor:
-    dependencies:
-      '@math-blocks/core':
-        specifier: workspace:^
-        version: link:../core
-      '@math-blocks/semantic':
-        specifier: workspace:^
-        version: link:../semantic
-      '@math-blocks/solver':
-        specifier: workspace:^
-        version: link:../solver
-    devDependencies:
-      '@math-blocks/parser':
-        specifier: workspace:^
-        version: link:../parser
 
   packages/typesetter:
     dependencies:

@@ -28,7 +28,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/test-util.ts',
         // Test-only helpers for parsing and printing plain-text math.
-        'packages/tutor/src/testing/**',
+        'packages/grader/src/testing/**',
         // A script, run by hand, that generates semantic's types.ts and
         // builders.ts. Its `istanbul ignore` comment kept it out of Jest's
         // coverage, but V8 coverage doesn't read that comment.

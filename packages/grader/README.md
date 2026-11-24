@@ -1,26 +1,10 @@
-# @math-blocks/tutor
+# @math-blocks/grader
 
-Helps students work through math problems. It gives hints, shows the next
-step, and checks whether a step a student writes is valid.
+Checks whether a step a student writes is valid.
 
-It depends on `@math-blocks/semantic` and `@math-blocks/solver`, plus `@math-blocks/core` for shared helpers.
+It depends on `@math-blocks/semantic` and `@math-blocks/solver`.
 
 ## API
-
-```typescript
-getHint(problem: Solver.Problem): Solver.Step
-```
-
-Returns the first step a student should take to make progress on `problem`.
-Throws if the solver can't make progress, for example because the expression
-is already simplified.
-
-```typescript
-showMeHow(problem: Solver.Problem): Semantic.types.Node
-```
-
-Applies the step from `getHint` and returns the resulting expression or
-relation.
 
 ```typescript
 checkStep(prev: Semantic.types.Node, next: Semantic.types.Node): CheckStepResult
