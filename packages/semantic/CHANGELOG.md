@@ -1,5 +1,22 @@
 # @math-blocks/semantic
 
+## 0.2.0
+
+### Minor Changes
+
+- 71b9d02: Build with tsdown instead of Rollup. The package now ships an ES module build (`dist/index.mjs`, typed by `dist/index.d.mts`) alongside the CommonJS build (`dist/index.js`, typed by `dist/index.d.ts`), and adds an `exports` map in `package.json` that picks the right one for `import` and `require`.
+
+  Breaking: the `exports` map only allows importing the package root (and `package.json`). Deep imports into `dist`, such as `@math-blocks/semantic/dist/index.js`, no longer resolve. Declaration files for internal modules, tests and stories are no longer published; `dist/index.d.ts` and `dist/index.d.mts` hold the whole public API.
+
+### Patch Changes
+
+- 274cb55: Fix the published types referencing `OneOrMore` and `TwoOrMore` without declaring them. Projects with `skipLibCheck: false` got "Cannot find name" errors, and with `skipLibCheck: true` those types became `any`, so `args` on sums, products, equations and other n-ary nodes went unchecked. The types now import them from `@math-blocks/core`.
+- 47f0afb: Lint fixes from oxlint's type-aware rules in `serializer`, `util.normalize`, `util.traverse` and `util.traverseNumeric`: removed unneeded template literals, joined an array explicitly, and typed `Object.entries` values as `unknown`. No change in behavior.
+- Updated dependencies [274cb55]
+- Updated dependencies [71b9d02]
+- Updated dependencies [47f0afb]
+  - @math-blocks/core@0.1.0
+
 ## 0.1.2
 
 ### Patch Changes

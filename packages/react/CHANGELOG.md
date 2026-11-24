@@ -1,5 +1,49 @@
 # @math-blocks/react
 
+## 0.1.0
+
+### Minor Changes
+
+- 71b9d02: Build with tsdown instead of Rollup. The package now ships an ES module build (`dist/index.mjs`, typed by `dist/index.d.mts`) alongside the CommonJS build (`dist/index.js`, typed by `dist/index.d.ts`), and adds an `exports` map in `package.json` that picks the right one for `import` and `require`.
+
+  Import the stylesheet with `import '@math-blocks/react/index.css'`. The CSS module class names in it have changed (for example `editor-module_container__UsRAy` is now `rpWC2q_container`), so don't rely on the generated names.
+
+  Breaking: the `exports` map only allows importing the package root, `index.css` and `package.json`. Deep imports into `dist`, such as `@math-blocks/react/dist/index.js` or `@math-blocks/react/dist/index.css`, no longer resolve. Declaration files for internal modules, tests and stories are no longer published; `dist/index.d.ts` and `dist/index.d.mts` hold the whole public API.
+
+### Patch Changes
+
+- 1351c0c: Fix `GlyphDefsProvider` painting one frame with no glyph definitions on first render. The provider's hidden `<svg>` now picks up the definitions that renderers add on mount before the browser paints, so math no longer flashes blank when a page loads.
+- 1da15cd: `MathRenderer` and `MathEditor` render faster and produce smaller SVG markup. `SceneRenderer` now draws the scene with plain functions instead of one React component per node, so React creates one fiber per SVG element and none for wrappers. On a page of 100 expressions, rendering takes about 15% less script time and the markup is about 15% smaller.
+
+  The markup changes in three ways that don't affect what's drawn:
+
+  - Glyphs that aren't pending no longer get `style="opacity:1"`. Pending glyphs still get `opacity: 0.5`.
+  - Translations in `transform` attributes are rounded to a thousandth of a pixel, so values like `translate(68.01599999999999, 0)` become `translate(68.016,0)`. Glyph scales aren't rounded.
+  - `<line>` and `<rect>` elements no longer get a stray `type` attribute.
+
+- Updated dependencies [c162c5f]
+- Updated dependencies [274cb55]
+- Updated dependencies [0f5b5d2]
+- Updated dependencies [274cb55]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [71b9d02]
+- Updated dependencies [47f0afb]
+- Updated dependencies [47f0afb]
+- Updated dependencies [47f0afb]
+- Updated dependencies [47f0afb]
+- Updated dependencies [47f0afb]
+- Updated dependencies [47f0afb]
+  - @math-blocks/opentype@0.1.0
+  - @math-blocks/core@0.1.0
+  - @math-blocks/semantic@0.2.0
+  - @math-blocks/editor@0.1.0
+  - @math-blocks/tex@0.2.0
+  - @math-blocks/typesetter@0.1.0
+
 ## 0.0.17
 
 ### Patch Changes
