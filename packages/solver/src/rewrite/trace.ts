@@ -48,7 +48,7 @@ export const fromRule = (rule: Rule): Strategy =>
 // across the recursion so that building the result is linear in its length.
 const firstDerivation = (
   trace: Trace,
-  steps: Step[],
+  steps: Step[], // oxlint-disable-line math-blocks/prefer-readonly-type -- pushed and popped while recursing
 ): Derivation | undefined => {
   for (const branch of trace) {
     if (branch.type === 'done') {

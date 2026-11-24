@@ -73,6 +73,7 @@ export class GlyphRegistry {
   // Replaced, not mutated, whenever a definition is added, so the hidden <svg>
   // can tell from the reference alone whether anything changed and skip
   // re-rendering when nothing did.
+  // oxlint-disable-next-line math-blocks/prefer-readonly-type -- replaced on every change (see above)
   private snapshot: readonly GlyphPath[] = [];
   private readonly listeners = new Set<() => void>();
 

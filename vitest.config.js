@@ -11,7 +11,10 @@ export default defineConfig({
     globals: true,
     // Tests that need a DOM opt in with a `@vitest-environment jsdom` docblock.
     environment: 'node',
-    include: ['{packages,demo}/**/*.test.{ts,tsx,js,jsx}'],
+    include: [
+      '{packages,demo}/**/*.test.{ts,tsx,js,jsx}',
+      'scripts/**/*.test.js',
+    ],
     // Playwright runs the end-to-end tests in e2e/; see playwright.config.ts.
     exclude: ['**/node_modules/**', '**/out/**', '**/dist/**', 'e2e/**'],
     setupFiles: ['./vitest.setup.js'],

@@ -35,6 +35,7 @@ const svgPathFromFontPath = (path: OpenType.Path): string => {
 
 // A font's glyph outlines never change, so each glyph's path string is built
 // once per font and reused by every render and every renderer.
+// oxlint-disable-next-line math-blocks/prefer-readonly-type -- a cache, filled in by getPath
 const pathCache = new WeakMap<OpenType.Font, Map<number, string>>();
 
 const getPath = (font: OpenType.Font, glyphID: number): string => {

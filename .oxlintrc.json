@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["import", "react", "typescript", "vitest"],
+  // Local rules oxlint doesn't have natively.
+  "jsPlugins": ["./scripts/oxlint-plugin/index.js"],
   "categories": {
     "correctness": "off"
   },
@@ -135,6 +137,10 @@
       { "considerDefaultExhaustiveForUnions": true }
     ],
     "typescript/unbound-method": "error",
+
+    // The repo marks types `readonly` by convention. Mutable types are
+    // allowed inside function bodies and in return types.
+    "math-blocks/prefer-readonly-type": "error",
 
     "react/display-name": "error",
     "react/exhaustive-deps": "error",

@@ -3,10 +3,11 @@ import { types, builders, isAccentType } from '@math-blocks/editor';
 import { macros } from './macros';
 
 class Parser {
+  // oxlint-disable-next-line math-blocks/prefer-readonly-type -- the parser advances through the input
   index: number;
   readonly input: string;
-  readonly leftDelims: string[];
-  readonly rightDelims: string[];
+  readonly leftDelims: readonly string[];
+  readonly rightDelims: readonly string[];
 
   constructor(input: string) {
     this.index = 0;
