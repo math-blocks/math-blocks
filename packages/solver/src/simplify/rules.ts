@@ -8,6 +8,7 @@ import { dropAddIdentity } from './transforms/drop-add-identity';
 import { evalMul, evalAdd, evalDiv } from './transforms/eval';
 import { collectLikeTerms } from './transforms/collect-like-terms';
 import { distribute } from './transforms/distribute';
+import { expandPow } from './transforms/expand-pow';
 import { distributeDiv } from './transforms/distribute-div';
 import { reduceFraction } from './transforms/reduce-fraction';
 import { mulFraction } from './transforms/mul-fraction';
@@ -47,6 +48,7 @@ export const mulByZeroIsZeroRule = fromTransform(
   'mul-by-zero-is-zero',
   mulByZeroIsZero,
 );
+export const expandPowRule = fromTransform('expand-pow', expandPow);
 export const distributeRule = fromTransform('distribute', distribute);
 export const distributeDivRule = fromTransform('distribute-div', distributeDiv);
 export const collectLikeTermsRule = fromTransform(
@@ -83,6 +85,7 @@ export const simplifyRules: readonly Rule[] = [
   simplifyMulRule,
   mulByZeroIsZeroRule,
 
+  expandPowRule,
   distributeRule,
   distributeDivRule,
   collectLikeTermsRule,

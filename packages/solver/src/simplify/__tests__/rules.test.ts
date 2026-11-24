@@ -12,6 +12,7 @@ import { dropAddIdentity } from '../transforms/drop-add-identity';
 import { evalMul, evalAdd, evalDiv } from '../transforms/eval';
 import { collectLikeTerms } from '../transforms/collect-like-terms';
 import { distribute } from '../transforms/distribute';
+import { expandPow } from '../transforms/expand-pow';
 import { distributeDiv } from '../transforms/distribute-div';
 import { reduceFraction } from '../transforms/reduce-fraction';
 import { mulFraction } from '../transforms/mul-fraction';
@@ -23,7 +24,12 @@ import { mulToPow } from '../transforms/mul-to-pow';
 import { multiplyPowers } from '../transforms/multiply-powers';
 import { dividePowers } from '../transforms/divide-powers';
 
-import { distributeRule, dropAddIdentityRule, simplifyRules } from '../rules';
+import {
+  distributeRule,
+  dropAddIdentityRule,
+  expandPowRule,
+  simplifyRules,
+} from '../rules';
 
 type Node = Semantic.types.Node;
 
@@ -36,6 +42,7 @@ const transforms: readonly (readonly [string, Transform, string])[] = [
   ['simplify-div-by-frac', simplifyDivByFrac, '\\frac{a}{\\frac{b}{c}}'],
   ['simplify-mul', simplifyMul, '1x'],
   ['mul-by-zero-is-zero', mulByZeroIsZero, '0x'],
+  ['expand-pow', expandPow, '(x + 1)^2'],
   ['distribute', distribute, '3(x + 1)'],
   ['distribute-div', distributeDiv, '\\frac{a+b}{c}'],
   ['collect-like-terms', collectLikeTerms, '3x + 4x'],
@@ -165,5 +172,25 @@ describe('distributeRule', () => {
     const [step] = stepsOf(distributeRule, parent, rootContext());
 
     expect(print(step.after)).toEqual('1+2x+2');
+  });
+});
+
+describe('expandPowRule', () => {
+  // `expandPow` leaves powers inside a fraction alone, so that factors can
+  // still cancel.
+  const div = parse('\\frac{1}{(x + 1)^2}');
+  if (div.type !== Semantic.NodeType.Div) {
+    throw new Error('expected a fraction');
+  }
+  const node = div.args[1];
+
+  test('expands a power with no fraction around it', () => {
+    const [step] = stepsOf(expandPowRule, node, rootContext());
+
+    expect(step.message).toEqual('expand power');
+  });
+
+  test('declines a power inside a fraction', () => {
+    expect(stepsOf(expandPowRule, node, { path: [div] })).toEqual([]);
   });
 });
