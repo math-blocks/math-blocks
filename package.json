@@ -24,9 +24,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^3.2.4",
     "diff": "^7.0.0",
-    "husky": "^3.0.5",
     "jsdom": "^26.1.0",
-    "lint-staged": "^10.2.11",
     "oxfmt": "0.79.0",
     "oxlint": "1.94.0",
     "oxlint-tsgolint": "7.0.2008",
@@ -63,18 +61,6 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "6.28.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "oxlint --type-aware --report-unused-disable-directives --no-error-on-unmatched-pattern",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "*.{js,jsx,cjs,mjs,mts,cts,css,yaml,yml,json,md,html}": "oxfmt --no-error-on-unmatched-pattern"
   },
   "typeCoverage": {
     "atLeast": 95,

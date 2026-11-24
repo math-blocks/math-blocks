@@ -99,7 +99,7 @@
     "typescript/triple-slash-reference": "error",
 
     // Type-aware rules. These need `oxlint --type-aware` (oxlint-tsgolint);
-    // `pnpm lint` and the pre-commit hook pass it.
+    // `pnpm lint` passes it.
     "typescript/await-thenable": "error",
     "typescript/consistent-type-exports": "error",
     "typescript/no-array-delete": "error",
