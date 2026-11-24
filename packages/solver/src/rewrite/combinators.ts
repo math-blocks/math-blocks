@@ -34,7 +34,7 @@ const plainStep = (
   // TypeScript can't check this assignment because the `Step` union has too
   // many members to match `message` against. It's safe: every
   // `PlainStepMessage` belongs to a variant with exactly these fields.
-  ({ message, before, after, substeps } as Step);
+  ({ message, before, after, substeps }) as Step;
 
 /** Finishes at the node it's given without taking a step. Always succeeds. */
 export const identity: Strategy = (node) => done(node);

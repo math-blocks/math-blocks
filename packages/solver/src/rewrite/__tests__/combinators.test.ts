@@ -78,11 +78,7 @@ function expectStep(branch: Branch): asserts branch is StepBranch {
 
 // Records each call, then delegates to `strategy`.
 const spy =
-  (
-    calls: string[], // eslint-disable-line functional/prefer-readonly-type
-    name: string,
-    strategy: Strategy,
-  ): Strategy =>
+  (calls: string[], name: string, strategy: Strategy): Strategy =>
   (node, context) => {
     calls.push(name);
     return strategy(node, context);

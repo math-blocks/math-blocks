@@ -65,10 +65,7 @@ const firstDerivation = (
   return undefined;
 };
 
-function* allDerivations(
-  trace: Trace,
-  steps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Generator<Derivation> {
+function* allDerivations(trace: Trace, steps: Step[]): Generator<Derivation> {
   for (const branch of trace) {
     if (branch.type === 'done') {
       // Copy, because `steps` keeps changing as the search continues.
