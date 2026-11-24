@@ -22,7 +22,7 @@ export function row(children: readonly TokenNode[]): TokenRow {
     type: NodeType.Row,
     children,
     // TODO: fix the path
-    loc: loc || { path: [], start: -1, end: -1 },
+    loc: loc ?? { path: [], start: -1, end: -1 },
   };
 }
 

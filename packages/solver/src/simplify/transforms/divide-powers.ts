@@ -17,7 +17,7 @@ const getBase = (node: types.Node): types.Node => {
 
 // TODO: combine this with multiplyPowers
 // OR... we could just always run multiplePowers first when simplifying
-export function dividePowers(node: types.Node): Step<types.Node> | void {
+export function dividePowers(node: types.Node): Step | void {
   if (!isDiv(node)) {
     return undefined;
   }
@@ -31,7 +31,7 @@ export function dividePowers(node: types.Node): Step<types.Node> | void {
   for (const fact of numFactors) {
     const base = getBase(fact);
     const key = util.normalize(base);
-    const arr = numMap.get(key) || [];
+    const arr = numMap.get(key) ?? [];
     arr.push(fact);
     numMap.set(key, arr);
   }
@@ -39,7 +39,7 @@ export function dividePowers(node: types.Node): Step<types.Node> | void {
   for (const fact of denFactors) {
     const base = getBase(fact);
     const key = util.normalize(base);
-    const arr = denMap.get(key) || [];
+    const arr = denMap.get(key) ?? [];
     arr.push(fact);
     denMap.set(key, arr);
   }

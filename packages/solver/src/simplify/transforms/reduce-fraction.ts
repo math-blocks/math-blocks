@@ -9,9 +9,7 @@ const { NodeType } = Semantic;
 // TODO:
 // - powers
 // - negative factors
-export function reduceFraction(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function reduceFraction(node: Semantic.types.Node): Step | void {
   if (node.type !== NodeType.Div) {
     return undefined;
   }

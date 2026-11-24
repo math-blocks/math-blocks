@@ -36,9 +36,7 @@ const evalNode = (node: Semantic.types.Node): Semantic.types.Node => {
 // but won't touch any non-number terms, e.g.
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
-export function evalMul(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function evalMul(node: Semantic.types.Node): Step | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -61,9 +59,7 @@ export function evalMul(
   return undefined;
 }
 
-export function evalAdd(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function evalAdd(node: Semantic.types.Node): Step | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -88,9 +84,7 @@ export function evalAdd(
 
 // TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
 // process it.
-export function evalDiv(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function evalDiv(node: Semantic.types.Node): Step | void {
   if (node.type !== NodeType.Div) {
     return;
   }

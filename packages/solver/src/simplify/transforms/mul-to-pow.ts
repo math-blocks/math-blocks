@@ -3,9 +3,7 @@ import * as Semantic from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-export function mulToPow(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function mulToPow(node: Semantic.types.Node): Step | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }

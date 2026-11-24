@@ -105,9 +105,7 @@ const getString = (operand: number, stringIndex: Index): string => {
   const start = offsets[index] - 1;
   const end = offsets[index + 1] - 1;
 
-  if (decoder === null) {
-    decoder = new TextDecoder();
-  }
+  decoder ??= new TextDecoder();
 
   return decoder.decode(data.slice(start, end));
 };

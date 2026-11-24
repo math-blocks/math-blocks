@@ -107,7 +107,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
 
 // TODO: update to support multiple parts
 export type Solution<T extends Semantic.types.Node = Semantic.types.Node> = {
-  readonly steps: readonly Step<Semantic.types.Node>[];
+  readonly steps: readonly Step[];
   readonly answer: T;
 };
 
@@ -149,4 +149,4 @@ export type Transform = (
   node: Semantic.types.Node,
   path: readonly Semantic.types.Node[],
   simplify: Transform,
-) => Step<Semantic.types.Node> | void;
+) => Step | void;

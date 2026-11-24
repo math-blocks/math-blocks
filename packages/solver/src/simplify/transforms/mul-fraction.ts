@@ -5,9 +5,7 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 // TODO: Don't multiply (3/2)(n) to 3n/2
-export function mulFraction(
-  node: Semantic.types.Node,
-): Step<Semantic.types.Node> | void {
+export function mulFraction(node: Semantic.types.Node): Step | void {
   if (
     node.type === NodeType.Mul &&
     node.args.some((arg) => arg.type === NodeType.Div)
