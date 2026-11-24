@@ -1,4 +1,4 @@
-# @math-blocks/tutor
+# @math-blocks/grader
 
 ## 0.2.0
 

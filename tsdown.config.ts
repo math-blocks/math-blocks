@@ -17,7 +17,7 @@ export default defineConfig({
   clean: true,
   deps: {
     // tsdown externalizes each package's dependencies and peerDependencies,
-    // but some packages don't declare everything they import yet (e.g. tutor
+    // but some packages don't declare everything they import yet (e.g. grader
     // imports @math-blocks/parser), so list the runtime imports explicitly.
     neverBundle: [
       /^@math-blocks\//,
