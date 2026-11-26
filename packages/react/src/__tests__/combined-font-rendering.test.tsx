@@ -8,6 +8,7 @@ import ReactDOMServer from 'react-dom/server';
 import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
+import { fonts } from '@math-blocks/fonts';
 import {
   combineFonts,
   getFontData,
@@ -22,20 +23,17 @@ import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
 import { expandGlyphUses } from '../test-util';
 
+// The source fonts, and the subsets that @math-blocks/fonts ships.
 const ASSETS = path.join(__dirname, '../../../../assets');
+const SUBSETS = path.join(__dirname, '../../../fonts/subsets');
 
-// Keep in sync with FONTS in scripts/subset-fonts.py.
-const FONTS: readonly { readonly source: string; readonly subset: string }[] = [
-  { source: 'STIX2Math.otf', subset: 'stix-two-math' },
-  { source: 'latinmodern-math.otf', subset: 'latin-modern-math' },
-  { source: 'texgyrebonum-math.otf', subset: 'tex-gyre-bonum-math' },
-  { source: 'texgyrepagella-math.otf', subset: 'tex-gyre-pagella-math' },
-  { source: 'texgyreschola-math.otf', subset: 'tex-gyre-schola-math' },
-  { source: 'texgyretermes-math.otf', subset: 'tex-gyre-termes-math' },
-];
+const FONTS = fonts.map((font) => ({
+  source: font.source,
+  subset: font.folder,
+}));
 
 const loadFont = (...segments: readonly string[]): Promise<Font> =>
-  parse(new Blob([fs.readFileSync(path.join(ASSETS, ...segments))]));
+  parse(new Blob([fs.readFileSync(path.join(...segments))]));
 
 const hasGlyph = (font: Font, char: string): boolean => {
   try {
@@ -117,13 +115,13 @@ describe.each(FONTS)(
       const parts: Record<string, Font> = {};
       for (const group of glyphGroups) {
         parts[group.name] = await loadFont(
-          'subsets',
+          SUBSETS,
           subset,
           `${group.name}.otf`,
         );
       }
       // The same family name for both, so only the font data differs.
-      original = getFontData(await loadFont(source), 'test');
+      original = getFontData(await loadFont(ASSETS, source), 'test');
       combined = getFontData(combineFonts(parts), 'test');
     });
 

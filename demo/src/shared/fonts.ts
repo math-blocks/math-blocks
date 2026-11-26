@@ -6,30 +6,28 @@ import {
   loadFontSubsets,
 } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
+import { fonts } from '@math-blocks/fonts';
 
-// The URL of every subset in assets/subsets/, keyed by "<folder>/<group>".
-// Vite copies the files into the build, so this works with `pnpm start` and in
-// the deployed demo.
+// The URL of every WOFF subset in @math-blocks/fonts, keyed by
+// "<folder>/<group>". Vite copies the files into the build, so this works with
+// `pnpm start` and in the deployed demo. The demo loads the .woff files rather
+// than the .otf ones since they're smaller.
 const subsetUrls: Record<string, string> = Object.fromEntries(
   Object.entries(
-    import.meta.glob<string>('../../../assets/subsets/*/*.otf', {
+    import.meta.glob<string>('../../../packages/fonts/subsets/*/*.woff', {
       query: '?url',
       import: 'default',
       eager: true,
     }),
-  ).map(([path, url]) => [path.replace(/^.*\/subsets\/(.*)\.otf$/, '$1'), url]),
+  ).map(([path, url]) => [
+    path.replace(/^.*\/subsets\/(.*)\.woff$/, '$1'),
+    url,
+  ]),
 );
 
-export const FONTS = [
-  { name: 'STIX Two Math', folder: 'stix-two-math' },
-  { name: 'Latin Modern Math', folder: 'latin-modern-math' },
-  { name: 'TeX Gyre Bonum Math', folder: 'tex-gyre-bonum-math' },
-  { name: 'TeX Gyre Pagella Math', folder: 'tex-gyre-pagella-math' },
-  { name: 'TeX Gyre Schola Math', folder: 'tex-gyre-schola-math' },
-  { name: 'TeX Gyre Termes Math', folder: 'tex-gyre-termes-math' },
-] as const;
+export const FONTS = fonts;
 
-export type FontFolder = (typeof FONTS)[number]['folder'];
+export type FontFolder = string;
 
 const ALL_GROUPS = glyphGroups.map((group) => group.name);
 
@@ -40,7 +38,7 @@ const loadSubset = async (
   const url = subsetUrls[`${folder}/${group}`];
   if (!url) {
     // loadFontSubsets adds the subset's name to these messages.
-    throw new Error(`Not found in assets/subsets/${folder}/`);
+    throw new Error(`Not found in packages/fonts/subsets/${folder}/`);
   }
   const response = await fetch(url);
   if (!response.ok) {

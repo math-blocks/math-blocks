@@ -27,19 +27,14 @@ const { char: glyph, row, subsup } = Editor.builders;
 const reducer = Editor.getReducer(macros);
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
-// The tests render with the font subsets in assets/subsets/, all groups
+// The tests render with the font subsets in @math-blocks/fonts, all groups
 // combined, which must render exactly like the original fonts. They're read
 // from disk since there's no bundler to load them as URLs here.
 const readSubset =
   (subset: string) =>
   async (group: string): Promise<ArrayBuffer> => {
     const file = fs.readFileSync(
-      path.join(
-        __dirname,
-        '../../../../assets/subsets',
-        subset,
-        `${group}.otf`,
-      ),
+      path.join(__dirname, '../../../fonts/subsets', subset, `${group}.otf`),
     );
     const buffer = new ArrayBuffer(file.byteLength);
     new Uint8Array(buffer).set(file);

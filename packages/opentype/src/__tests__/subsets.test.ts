@@ -1,4 +1,4 @@
-// Checks that each font subset in assets/subsets/ renders its characters
+// Checks that each font subset in @math-blocks/fonts renders its characters
 // exactly like the original font: same outlines, metrics and MATH data. Glyph
 // IDs differ between a subset and its original, so glyphs are compared by
 // what they contain rather than by ID. See
@@ -10,6 +10,7 @@ import {
   getGlyphID,
   hex,
   loadFont,
+  loadSubset,
 } from '../test-util';
 import type { Font } from '../types';
 
@@ -41,7 +42,7 @@ describe.each(FONTS)('$subset (subset of $source)', ({ source, subset }) => {
     let font: Font;
 
     beforeAll(async () => {
-      font = await loadFont('subsets', subset, `${group.name}.otf`);
+      font = await loadSubset(subset, `${group.name}.otf`);
     });
 
     test('has the same MATH constants as the original', () => {

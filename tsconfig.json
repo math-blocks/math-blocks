@@ -4,6 +4,7 @@
     {"path": "./demo"},
     {"path": "./packages/core"},
     {"path": "./packages/editor"},
+    {"path": "./packages/fonts"},
     {"path": "./packages/grader"},
     {"path": "./packages/opentype"},
     {"path": "./packages/parser"},

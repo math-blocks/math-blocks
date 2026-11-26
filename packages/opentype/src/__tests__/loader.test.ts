@@ -5,9 +5,9 @@ import vm from 'vm';
 import { fromBaseUrl, loadFontSubsets } from '../loader';
 import { parseDirectory } from '../parser';
 import { fromArrayBuffer } from '../byte-source';
-import { ASSETS } from '../test-util';
+import { SUBSETS } from '../test-util';
 
-const SUBSET_DIR = path.join(ASSETS, 'subsets', 'stix-two-math');
+const SUBSET_DIR = path.join(SUBSETS, 'stix-two-math');
 
 // Reads subset files from disk, recording which groups were requested.
 const diskLoader = (): {

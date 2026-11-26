@@ -13,6 +13,7 @@
   "references": [
     {"path": "../packages/core"},
     {"path": "../packages/editor"},
+    {"path": "../packages/fonts"},
     {"path": "../packages/opentype"},
     {"path": "../packages/react"},
     {"path": "../packages/semantic"},

@@ -4,31 +4,40 @@ import fs from 'fs';
 import path from 'path';
 import { Blob } from 'buffer';
 
+import { fonts } from '@math-blocks/fonts';
+
 import { parse } from './parser';
 import type { Font, GlyphMetrics } from './types';
 import type { Path } from './tables/cff-types';
 import type { GlyphConstruction } from './tables/math-types';
 
+/** The source fonts. */
 export const ASSETS = path.join(__dirname, '../../../assets');
 
-// Keep in sync with FONTS in scripts/subset-fonts.py.
+/** The font subsets, which @math-blocks/fonts ships. */
+export const SUBSETS = path.join(__dirname, '../../fonts/subsets');
+
+// Each font's source file in assets/ and its folder in SUBSETS, from the
+// list of fonts in @math-blocks/fonts.
 export const FONTS: readonly {
   readonly source: string;
   readonly subset: string;
-}[] = [
-  { source: 'STIX2Math.otf', subset: 'stix-two-math' },
-  { source: 'latinmodern-math.otf', subset: 'latin-modern-math' },
-  { source: 'texgyrebonum-math.otf', subset: 'tex-gyre-bonum-math' },
-  { source: 'texgyrepagella-math.otf', subset: 'tex-gyre-pagella-math' },
-  { source: 'texgyreschola-math.otf', subset: 'tex-gyre-schola-math' },
-  { source: 'texgyretermes-math.otf', subset: 'tex-gyre-termes-math' },
-];
+}[] = fonts.map((font) => ({ source: font.source, subset: font.folder }));
 
 /** Parses a font file, given its path relative to assets/. */
 export const loadFont = async (
   ...segments: readonly string[]
 ): Promise<Font> => {
   const buffer = fs.readFileSync(path.join(ASSETS, ...segments));
+  return parse(new Blob([buffer]));
+};
+
+/** Parses a subset file, given its font's folder and file name. */
+export const loadSubset = async (
+  subset: string,
+  file: string,
+): Promise<Font> => {
+  const buffer = fs.readFileSync(path.join(SUBSETS, subset, file));
   return parse(new Blob([buffer]));
 };
 

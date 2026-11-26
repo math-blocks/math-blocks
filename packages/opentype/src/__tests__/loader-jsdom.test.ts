@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { loadFontSubsets } from '../loader';
-import { ASSETS } from '../test-util';
+import { SUBSETS } from '../test-util';
 
 // WOFF tables are decompressed with DecompressionStream, so the .woff subsets
 // need it to be available in jsdom test environments too.
@@ -16,7 +16,7 @@ test.each(['otf', 'woff'])(
   async (format) => {
     const font = await loadFontSubsets(['calculus'], async (group) => {
       const file = fs.readFileSync(
-        path.join(ASSETS, 'subsets', 'stix-two-math', `${group}.${format}`),
+        path.join(SUBSETS, 'stix-two-math', `${group}.${format}`),
       );
       const buffer = new ArrayBuffer(file.byteLength);
       new Uint8Array(buffer).set(file);

@@ -28,29 +28,31 @@ const watchErrors = (page: Page): string[] => {
   return errors;
 };
 
-/** Records the font files the page requests, as paths relative to assets/. */
+/** Records the paths of the font files (.otf or .woff) the page requests. */
 const watchFonts = (page: Page): string[] => {
   const fonts: string[] = [];
   page.on('request', (request) => {
     const { pathname } = new URL(request.url());
-    if (pathname.endsWith('.otf')) {
+    if (/\.(otf|woff)$/.test(pathname)) {
       fonts.push(pathname);
     }
   });
   return fonts;
 };
 
-// A built file's name is its source name plus a hash, e.g. base-BW9-VWCI.otf.
+// A built file's name is its source name plus a hash, e.g. base-BW9-VWCI.woff.
+// This drops the hash and keeps the extension, e.g. base.woff.
 const builtName = (path: string): string =>
-  (path.split('/').pop() ?? '').replace(/-[\w-]{8}\.otf$/, '');
+  (path.split('/').pop() ?? '').replace(/-[\w-]{8}(\.\w+)$/, '$1');
 
+// The demo loads the WOFF subsets, which are smaller than the .otf ones.
 const GROUPS = [
   'base',
   'calculus',
   'linear-algebra',
   'sets-logic',
   'trig-geometry',
-];
+].map((group) => `${group}.woff`);
 
 const PAGES = [
   { path: '/', heading: 'MathBlocks Demos', drawsMath: false },
@@ -133,7 +135,7 @@ test.describe('editor', () => {
     page,
     browserName,
   }) => {
-    await page.route(/calculus-[\w-]{8}\.otf$/, (route) => route.abort());
+    await page.route(/calculus-[\w-]{8}\.woff$/, (route) => route.abort());
     await page.goto('#/editor');
 
     await expect(page.getByText('Unexpected Application Error!')).toBeVisible();

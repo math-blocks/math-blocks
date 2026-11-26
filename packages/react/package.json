@@ -42,5 +42,8 @@
     },
     "peerDependencies": {
         "react": "^18.0.0"
+    },
+    "devDependencies": {
+        "@math-blocks/fonts": "workspace:^"
     }
 }

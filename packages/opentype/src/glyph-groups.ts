@@ -29,7 +29,7 @@ const parseCodePoints = (entries: readonly string[]): number[] => {
 };
 
 /**
- * The groups of characters that the font subsets in assets/subsets/ are split
+ * The groups of characters that the font subsets in @math-blocks/fonts are split
  * into. Each group is built into its own font file by scripts/subset-fonts.py,
  * and every code point belongs to exactly one group. The first group, "base",
  * covers arithmetic and algebra.

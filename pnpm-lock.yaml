@@ -129,6 +129,8 @@ importers:
         specifier: ^3.10.0
         version: 3.11.0
 
+  packages/fonts: {}
+
   packages/grader:
     dependencies:
       '@math-blocks/semantic':
@@ -147,6 +149,9 @@ importers:
 
   packages/opentype:
     devDependencies:
+      '@math-blocks/fonts':
+        specifier: workspace:^
+        version: link:../fonts
       utility-types:
         specifier: ^3.10.0
         version: 3.11.0
@@ -179,6 +184,10 @@ importers:
       react:
         specifier: ^18.0.0
         version: 18.3.1
+    devDependencies:
+      '@math-blocks/fonts':
+        specifier: workspace:^
+        version: link:../fonts
 
   packages/semantic:
     dependencies:

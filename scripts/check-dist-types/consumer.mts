@@ -5,6 +5,7 @@
 // says.
 export * as Core from '@math-blocks/core';
 export * as Editor from '@math-blocks/editor';
+export * as Fonts from '@math-blocks/fonts';
 export * as Grader from '@math-blocks/grader';
 export * as OpenType from '@math-blocks/opentype';
 export * as Parser from '@math-blocks/parser';

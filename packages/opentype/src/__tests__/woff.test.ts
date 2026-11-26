@@ -5,11 +5,11 @@ import { deflateSync } from 'zlib';
 import { glyphGroups } from '../glyph-groups';
 import { fromArrayBuffer } from '../byte-source';
 import { parse, parseDirectory } from '../parser';
-import { ASSETS, FONTS, describeCharacter, getGlyphID } from '../test-util';
+import { FONTS, SUBSETS, describeCharacter, getGlyphID } from '../test-util';
 import { isWoff, woffToSfnt } from '../woff';
 
 const readFile = (...segments: readonly string[]): ArrayBuffer => {
-  const file = fs.readFileSync(path.join(ASSETS, ...segments));
+  const file = fs.readFileSync(path.join(SUBSETS, ...segments));
   const buffer = new ArrayBuffer(file.byteLength);
   new Uint8Array(buffer).set(file);
   return buffer;
@@ -71,12 +71,8 @@ const makeWoff = (
 
 describe('isWoff', () => {
   test('is true for a .woff subset and false for a .otf one', () => {
-    expect(isWoff(readFile('subsets', 'stix-two-math', 'base.woff'))).toBe(
-      true,
-    );
-    expect(isWoff(readFile('subsets', 'stix-two-math', 'base.otf'))).toBe(
-      false,
-    );
+    expect(isWoff(readFile('stix-two-math', 'base.woff'))).toBe(true);
+    expect(isWoff(readFile('stix-two-math', 'base.otf'))).toBe(false);
   });
 
   test('is false for data shorter than the signature', () => {
@@ -88,8 +84,8 @@ describe.each(FONTS)('$subset', ({ subset }) => {
   test.each(glyphGroups)(
     '$name.woff holds the same tables as $name.otf',
     async ({ name }) => {
-      const otf = readFile('subsets', subset, `${name}.otf`);
-      const woff = readFile('subsets', subset, `${name}.woff`);
+      const otf = readFile(subset, `${name}.otf`);
+      const woff = readFile(subset, `${name}.woff`);
 
       const sfnt = await woffToSfnt(woff);
       expect(await readTables(sfnt)).toEqual(await readTables(otf));
@@ -101,8 +97,8 @@ describe.each(FONTS)('$subset', ({ subset }) => {
 
 describe('parse', () => {
   test('reads a .woff subset like the matching .otf subset', async () => {
-    const otf = await parse(readFile('subsets', 'stix-two-math', 'base.otf'));
-    const woff = await parse(readFile('subsets', 'stix-two-math', 'base.woff'));
+    const otf = await parse(readFile('stix-two-math', 'base.otf'));
+    const woff = await parse(readFile('stix-two-math', 'base.woff'));
 
     expect(woff.cff.name).toEqual(otf.cff.name);
     expect(woff.head).toEqual(otf.head);
@@ -118,7 +114,7 @@ describe('parse', () => {
 
   test('reads a .woff subset from a Blob', async () => {
     const file = fs.readFileSync(
-      path.join(ASSETS, 'subsets', 'stix-two-math', 'calculus.woff'),
+      path.join(SUBSETS, 'stix-two-math', 'calculus.woff'),
     );
     const font = await parse(new Blob([file]));
     expect(font.getGlyphID('∫')).toBeGreaterThan(0);

@@ -8,11 +8,12 @@ import {
   getGlyphID,
   hex,
   loadFont,
+  loadSubset as loadSubsetFile,
 } from '../test-util';
 import type { Font } from '../types';
 
 const loadSubset = (subset: string, group: string): Promise<Font> =>
-  loadFont('subsets', subset, `${group}.otf`);
+  loadSubsetFile(subset, `${group}.otf`);
 
 describe('combineFonts', () => {
   let base: Font;

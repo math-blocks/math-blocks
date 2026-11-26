@@ -1,0 +1,46 @@
+{
+  "fonts": [
+    {
+      "name": "STIX Two Math",
+      "folder": "stix-two-math",
+      "source": "STIX2Math.otf",
+      "letter": "A",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "Latin Modern Math",
+      "folder": "latin-modern-math",
+      "source": "latinmodern-math.otf",
+      "letter": "B",
+      "license": "GUST-Font-License"
+    },
+    {
+      "name": "TeX Gyre Bonum Math",
+      "folder": "tex-gyre-bonum-math",
+      "source": "texgyrebonum-math.otf",
+      "letter": "C",
+      "license": "GUST-Font-License"
+    },
+    {
+      "name": "TeX Gyre Pagella Math",
+      "folder": "tex-gyre-pagella-math",
+      "source": "texgyrepagella-math.otf",
+      "letter": "D",
+      "license": "GUST-Font-License"
+    },
+    {
+      "name": "TeX Gyre Schola Math",
+      "folder": "tex-gyre-schola-math",
+      "source": "texgyreschola-math.otf",
+      "letter": "E",
+      "license": "GUST-Font-License"
+    },
+    {
+      "name": "TeX Gyre Termes Math",
+      "folder": "tex-gyre-termes-math",
+      "source": "texgyretermes-math.otf",
+      "letter": "F",
+      "license": "GUST-Font-License"
+    }
+  ]
+}

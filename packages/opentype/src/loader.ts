@@ -102,7 +102,8 @@ export type FromBaseUrlOptions = {
 
 /**
  * Returns a LoadGroup that fetches `${baseUrl}/${group}.otf`, for subsets
- * hosted in one folder, such as a copy of `assets/subsets/stix-two-math/`.
+ * hosted in one folder, such as a copy of the `subsets/stix-two-math/` folder
+ * of `@math-blocks/fonts`.
  * Pass `{format: 'woff'}` to fetch `${baseUrl}/${group}.woff` instead.
  */
 export const fromBaseUrl = (

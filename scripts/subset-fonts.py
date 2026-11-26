@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Build the usage-based font subsets in assets/subsets/.
+"""Build the usage-based font subsets in packages/fonts/subsets/.
 
-Each math font in assets/ is split into one font file per group in
+Each math font listed in packages/fonts/src/fonts.json, whose source file is
+in assets/, is split into one font file per group in
 packages/opentype/src/glyph-groups.json. See
 https://github.com/math-blocks/math-blocks/issues/696.
 
@@ -11,8 +12,8 @@ download. See https://github.com/math-blocks/math-blocks/issues/871.
 
 Usage:
     pip install -r scripts/requirements.txt
-    python3 scripts/subset-fonts.py          # rebuild assets/subsets/
-    python3 scripts/subset-fonts.py --check  # fail if assets/subsets/ is stale
+    python3 scripts/subset-fonts.py          # rebuild packages/fonts/subsets/
+    python3 scripts/subset-fonts.py --check  # fail if packages/fonts/subsets/ is stale
 
 The subsets are modified versions of the original fonts, so they're renamed
 (STIX's license requires a modified version to carry a different name, and the
@@ -34,20 +35,25 @@ from fontTools.ttLib import TTFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, 'assets')
 GROUPS_FILE = os.path.join(ROOT, 'packages', 'opentype', 'src', 'glyph-groups.json')
-OUT_DIR = os.path.join(ASSETS, 'subsets')
+FONTS_PACKAGE = os.path.join(ROOT, 'packages', 'fonts')
+FONTS_FILE = os.path.join(FONTS_PACKAGE, 'src', 'fonts.json')
+OUT_DIR = os.path.join(FONTS_PACKAGE, 'subsets')
+OUT_DIR_NAME = os.path.relpath(OUT_DIR, ROOT)
 
-# Source font file in assets/ -> (folder in assets/subsets/, letter used in
-# the subset's font name, source name). The folders are named after the source
-# fonts so they're easy to find; the fonts inside are renamed (see the module
-# docstring), so their names don't use the source names.
-FONTS = {
-    'STIX2Math.otf': ('stix-two-math', 'A', 'STIX Two Math'),
-    'latinmodern-math.otf': ('latin-modern-math', 'B', 'Latin Modern Math'),
-    'texgyrebonum-math.otf': ('tex-gyre-bonum-math', 'C', 'TeX Gyre Bonum Math'),
-    'texgyrepagella-math.otf': ('tex-gyre-pagella-math', 'D', 'TeX Gyre Pagella Math'),
-    'texgyreschola-math.otf': ('tex-gyre-schola-math', 'E', 'TeX Gyre Schola Math'),
-    'texgyretermes-math.otf': ('tex-gyre-termes-math', 'F', 'TeX Gyre Termes Math'),
-}
+
+
+def load_fonts():
+    """Return {source font file in assets/: (folder in the subsets folder,
+    letter used in the subset's font name, source name)}, from fonts.json.
+
+    The folders are named after the source fonts so they're easy to find; the
+    fonts inside are renamed (see the module docstring), so their names don't
+    use the source names."""
+    with open(FONTS_FILE, encoding='utf-8') as f:
+        data = json.load(f)
+    return {font['source']: (font['folder'], font['letter'], font['name'])
+            for font in data['fonts']}
+
 
 # File extension -> fontTools flavor for each format a subset is written in.
 # A flavor of None is raw OpenType (sfnt).
@@ -151,7 +157,7 @@ def build(out_dir):
     groups = load_groups()
     options = subset_options()
     written = []
-    for source, (folder, letter, source_name) in FONTS.items():
+    for source, (folder, letter, source_name) in load_fonts().items():
         font_dir = os.path.join(out_dir, folder)
         os.makedirs(font_dir, exist_ok=True)
         for group, code_points in groups:
@@ -172,12 +178,12 @@ def build(out_dir):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--check', action='store_true',
-                        help='rebuild into a temporary folder and fail if assets/subsets/ differs')
+                        help='rebuild into a temporary folder and fail if the subsets differ')
     args = parser.parse_args()
 
     if not args.check:
         for path in build(OUT_DIR):
-            print(os.path.join('assets', 'subsets', path))
+            print(os.path.join(OUT_DIR_NAME, path))
         return
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -191,11 +197,11 @@ def main():
     extra = [p for p in extra if p not in expected]
     if stale or extra:
         for p in stale:
-            print(f'out of date: assets/subsets/{p}')
+            print(f'out of date: {OUT_DIR_NAME}/{p}')
         for p in extra:
-            print(f'not built by this script: assets/subsets/{p}')
+            print(f'not built by this script: {OUT_DIR_NAME}/{p}')
         sys.exit('Run `python3 scripts/subset-fonts.py` and commit the result.')
-    print(f'assets/subsets/ is up to date ({len(written)} files).')
+    print(f'{OUT_DIR_NAME}/ is up to date ({len(written)} files).')
 
 
 if __name__ == '__main__':
