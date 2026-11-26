@@ -1053,7 +1053,7 @@ describe('EditorParser', () => {
     test('an unknown multi-letter char throws', () => {
       const input = row([char('gcd'), char('x')]);
       expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-        `"Unsupported function 'gcd'"`,
+        `[Error: Unsupported function 'gcd']`,
       );
     });
   });
@@ -1087,11 +1087,11 @@ describe('EditorParser', () => {
   describe('empty input', () => {
     test('throws "Empty input"', () => {
       expect(() => parser.parse(row([]))).toThrowErrorMatchingInlineSnapshot(
-        `"Empty input"`,
+        `[Error: Empty input]`,
       );
       expect(() =>
         parser.parse(util.row('  ')),
-      ).toThrowErrorMatchingInlineSnapshot(`"Empty input"`);
+      ).toThrowErrorMatchingInlineSnapshot(`[Error: Empty input]`);
     });
   });
 });

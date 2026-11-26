@@ -482,7 +482,7 @@ describe('Parser', () => {
 
     test('a missing superscript throws', () => {
       expect(() => parse('x^')).toThrowErrorMatchingInlineSnapshot(
-        `"expected a subscript or superscript"`,
+        `[Error: expected a subscript or superscript]`,
       );
     });
   });
