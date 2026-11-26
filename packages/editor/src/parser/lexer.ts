@@ -150,7 +150,9 @@ const tokenizeChars = (
   const tokens: TokenAtom[] = [];
   let runStart = 0;
   chars.forEach((char, index) => {
-    if (char.value.length > 1) {
+    // Count code points rather than UTF-16 code units, so that a single char
+    // outside the BMP, such as U+1D465, isn't mistaken for a function name.
+    if ([...char.value].length > 1) {
       tokens.push(
         ...tokenizeRun(chars.slice(runStart, index), path, offset + runStart),
       );
