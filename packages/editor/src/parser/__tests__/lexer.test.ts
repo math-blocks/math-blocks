@@ -72,7 +72,7 @@ describe('Lexer', () => {
       expect(() =>
         Lexer.lexRow(row([char('a'), char('\u00A7'), char('b')])),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Unexpected character '§' (U+00A7)"`,
+        `[Error: Unexpected character '§' (U+00A7)]`,
       );
     });
 

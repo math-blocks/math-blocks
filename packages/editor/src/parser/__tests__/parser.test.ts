@@ -193,19 +193,23 @@ describe('EditorParser', () => {
   it('should throw on a char it does not recognize', () => {
     expect(() =>
       parser.parse(util.row('a?b')),
-    ).toThrowErrorMatchingInlineSnapshot(`"Unexpected character '?' (U+003F)"`);
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected character '?' (U+003F)]`,
+    );
   });
 
   it('should throw on an unrecognized char at the end of a row', () => {
     expect(() =>
       parser.parse(util.row('ab$')),
-    ).toThrowErrorMatchingInlineSnapshot(`"Unexpected character '$' (U+0024)"`);
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected character '$' (U+0024)]`,
+    );
   });
 
   it('should throw on an unrecognized char inside a fraction', () => {
     const input = row([builders.frac([char('1')], [char('#')])]);
     expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-      `"Unexpected character '#' (U+0023)"`,
+      `[Error: Unexpected character '#' (U+0023)]`,
     );
   });
 
