@@ -76,6 +76,13 @@ describe('Lexer', () => {
       );
     });
 
+    it('should name a char outside the BMP as one code point', () => {
+      // U+1D465 MATHEMATICAL ITALIC SMALL X is a surrogate pair in UTF-16.
+      expect(() =>
+        Lexer.lexRow(row([char('a'), char('\u{1D465}'), char('b')])),
+      ).toThrow("Unexpected character '\u{1D465}' (U+1D465)");
+    });
+
     it('should lex `1 + a`', () => {
       const glyphTree = row([char('1'), char('+'), char('a')]);
       const tokenTree = Lexer.lexRow(glyphTree);

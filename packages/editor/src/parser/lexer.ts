@@ -103,8 +103,9 @@ const assertOnlyWhitespace = (
   start: number,
   end: number,
 ): void => {
-  for (let i = start; i < end; i++) {
-    const char = str[i];
+  // Iterating the string, rather than indexing it, gives whole code points,
+  // so a char outside the BMP such as U+1D465 isn't split into surrogates.
+  for (const char of str.slice(start, end)) {
     if (!/\s/.test(char)) {
       const codePoint = char.codePointAt(0) ?? 0;
       const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
