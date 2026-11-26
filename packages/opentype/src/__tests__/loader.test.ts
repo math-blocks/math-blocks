@@ -148,6 +148,36 @@ describe('fromBaseUrl', () => {
     expect(fetchMock).toHaveBeenCalledWith('/fonts/stix-two-math/calculus.otf');
   });
 
+  test("fetches `${baseUrl}/${group}.woff` with {format: 'woff'}", async () => {
+    const response = { ok: true, status: 200, statusText: 'OK' };
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    global.fetch = fetchMock;
+
+    const load = fromBaseUrl('/fonts/stix-two-math', { format: 'woff' });
+    await expect(load('calculus')).resolves.toBe(response);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/fonts/stix-two-math/calculus.woff',
+    );
+  });
+
+  test("loadFontSubsets reads the .woff subsets with {format: 'woff'}", async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      const file = fs.readFileSync(
+        path.join(SUBSET_DIR, url.replace(/^\/fonts\//, '')),
+      );
+      return { ok: true, arrayBuffer: async () => new Uint8Array(file).buffer };
+    });
+
+    const font = await loadFontSubsets(
+      ['calculus'],
+      fromBaseUrl('/fonts', { format: 'woff' }),
+    );
+    expect(global.fetch).toHaveBeenCalledWith('/fonts/base.woff');
+    expect(global.fetch).toHaveBeenCalledWith('/fonts/calculus.woff');
+    expect(font.getGlyphID('x')).toBeGreaterThan(0);
+    expect(font.getGlyphID('∫')).toBeGreaterThan(0);
+  });
+
   test('throws for a failed response', async () => {
     global.fetch = vi
       .fn()

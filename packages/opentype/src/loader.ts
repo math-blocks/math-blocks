@@ -89,14 +89,30 @@ export const loadFontSubsets = async (
   return combineFonts(Object.fromEntries(fonts));
 };
 
+/** The file formats that the font subsets are published in. */
+export type FontFormat = 'otf' | 'woff';
+
+export type FromBaseUrlOptions = {
+  /**
+   * Which file to fetch for each subset: `'otf'` (the default) for raw
+   * OpenType, or `'woff'` for WOFF, which is smaller to download.
+   */
+  readonly format?: FontFormat;
+};
+
 /**
  * Returns a LoadGroup that fetches `${baseUrl}/${group}.otf`, for subsets
  * hosted in one folder, such as a copy of `assets/subsets/stix-two-math/`.
+ * Pass `{format: 'woff'}` to fetch `${baseUrl}/${group}.woff` instead.
  */
-export const fromBaseUrl = (baseUrl: string): LoadGroup => {
+export const fromBaseUrl = (
+  baseUrl: string,
+  options: FromBaseUrlOptions = {},
+): LoadGroup => {
   const base = baseUrl.replace(/\/+$/, '');
+  const format = options.format ?? 'otf';
   return async (group) => {
-    const url = `${base}/${group}.otf`;
+    const url = `${base}/${group}.${format}`;
     const response = await fetch(url);
     if (!response.ok) {
       // loadFontSubsets adds the subset's name to the message.

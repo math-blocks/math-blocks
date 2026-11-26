@@ -9,6 +9,7 @@ import { parseMATH } from './tables/math';
 import { parseHead } from './tables/head';
 
 import { getGlyphMetrics } from './util';
+import { isWoff, woffToSfnt } from './woff';
 
 import type { Font, GlyphMetrics, TableRecord, TableDirectory } from './types';
 
@@ -74,18 +75,32 @@ export const parseDirectory = async (
   return dir;
 };
 
+// Returns the sfnt data to parse. A WOFF file is decompressed into the sfnt
+// file it was made from; anything else is returned as is.
+const toSfnt = async (blob: ByteSource): Promise<ByteSource> => {
+  if (!isWoff(await blob.slice(0, 4).arrayBuffer())) {
+    return blob;
+  }
+  return fromArrayBuffer(await woffToSfnt(await blob.arrayBuffer()));
+};
+
 /**
  * Parses an OpenType font with a MATH table and CFF outlines. `data` is the
- * font file: a Blob, or an ArrayBuffer.
+ * font file, as raw OpenType (.otf) or WOFF 1.0 (.woff): a Blob, or an
+ * ArrayBuffer.
+ *
+ * WOFF tables are decompressed with `DecompressionStream`, which browsers and
+ * Node 18+ provide.
  */
 export const parse = async (data: ByteSource | ArrayBuffer): Promise<Font> => {
   // Checks for arrayBuffer() rather than using `instanceof ArrayBuffer`, which
   // fails for an ArrayBuffer from another realm (an iframe, a worker, or a
   // different test environment).
-  const blob =
+  const blob = await toSfnt(
     'arrayBuffer' in data && typeof data.arrayBuffer === 'function'
       ? data
-      : fromArrayBuffer(data as ArrayBuffer);
+      : fromArrayBuffer(data as ArrayBuffer),
+  );
   const dir = await parseDirectory(blob);
 
   const headTableRecord = dir.tableRecords['head'];

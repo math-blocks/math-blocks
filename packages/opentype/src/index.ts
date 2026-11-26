@@ -9,6 +9,11 @@ export { loadFontSubsets, fromBaseUrl } from './loader';
 export type { GlyphMetrics, FontData, Font } from './types';
 export type { GlyphGroup } from './glyph-groups';
 export type { CombinedFont } from './combined-font';
-export type { FontFileData, LoadGroup } from './loader';
+export type {
+  FontFileData,
+  FontFormat,
+  FromBaseUrlOptions,
+  LoadGroup,
+} from './loader';
 export type { Glyph, Path, Command } from './tables/cff-types';
 export type { MathConstants, MathValueRecord } from './tables/math-types';
