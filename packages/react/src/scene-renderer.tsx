@@ -327,10 +327,25 @@ type Props = {
   readonly scene: SceneGraph.Scene;
   readonly style?: React.CSSProperties;
   readonly showHitboxes?: boolean;
+  // When set, the SVG is exposed to assistive technology as a single image
+  // with this text as its accessible name, and everything drawn inside it is
+  // hidden from the accessibility tree. When it's unset, the SVG's markup is
+  // left as it was.
+  readonly accessibleLabel?: string;
+  // Hides the whole SVG from assistive technology, for when the page provides
+  // its own accessible alternative. Takes precedence over accessibleLabel.
+  readonly accessibilityHidden?: boolean;
 };
 
 const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
-  const { scene, style, showHitboxes } = props;
+  const { scene, style, showHitboxes, accessibilityHidden } = props;
+  const accessibleLabel = accessibilityHidden
+    ? undefined
+    : props.accessibleLabel;
+  const labelled = accessibleLabel !== undefined;
+  // Screen readers treat the children of role="img" as presentational, but
+  // hiding the drawn content explicitly guards against ones that don't.
+  const hidden = labelled ? true : undefined;
   const { width, height } = scene;
   const padding = CURSOR_WIDTH / 2;
   const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
@@ -376,6 +391,9 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
       height={height}
       style={style}
       ref={ref}
+      role={labelled ? 'img' : undefined}
+      aria-label={accessibleLabel}
+      aria-hidden={accessibilityHidden ? true : undefined}
     >
       {!shared && glyphDefs.length > 0 && (
         <defs>
@@ -384,7 +402,12 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
           ))}
         </defs>
       )}
-      <g fill="currentColor" stroke="none" transform={translate(0, yAdjust)}>
+      <g
+        fill="currentColor"
+        stroke="none"
+        transform={translate(0, yAdjust)}
+        aria-hidden={hidden}
+      >
         {drawGroup(scene.selection, undefined, ids)}
         {/**
          * We set 'fill' and stroke to 'currentColor' so that the base
@@ -395,7 +418,12 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
          */}
         {drawGroup(scene.content, undefined, ids)}
       </g>
-      {showHitboxes && drawGroup(scene.hitboxes, undefined, ids)}
+      {showHitboxes &&
+        (labelled ? (
+          <g aria-hidden="true">{drawGroup(scene.hitboxes, undefined, ids)}</g>
+        ) : (
+          drawGroup(scene.hitboxes, undefined, ids)
+        ))}
     </svg>
   );
 });

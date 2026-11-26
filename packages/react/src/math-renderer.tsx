@@ -7,6 +7,7 @@ import { macros } from '@math-blocks/tex';
 import { useFontData } from './font-data-context';
 import { useMissingGlyphs } from './use-missing-glyphs';
 import SceneRenderer from './scene-renderer';
+import { getSpokenText } from './spoken-text';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -30,6 +31,17 @@ type Props = {
   // placeholder instead. `group` is set when the character's glyph group isn't
   // loaded. It's called again only when the set of missing characters changes.
   readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
+
+  // The text screen readers announce for the math. The SVG is exposed as a
+  // single image (role="img") with this as its name. Defaults to a spoken
+  // description generated from `row`, such as "x squared plus 1"; see
+  // getSpokenText. Pass your own to use different wording or another language.
+  readonly 'aria-label'?: string;
+
+  // Hides the math from screen readers entirely, for example when it's
+  // decorative or the page already provides an accessible alternative such as
+  // MathML. The SVG then has aria-hidden="true" and no role or label.
+  readonly 'aria-hidden'?: boolean;
 };
 
 // TODO: expose other settings such as display style as props
@@ -75,6 +87,12 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
         ref={ref}
         scene={scene}
         showHitboxes={showHitboxes}
+        accessibilityHidden={props['aria-hidden']}
+        accessibleLabel={
+          props['aria-hidden']
+            ? undefined
+            : (props['aria-label'] ?? getSpokenText(props.row))
+        }
         style={{
           ...style,
           verticalAlign,

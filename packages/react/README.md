@@ -21,6 +21,31 @@ it a `className` or `style` prop.
 
 ## MathRenderer
 
+### Accessibility
+
+`MathRenderer` draws math as an SVG of glyph outlines, which screen readers
+can't read on their own. So the SVG is exposed as a single image
+(`role="img"`) whose `aria-label` describes the math in words, and everything
+drawn inside it is `aria-hidden`:
+
+```tsx
+<MathRenderer row={row} />
+// <svg role="img" aria-label="the fraction x plus 1 over 2, end fraction" ...>
+```
+
+The description is generated from `row` by `getSpokenText`, which you can also
+call yourself. It uses short forms for simple parts ("x squared", "1 over 2",
+"the square root of 2") and marks where compound ones end (", end fraction",
+", end root"). It's English only.
+
+- Pass `aria-label` to use your own wording, for example in another language.
+- Pass `aria-hidden` when the math is decorative, or when the page already
+  provides an accessible alternative such as MathML, so that it isn't read
+  twice.
+
+A label is read as one phrase: screen reader users can't move through the
+parts of an expression the way they can with MathML.
+
 ## MathEditor
 
 TODO:

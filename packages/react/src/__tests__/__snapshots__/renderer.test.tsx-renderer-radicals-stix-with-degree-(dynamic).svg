@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 88 72" width="88" height="72" style="background:white;vertical-align:-15px">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 88 72" width="88" height="72" style="background:white;vertical-align:-15px" role="img" aria-label="the cube root of x">
     <defs>
         <path id="mbR0-STIX2-94" d="M 86,498 C 120,551 157,579 217,579C 279,579 319,545 319,486C 319,405 248,350 180,350L 161,350 L 161,312 L 181,312 C 277,312 362,253 362,164C 362,66 301,37 238,37C 214,37 200,41 157,63C 122,81 114,86 98,86C 72,86 59,63 59,42C 59,16 81,-13 171,-13C 317,-13 444,57 444,194C 444,283 377,336 297,361L 297,364 C 360,404 405,441 405,510C 405,586 346,644 244,644C 162,644 100,598 63,511Z"></path>
         <path id="mbR0-STIX2-309" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z"></path>
     </defs>
-    <g fill="currentColor" stroke="none" transform="translate(0,0.78)">
+    <g fill="currentColor" stroke="none" transform="translate(0,0.78)" aria-hidden="true">
         <g transform="translate(0,56.28)" id="5">
             <g transform="translate(0,0)" id="2">
                 <g transform="translate(3.765,-24.231)" id="3"></g>
