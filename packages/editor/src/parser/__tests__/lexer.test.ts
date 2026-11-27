@@ -580,6 +580,10 @@ describe('Lexer', () => {
         expect(() => lexTokens('x+1.2.')).toThrow(
           "'1.2.' has more than one decimal point",
         );
+        // An ellipsis after the number isn't part of the message.
+        expect(() => lexTokens('1.2.3...')).toThrow(
+          /^'1\.2\.3' has more than one decimal point$/,
+        );
       });
 
       it('should throw on a lone or doubled `.`', () => {

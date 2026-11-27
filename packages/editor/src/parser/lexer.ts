@@ -324,6 +324,8 @@ const tokenizeChars = (
   const valueAt = (index: number): string | undefined => chars[index]?.value;
   const loc = (start: number, end: number): SourceLocation =>
     location(path, offset + start, offset + end);
+  // Each name split into code points once, rather than at every letter.
+  const wordLetters = wordNames.map((name) => ({ name, letters: [...name] }));
   const isEllipsisAt = (index: number): boolean =>
     valueAt(index) === '.' &&
     valueAt(index + 1) === '.' &&
@@ -349,7 +351,12 @@ const tokenizeChars = (
       // `1.2` followed by `.3` would silently change its meaning.
       if (valueAt(i) === '.' && !isEllipsisAt(i)) {
         let end = i;
-        while (isDigit(valueAt(end)) || valueAt(end) === '.') {
+        // The message names only the number, not an ellipsis after it,
+        // e.g. `1.2.3` in `1.2.3...`.
+        while (
+          isDigit(valueAt(end)) ||
+          (valueAt(end) === '.' && !isEllipsisAt(end))
+        ) {
           end++;
         }
         const text = chars
@@ -367,10 +374,15 @@ const tokenizeChars = (
    * at `start`, or undefined if there isn't one.  `wordNames` is sorted
    * longest first.
    */
-  const matchFunctionName = (start: number): string | undefined =>
-    wordNames.find((name) =>
-      [...name].every((letter, j) => valueAt(start + j) === letter),
+  const matchFunctionName = (start: number): string | undefined => {
+    const first = valueAt(start);
+    const match = wordLetters.find(
+      ({ letters }) =>
+        letters[0] === first &&
+        letters.every((letter, j) => valueAt(start + j) === letter),
     );
+    return match?.name;
+  };
 
   let i = 0;
   while (i < chars.length) {
