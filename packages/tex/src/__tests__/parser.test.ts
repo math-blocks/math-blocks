@@ -457,13 +457,7 @@ describe('Parser', () => {
       expect(
         util.isEqual(
           parse('x^-2'),
-          builders.row([
-            builders.char('x'),
-            builders.subsup(undefined, [
-              builders.char('−'),
-              builders.char('2'),
-            ]),
-          ]),
+          builders.row([builders.char('x'), util.sup('−2')]),
         ),
       ).toBe(true);
     });
@@ -472,10 +466,7 @@ describe('Parser', () => {
       expect(
         util.isEqual(
           parse('x_-1'),
-          builders.row([
-            builders.char('x'),
-            builders.subsup([builders.char('−'), builders.char('1')]),
-          ]),
+          builders.row([builders.char('x'), util.sub('−1')]),
         ),
       ).toBe(true);
     });
