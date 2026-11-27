@@ -1,0 +1,40 @@
+{
+    "name": "@math-blocks/fonts",
+    "version": "0.0.0",
+    "description": "Math font subsets (WOFF) for rendering math with math-blocks",
+    "license": "MIT AND OFL-1.1 AND LPPL-1.3c",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/math-blocks/math-blocks.git",
+        "directory": "packages/fonts"
+    },
+    "bugs": "https://github.com/math-blocks/math-blocks/issues",
+    "homepage": "https://github.com/math-blocks/math-blocks/tree/main/packages/fonts#readme",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        },
+        "./subsets/*": "./subsets/*",
+        "./licenses/*": "./licenses/*",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "subsets",
+        "licenses",
+        "LICENSE.md"
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
+}

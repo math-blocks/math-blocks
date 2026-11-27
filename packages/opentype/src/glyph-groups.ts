@@ -1,7 +1,7 @@
 import data from './glyph-groups.json';
 
 export type GlyphGroup = {
-  // Also the subset's file name, e.g. "base" for base.otf.
+  // Also the subset's file name, e.g. "base" for base.woff.
   readonly name: string;
   readonly description: string;
   // Every code point in the group, in ascending order.
@@ -29,7 +29,7 @@ const parseCodePoints = (entries: readonly string[]): number[] => {
 };
 
 /**
- * The groups of characters that the font subsets in assets/subsets/ are split
+ * The groups of characters that the font subsets in @math-blocks/fonts are split
  * into. Each group is built into its own font file by scripts/subset-fonts.py,
  * and every code point belongs to exactly one group. The first group, "base",
  * covers arithmetic and algebra.

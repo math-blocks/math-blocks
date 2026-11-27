@@ -28,9 +28,10 @@ import { FontDataContext } from '../font-data-context';
 import { expandGlyphUses } from '../test-util';
 
 const ASSETS = path.join(__dirname, '../../../../assets');
+const SUBSETS = path.join(__dirname, '../../../fonts/subsets');
 
 const loadFont = (...segments: readonly string[]): Promise<Font> =>
-  parse(new Blob([fs.readFileSync(path.join(ASSETS, ...segments))]));
+  parse(new Blob([fs.readFileSync(path.resolve(ASSETS, ...segments))]));
 
 type Missing = readonly [string, string | undefined];
 
@@ -69,7 +70,7 @@ describe('placeholders', () => {
 
   beforeAll(async () => {
     // Only the base subset, so characters in other groups can't be drawn.
-    const base = await loadFont('subsets', 'stix-two-math', 'base.otf');
+    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.woff');
     baseOnly = getFontData(combineFonts({ base }), 'STIX2');
     full = getFontData(await loadFont('STIX2Math.otf'), 'STIX2');
   });
@@ -294,7 +295,7 @@ describe('onMissingGlyph', () => {
   let full: FontData;
 
   beforeAll(async () => {
-    const base = await loadFont('subsets', 'stix-two-math', 'base.otf');
+    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.woff');
     baseOnly = getFontData(combineFonts({ base }), 'STIX2');
     full = getFontData(await loadFont('STIX2Math.otf'), 'STIX2');
   });

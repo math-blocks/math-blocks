@@ -5,14 +5,42 @@ import { deflateSync } from 'zlib';
 import { glyphGroups } from '../glyph-groups';
 import { fromArrayBuffer } from '../byte-source';
 import { parse, parseDirectory } from '../parser';
-import { ASSETS, FONTS, describeCharacter, getGlyphID } from '../test-util';
+import {
+  ASSETS,
+  FONTS,
+  SUBSETS,
+  describeCharacter,
+  getGlyphID,
+} from '../test-util';
 import { isWoff, woffToSfnt } from '../woff';
 
-const readFile = (...segments: readonly string[]): ArrayBuffer => {
-  const file = fs.readFileSync(path.join(ASSETS, ...segments));
+const readFrom = (dir: string, ...segments: readonly string[]): ArrayBuffer => {
+  const file = fs.readFileSync(path.join(dir, ...segments));
   const buffer = new ArrayBuffer(file.byteLength);
   new Uint8Array(buffer).set(file);
   return buffer;
+};
+
+// A subset file, given its font's folder and file name.
+const readFile = (...segments: readonly string[]): ArrayBuffer =>
+  readFrom(SUBSETS, ...segments);
+
+// The OpenType checksum of a table: the sum of its bytes as big-endian
+// uint32s, padded with zeros to a multiple of four, modulo 2^32. The 'head'
+// table's checksum is computed with its checkSumAdjustment field (bytes 8-11)
+// set to zero.
+const tableChecksum = (tag: string, bytes: Uint8Array): number => {
+  const padded = new Uint8Array((bytes.byteLength + 3) & ~3);
+  padded.set(bytes);
+  if (tag === 'head') {
+    padded.fill(0, 8, 12);
+  }
+  const view = new DataView(padded.buffer);
+  let sum = 0;
+  for (let i = 0; i < padded.byteLength; i += 4) {
+    sum = (sum + view.getUint32(i)) >>> 0;
+  }
+  return sum;
 };
 
 // Each table's tag, checksum and bytes, ignoring where in the file it is.
@@ -70,13 +98,9 @@ const makeWoff = (
 };
 
 describe('isWoff', () => {
-  test('is true for a .woff subset and false for a .otf one', () => {
-    expect(isWoff(readFile('subsets', 'stix-two-math', 'base.woff'))).toBe(
-      true,
-    );
-    expect(isWoff(readFile('subsets', 'stix-two-math', 'base.otf'))).toBe(
-      false,
-    );
+  test('is true for a .woff subset and false for an .otf font', () => {
+    expect(isWoff(readFile('stix-two-math', 'base.woff'))).toBe(true);
+    expect(isWoff(readFrom(ASSETS, 'STIX2Math.otf'))).toBe(false);
   });
 
   test('is false for data shorter than the signature', () => {
@@ -84,28 +108,41 @@ describe('isWoff', () => {
   });
 });
 
+// Each WOFF table entry stores the checksum of the uncompressed table, so a
+// table that decompressed wrongly, or was laid out at the wrong offset, won't
+// match it. (subsets.test.ts checks that each subset draws its characters
+// exactly like the original font.)
 describe.each(FONTS)('$subset', ({ subset }) => {
   test.each(glyphGroups)(
-    '$name.woff holds the same tables as $name.otf',
+    '$name.woff decompresses to tables that match their checksums',
     async ({ name }) => {
-      const otf = readFile('subsets', subset, `${name}.otf`);
-      const woff = readFile('subsets', subset, `${name}.woff`);
+      const woff = readFile(subset, `${name}.woff`);
+      const tables = await readTables(await woffToSfnt(woff));
 
-      const sfnt = await woffToSfnt(woff);
-      expect(await readTables(sfnt)).toEqual(await readTables(otf));
-      // The .woff file is the point of the exercise: it's smaller.
-      expect(woff.byteLength).toBeLessThan(otf.byteLength);
+      expect(Object.keys(tables)).toEqual(
+        expect.arrayContaining(['head', 'cmap', 'MATH', 'CFF ']),
+      );
+      for (const [tag, { checksum, bytes }] of Object.entries(tables)) {
+        expect([tag, tableChecksum(tag, bytes)]).toEqual([tag, checksum]);
+      }
+      // The point of WOFF: the file is smaller than the tables it holds.
+      const total = Object.values(tables).reduce(
+        (sum, { bytes }) => sum + bytes.byteLength,
+        0,
+      );
+      expect(woff.byteLength).toBeLessThan(total);
     },
   );
 });
 
 describe('parse', () => {
-  test('reads a .woff subset like the matching .otf subset', async () => {
-    const otf = await parse(readFile('subsets', 'stix-two-math', 'base.otf'));
-    const woff = await parse(readFile('subsets', 'stix-two-math', 'base.woff'));
+  test('reads a .woff subset like the original font', async () => {
+    const otf = await parse(readFrom(ASSETS, 'STIX2Math.otf'));
+    const woff = await parse(readFile('stix-two-math', 'base.woff'));
 
-    expect(woff.cff.name).toEqual(otf.cff.name);
-    expect(woff.head).toEqual(otf.head);
+    // The subset is renamed (see scripts/subset-fonts.py).
+    expect(woff.cff.name).toEqual('MathBlocksMathA-Base');
+    expect(woff.head.unitsPerEm).toEqual(otf.head.unitsPerEm);
     expect(woff.math.constants).toEqual(otf.math.constants);
     for (const char of ['x', '2', '+', '(', '=']) {
       const codePoint = char.codePointAt(0) ?? 0;
@@ -118,7 +155,7 @@ describe('parse', () => {
 
   test('reads a .woff subset from a Blob', async () => {
     const file = fs.readFileSync(
-      path.join(ASSETS, 'subsets', 'stix-two-math', 'calculus.woff'),
+      path.join(SUBSETS, 'stix-two-math', 'calculus.woff'),
     );
     const font = await parse(new Blob([file]));
     expect(font.getGlyphID('∫')).toBeGreaterThan(0);

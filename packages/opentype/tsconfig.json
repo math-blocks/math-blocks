@@ -10,5 +10,8 @@
         "esnext",
         "dom",
       ],
-    }
+    },
+    "references": [
+      {"path": "../fonts"}
+    ]
   }

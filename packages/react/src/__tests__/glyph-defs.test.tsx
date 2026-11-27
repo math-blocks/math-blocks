@@ -20,6 +20,7 @@ import { FontDataContext } from '../font-data-context';
 import { expandGlyphUses } from '../test-util';
 
 const ASSETS = path.join(__dirname, '../../../../assets');
+const SUBSETS = path.join(__dirname, '../../../fonts/subsets');
 
 let fontData: FontData;
 let baseOnly: FontData;
@@ -27,10 +28,10 @@ let lmFont: FontData['font'];
 
 beforeAll(async () => {
   const load = (...segments: readonly string[]): Promise<Font> =>
-    parse(new Blob([fs.readFileSync(path.join(ASSETS, ...segments))]));
+    parse(new Blob([fs.readFileSync(path.resolve(ASSETS, ...segments))]));
   fontData = getFontData(await load('STIX2Math.otf'), 'STIX2');
   // Only the base subset, so characters in other groups are placeholders.
-  const base = await load('subsets', 'stix-two-math', 'base.otf');
+  const base = await load(SUBSETS, 'stix-two-math', 'base.woff');
   baseOnly = getFontData(combineFonts({ base }), 'STIX2');
   lmFont = await load('latinmodern-math.otf');
 });
