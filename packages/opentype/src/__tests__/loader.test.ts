@@ -138,14 +138,41 @@ describe('fromBaseUrl', () => {
     global.fetch = realFetch;
   });
 
-  test('fetches `${baseUrl}/${group}.otf`, ignoring trailing slashes', async () => {
+  test('fetches `${baseUrl}/${group}.woff`, ignoring trailing slashes', async () => {
     const response = { ok: true, status: 200, statusText: 'OK' };
     const fetchMock = vi.fn().mockResolvedValue(response);
     global.fetch = fetchMock;
 
     const load = fromBaseUrl('/fonts/stix-two-math/');
     await expect(load('calculus')).resolves.toBe(response);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/fonts/stix-two-math/calculus.woff',
+    );
+  });
+
+  test("fetches `${baseUrl}/${group}.otf` with {format: 'otf'}", async () => {
+    const response = { ok: true, status: 200, statusText: 'OK' };
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    global.fetch = fetchMock;
+
+    const load = fromBaseUrl('/fonts/stix-two-math', { format: 'otf' });
+    await expect(load('calculus')).resolves.toBe(response);
     expect(fetchMock).toHaveBeenCalledWith('/fonts/stix-two-math/calculus.otf');
+  });
+
+  test('loadFontSubsets reads the .woff subsets by default', async () => {
+    global.fetch = vi.fn().mockImplementation(async (url: string) => {
+      const file = fs.readFileSync(
+        path.join(SUBSET_DIR, url.replace(/^\/fonts\//, '')),
+      );
+      return { ok: true, arrayBuffer: async () => new Uint8Array(file).buffer };
+    });
+
+    const font = await loadFontSubsets(['calculus'], fromBaseUrl('/fonts'));
+    expect(global.fetch).toHaveBeenCalledWith('/fonts/base.woff');
+    expect(global.fetch).toHaveBeenCalledWith('/fonts/calculus.woff');
+    expect(font.getGlyphID('x')).toBeGreaterThan(0);
+    expect(font.getGlyphID('∫')).toBeGreaterThan(0);
   });
 
   test('throws for a failed response', async () => {
@@ -154,13 +181,13 @@ describe('fromBaseUrl', () => {
       .mockResolvedValue({ ok: false, status: 404, statusText: 'Not Found' });
 
     await expect(fromBaseUrl('/fonts')('calculus')).rejects.toThrow(
-      "Couldn't fetch /fonts/calculus.otf: 404 Not Found",
+      "Couldn't fetch /fonts/calculus.woff: 404 Not Found",
     );
   });
 
   test('loadFontSubsets names the subset that failed to fetch', async () => {
     global.fetch = vi.fn().mockImplementation(async (url: string) =>
-      url.endsWith('/calculus.otf')
+      url.endsWith('/calculus.woff')
         ? { ok: false, status: 404, statusText: 'Not Found' }
         : {
             ok: true,
@@ -172,7 +199,7 @@ describe('fromBaseUrl', () => {
       loadFontSubsets(['calculus'], fromBaseUrl('/fonts')),
     ).rejects.toThrow(
       'Couldn\'t load the "calculus" font subset: ' +
-        "Couldn't fetch /fonts/calculus.otf: 404 Not Found",
+        "Couldn't fetch /fonts/calculus.woff: 404 Not Found",
     );
   });
 });
