@@ -253,6 +253,10 @@ describe('Editor.parse(Tex.parse(...))', () => {
         expectParse('\\cos^{-1}x', b.arccos(x));
         expectParse('\\tan^-1 x', b.arctan(x));
       });
+
+      test('\\ln^{-1} x is a power, since ln has no inverse here', () => {
+        expectParse('\\ln^{-1} x', b.pow(b.ln(x), b.neg(num('1'))));
+      });
     });
 
     describe('bare parentheses', () => {
