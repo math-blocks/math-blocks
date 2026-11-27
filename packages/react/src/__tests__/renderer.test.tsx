@@ -34,7 +34,7 @@ const readSubset =
   (subset: string) =>
   async (group: string): Promise<ArrayBuffer> => {
     const file = fs.readFileSync(
-      path.join(__dirname, '../../../fonts/subsets', subset, `${group}.otf`),
+      path.join(__dirname, '../../../fonts/subsets', subset, `${group}.woff`),
     );
     const buffer = new ArrayBuffer(file.byteLength);
     new Uint8Array(buffer).set(file);

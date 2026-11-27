@@ -6,9 +6,9 @@ in assets/, is split into one font file per group in
 packages/opentype/src/glyph-groups.json. See
 https://github.com/math-blocks/math-blocks/issues/696.
 
-Each subset is written twice: as raw OpenType (<group>.otf) and as WOFF
-(<group>.woff), which holds the same tables zlib-compressed and is smaller to
-download. See https://github.com/math-blocks/math-blocks/issues/871.
+Each subset is written as WOFF (<group>.woff), which holds the same tables as
+raw OpenType, zlib-compressed, so it's smaller to download. See
+https://github.com/math-blocks/math-blocks/issues/871.
 
 It also writes packages/fonts/src/fonts.generated.ts, which lists each font's
 folder as a TypeScript `as const` array. TypeScript widens strings imported
@@ -62,10 +62,6 @@ def load_fonts():
             for font in data['fonts']}
 
 
-# File extension -> fontTools flavor for each format a subset is written in.
-# A flavor of None is raw OpenType (sfnt).
-FORMATS = [('otf', None), ('woff', 'woff')]
-EXTENSIONS = tuple(f'.{ext}' for ext, _ in FORMATS)
 
 # Name table entries that identify the font. They're all replaced; everything
 # else (copyright, trademark, license, version, ...) is kept as is.
@@ -174,11 +170,10 @@ def build(out_dir):
             subsetter.populate(unicodes=code_points)
             subsetter.subset(font)
             rename(font, letter, group, source_name)
-            for ext, flavor in FORMATS:
-                font.flavor = flavor
-                path = os.path.join(font_dir, f'{group}.{ext}')
-                font.save(path)
-                written.append(os.path.relpath(path, out_dir))
+            font.flavor = 'woff'
+            path = os.path.join(font_dir, f'{group}.woff')
+            font.save(path)
+            written.append(os.path.relpath(path, out_dir))
     return written
 
 
@@ -225,8 +220,10 @@ def main():
                  if not os.path.exists(os.path.join(OUT_DIR, p))
                  or not filecmp.cmp(os.path.join(tmp, p), os.path.join(OUT_DIR, p), shallow=False)]
     expected = set(written)
+    # Any other file, such as an .otf subset from an earlier version of this
+    # script, wasn't built by it.
     extra = [os.path.relpath(os.path.join(d, f), OUT_DIR)
-             for d, _, files in os.walk(OUT_DIR) for f in files if f.endswith(EXTENSIONS)]
+             for d, _, files in os.walk(OUT_DIR) for f in files]
     extra = [p for p in extra if p not in expected]
     if stale or extra or ts_stale:
         for p in stale:

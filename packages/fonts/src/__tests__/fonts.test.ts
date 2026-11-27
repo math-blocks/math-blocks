@@ -29,9 +29,6 @@ const packageJson = JSON.parse(
   fs.readFileSync(path.join(PACKAGE, 'package.json'), 'utf8'),
 ) as { files: string[]; exports: Record<string, unknown> };
 
-// scripts/subset-fonts.py builds each subset as .otf and .woff. The repo's
-// tests read the .otf files, but only the .woff ones are published.
-
 describe('fonts', () => {
   test('each font has its own name, folder and family', () => {
     for (const key of ['name', 'folder', 'family'] as const) {
@@ -107,10 +104,8 @@ describe('subsets', () => {
     expect(folders).toEqual(fonts.map((font) => font.folder).sort());
   });
 
-  test.each(fonts)('$folder has every glyph group in both formats', (font) => {
-    const expected = groupNames
-      .flatMap((group) => [`${group}.otf`, `${group}.woff`])
-      .sort();
+  test.each(fonts)('$folder has a .woff file for every glyph group', (font) => {
+    const expected = groupNames.map((group) => `${group}.woff`).sort();
     const files = fs
       .readdirSync(path.join(PACKAGE, 'subsets', font.folder))
       .sort();
@@ -135,9 +130,9 @@ describe('subsetPath', () => {
 });
 
 describe('package.json', () => {
-  test('publishes the .woff subsets, not the .otf ones, and the licences', () => {
+  test('publishes the subsets and licences', () => {
     expect(packageJson.files.sort()).toEqual(
-      ['LICENSE.md', 'dist', 'licenses', 'subsets/**/*.woff'].sort(),
+      ['LICENSE.md', 'dist', 'licenses', 'subsets'].sort(),
     );
   });
 

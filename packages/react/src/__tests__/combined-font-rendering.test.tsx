@@ -117,7 +117,7 @@ describe.each(FONTS)(
         parts[group.name] = await loadFont(
           SUBSETS,
           subset,
-          `${group.name}.otf`,
+          `${group.name}.woff`,
         );
       }
       // The same family name for both, so only the font data differs.

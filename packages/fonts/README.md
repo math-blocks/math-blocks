@@ -81,9 +81,8 @@ and the TeX Gyre fonts are under the GUST Font License. See
 ## Updating the subsets
 
 The subsets are built from the fonts in the repository's `assets/` folder by
-`scripts/subset-fonts.py`, using the list in `src/fonts.json`. The script also
-builds `.otf` versions, which the repository's tests compare with the original
-fonts. They aren't published. To add a font,
+`scripts/subset-fonts.py`, using the list in `src/fonts.json`, which writes
+them straight to WOFF. To add a font,
 add an entry there, put its source file in `assets/`, and run
 `python3 scripts/subset-fonts.py`.
 

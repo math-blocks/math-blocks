@@ -45,7 +45,8 @@ const watchFonts = (page: Page): string[] => {
 const builtName = (path: string): string =>
   (path.split('/').pop() ?? '').replace(/-[\w-]{8}(\.\w+)$/, '$1');
 
-// The demo loads the WOFF subsets, which are smaller than the .otf ones.
+// The demo loads the WOFF subsets. watchFonts also records .otf requests, so
+// loading a full font would still show up.
 const GROUPS = [
   'base',
   'calculus',

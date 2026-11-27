@@ -70,7 +70,7 @@ describe('placeholders', () => {
 
   beforeAll(async () => {
     // Only the base subset, so characters in other groups can't be drawn.
-    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.otf');
+    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.woff');
     baseOnly = getFontData(combineFonts({ base }), 'STIX2');
     full = getFontData(await loadFont('STIX2Math.otf'), 'STIX2');
   });
@@ -295,7 +295,7 @@ describe('onMissingGlyph', () => {
   let full: FontData;
 
   beforeAll(async () => {
-    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.otf');
+    const base = await loadFont(SUBSETS, 'stix-two-math', 'base.woff');
     baseOnly = getFontData(combineFonts({ base }), 'STIX2');
     full = getFontData(await loadFont('STIX2Math.otf'), 'STIX2');
   });

@@ -31,7 +31,7 @@ beforeAll(async () => {
     parse(new Blob([fs.readFileSync(path.resolve(ASSETS, ...segments))]));
   fontData = getFontData(await load('STIX2Math.otf'), 'STIX2');
   // Only the base subset, so characters in other groups are placeholders.
-  const base = await load(SUBSETS, 'stix-two-math', 'base.otf');
+  const base = await load(SUBSETS, 'stix-two-math', 'base.woff');
   baseOnly = getFontData(combineFonts({ base }), 'STIX2');
   lmFont = await load('latinmodern-math.otf');
 });

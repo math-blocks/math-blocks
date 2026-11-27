@@ -1,7 +1,7 @@
 import data from './glyph-groups.json';
 
 export type GlyphGroup = {
-  // Also the subset's file name, e.g. "base" for base.otf.
+  // Also the subset's file name, e.g. "base" for base.woff.
   readonly name: string;
   readonly description: string;
   // Every code point in the group, in ascending order.

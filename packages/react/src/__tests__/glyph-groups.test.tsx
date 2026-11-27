@@ -72,7 +72,7 @@ describe('glyphGroupsForRow', () => {
           path.join(
             __dirname,
             '../../../fonts/subsets/stix-two-math',
-            `${group}.otf`,
+            `${group}.woff`,
           ),
         ),
       ]),

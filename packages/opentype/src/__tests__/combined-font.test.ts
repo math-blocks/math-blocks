@@ -13,7 +13,7 @@ import {
 import type { Font } from '../types';
 
 const loadSubset = (subset: string, group: string): Promise<Font> =>
-  loadSubsetFile(subset, `${group}.otf`);
+  loadSubsetFile(subset, `${group}.woff`);
 
 describe('combineFonts', () => {
   let base: Font;

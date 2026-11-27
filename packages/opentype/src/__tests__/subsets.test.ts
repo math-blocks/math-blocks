@@ -42,7 +42,7 @@ describe.each(FONTS)('$subset (subset of $source)', ({ source, subset }) => {
     let font: Font;
 
     beforeAll(async () => {
-      font = await loadSubset(subset, `${group.name}.otf`);
+      font = await loadSubset(subset, `${group.name}.woff`);
     });
 
     test('has the same MATH constants as the original', () => {

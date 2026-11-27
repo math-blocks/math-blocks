@@ -11,8 +11,7 @@ import type { FontFolder } from '@math-blocks/fonts';
 
 // The URL of every WOFF subset in @math-blocks/fonts, keyed by
 // "<folder>/<group>". Vite copies the files into the build, so this works with
-// `pnpm start` and in the deployed demo. The demo loads the .woff files rather
-// than the .otf ones since they're smaller.
+// `pnpm start` and in the deployed demo.
 const subsetUrls: Record<string, string> = Object.fromEntries(
   Object.entries(
     import.meta.glob<string>('../../../packages/fonts/subsets/*/*.woff', {

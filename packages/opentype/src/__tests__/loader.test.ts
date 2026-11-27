@@ -5,6 +5,7 @@ import vm from 'vm';
 import { fromBaseUrl, loadFontSubsets } from '../loader';
 import { parseDirectory } from '../parser';
 import { fromArrayBuffer } from '../byte-source';
+import { woffToSfnt } from '../woff';
 import { SUBSETS } from '../test-util';
 
 const SUBSET_DIR = path.join(SUBSETS, 'stix-two-math');
@@ -19,7 +20,7 @@ const diskLoader = (): {
     requested,
     load: async (group) => {
       requested.push(group);
-      const file = fs.readFileSync(path.join(SUBSET_DIR, `${group}.otf`));
+      const file = fs.readFileSync(path.join(SUBSET_DIR, `${group}.woff`));
       const buffer = new ArrayBuffer(file.byteLength);
       new Uint8Array(buffer).set(file);
       return buffer;
@@ -104,10 +105,12 @@ describe('loadFontSubsets', () => {
     // can't find a character map in it. The base subset is left alone.
     const loader = diskLoader();
     const load = async (group: string): Promise<ArrayBuffer> => {
-      const buffer = await loader.load(group);
+      const woff = await loader.load(group);
       if (group !== 'calculus') {
-        return buffer;
+        return woff;
       }
+      // Edit the OpenType tables inside the WOFF file.
+      const buffer = await woffToSfnt(woff);
       const dir = await parseDirectory(fromArrayBuffer(buffer));
       const view = new DataView(buffer);
       const cmapOffset = dir.tableRecords['cmap'].offset;
