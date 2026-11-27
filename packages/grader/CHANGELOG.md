@@ -1,5 +1,12 @@
 # @math-blocks/grader
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [cc25bba]
+  - @math-blocks/solver@0.1.1
+
 ## 0.3.0
 
 ### Minor Changes
