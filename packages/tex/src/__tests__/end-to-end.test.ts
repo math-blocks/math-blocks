@@ -234,7 +234,7 @@ describe('Editor.parse(Tex.parse(...))', () => {
       });
 
       test('an unsupported function throws', () => {
-        expect(() => parse('\\max x')).toThrow("Unsupported function 'max'");
+        expect(() => parse('\\max x')).toThrow("'max' isn't supported yet");
       });
 
       test('a subscript on a function other than log throws', () => {

@@ -19,6 +19,7 @@ export enum TokenKind {
   Plus = 'Plus',
   Minus = 'Minus',
   PlusMinus = 'PlusMinus',
+  MinusPlus = 'MinusPlus',
   Times = 'Times',
   Divide = 'Divide',
   Equal = 'Equal',
@@ -32,6 +33,17 @@ export enum TokenKind {
   VerticalBar = 'VerticalBar',
   Ellipsis = 'Ellipsis',
   Comma = 'Comma',
+  ElementOf = 'ElementOf',
+  NotElementOf = 'NotElementOf',
+  Contains = 'Contains',
+  NotContains = 'NotContains',
+  Subset = 'Subset',
+  ProperSubset = 'ProperSubset',
+  Superset = 'Superset',
+  ProperSuperset = 'ProperSuperset',
+  Union = 'Union',
+  Intersection = 'Intersection',
+  RightArrow = 'RightArrow',
   SummationOperator = 'SummationOperator',
   ProductOperator = 'ProductOperator',
   Lim = 'Lim',
@@ -59,6 +71,7 @@ type SimpleToken<kind extends TokenKind> = {
 type Plus = SimpleToken<TokenKind.Plus>;
 type Minus = SimpleToken<TokenKind.Minus>;
 type PlusMinus = SimpleToken<TokenKind.PlusMinus>;
+type MinusPlus = SimpleToken<TokenKind.MinusPlus>;
 type Times = SimpleToken<TokenKind.Times>;
 type Divide = SimpleToken<TokenKind.Divide>;
 type NotEqual = SimpleToken<TokenKind.NotEqual>;
@@ -72,6 +85,17 @@ type LeftParens = SimpleToken<TokenKind.LeftParens>;
 type RightParens = SimpleToken<TokenKind.RightParens>;
 type Ellipsis = SimpleToken<TokenKind.Ellipsis>;
 type Comma = SimpleToken<TokenKind.Comma>;
+type ElementOf = SimpleToken<TokenKind.ElementOf>;
+type NotElementOf = SimpleToken<TokenKind.NotElementOf>;
+type Contains = SimpleToken<TokenKind.Contains>;
+type NotContains = SimpleToken<TokenKind.NotContains>;
+type Subset = SimpleToken<TokenKind.Subset>;
+type ProperSubset = SimpleToken<TokenKind.ProperSubset>;
+type Superset = SimpleToken<TokenKind.Superset>;
+type ProperSuperset = SimpleToken<TokenKind.ProperSuperset>;
+type Union = SimpleToken<TokenKind.Union>;
+type Intersection = SimpleToken<TokenKind.Intersection>;
+type RightArrow = SimpleToken<TokenKind.RightArrow>;
 type SummationOperator = SimpleToken<TokenKind.SummationOperator>;
 type ProductOperator = SimpleToken<TokenKind.ProductOperator>;
 type Lim = SimpleToken<TokenKind.Lim>;
@@ -83,6 +107,7 @@ export type Token =
   | Plus
   | Minus
   | PlusMinus
+  | MinusPlus
   | Times
   | Divide
   | Equal
@@ -96,6 +121,17 @@ export type Token =
   | VerticalBar
   | Ellipsis
   | Comma
+  | ElementOf
+  | NotElementOf
+  | Contains
+  | NotContains
+  | Subset
+  | ProperSubset
+  | Superset
+  | ProperSuperset
+  | Union
+  | Intersection
+  | RightArrow
   | SummationOperator
   | ProductOperator
   | Lim

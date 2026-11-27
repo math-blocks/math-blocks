@@ -5,6 +5,7 @@ import * as Semantic from '@math-blocks/semantic';
 import type { Mutable } from 'utility-types';
 
 import * as Lexer from './lexer';
+import { unsupported } from './lexer';
 import { locFromRange } from '../token/util';
 import { TokenKind } from '../token/types';
 
@@ -13,6 +14,7 @@ import type {
   TokenAtom,
   TokenDelimited,
   TokenNode,
+  TokenRow,
   SourceLocation,
 } from '../token/types';
 import { NodeType } from '../shared-types';
@@ -22,6 +24,15 @@ type Operator =
   | 'add'
   | 'sub'
   | 'plusminus'
+  | 'minusplus'
+  | 'mod'
+  | 'in'
+  | 'subset'
+  | 'propersubset'
+  | 'superset'
+  | 'propersuperset'
+  | 'union'
+  | 'intersection'
   | 'mul.exp'
   | 'div'
   | 'div.exp'
@@ -43,6 +54,13 @@ type NAryOperator =
   | 'add'
   | 'sub'
   | 'plusminus'
+  | 'minusplus'
+  | 'subset'
+  | 'propersubset'
+  | 'superset'
+  | 'propersuperset'
+  | 'union'
+  | 'intersection'
   | 'mul.exp'
   | 'mul.imp'
   | 'eq'
@@ -81,7 +99,21 @@ const unaryFunctions: Record<string, UnaryBuilder> = {
   arcsec: Semantic.builders.arcsec,
   arccsc: Semantic.builders.arccsc,
   ln: Semantic.builders.ln,
+  det: Semantic.builders.determinant,
 };
+
+// Identifiers that stand for constants.
+const constants: Record<string, (loc?: SourceLocation) => Semantic.types.Node> =
+  {
+    '\u03C0': Semantic.builders.pi, // π
+    '\u221E': Semantic.builders.infinity, // ∞
+    '\u2205': Semantic.builders.emptyset, // ∅
+    '\u2115': Semantic.builders.naturals, // ℕ
+    '\u2124': Semantic.builders.integers, // ℤ
+    '\u211A': Semantic.builders.rationals, // ℚ
+    '\u211D': Semantic.builders.reals, // ℝ
+    '\u2102': Semantic.builders.complexes, // ℂ
+  };
 
 const isFunctionName = (name: string): boolean =>
   name === 'log' || name in trigFunctions || name in unaryFunctions;
@@ -90,6 +122,12 @@ const isFunctionToken = (node: TokenNode): boolean =>
   node.type === 'token' &&
   node.name === TokenKind.Identifier &&
   isFunctionName(node.value);
+
+// `mod` is a binary operator, e.g. `a \mod n`, rather than a function.
+const isModToken = (node: TokenNode): boolean =>
+  node.type === 'token' &&
+  node.name === TokenKind.Identifier &&
+  node.value === 'mod';
 
 // Tokens that can start a function's argument.
 const ARG_START_TOKENS: readonly TokenKind[] = [
@@ -172,6 +210,157 @@ const parseFunction = (
 };
 
 /**
+ * Returns the subscript and superscript of a subsup node that comes right
+ * after a big operator or `lim`, consuming it, or nulls if there isn't one.
+ */
+const consumeLimits = (
+  parser: EditorParser,
+): readonly [TokenRow | null, TokenRow | null] => {
+  const next = parser.peek();
+  if (next.type !== NodeType.SubSup) {
+    return [null, null];
+  }
+  parser.consume();
+  return next.children;
+};
+
+/**
+ * Parses the argument of a big operator or `lim`, which extends up to the
+ * next addition, subtraction, relation or comma.  For example,
+ * `\sum_{i=1}^n 2i + 1` is `(∑ 2i) + 1`.
+ */
+const parseBigOperatorArg = (
+  parser: EditorParser,
+  symbol: string,
+): Semantic.types.Node => {
+  const next = parser.peek();
+  if (next.type === 'token' && next.name === TokenKind.EOL) {
+    throw new Error(`Missing argument for ${symbol}`);
+  }
+  return parser.parseWithOperator('add');
+};
+
+/**
+ * Parses a sum or product, e.g. `\sum_{i=0}^{n} i`, whose operator and
+ * limits have already been consumed.  The lower limit must be of the form
+ * `i=…`, where `i` is the bound variable.
+ */
+const parseBigOperator = (
+  parser: EditorParser,
+  kind: TokenKind.SummationOperator | TokenKind.ProductOperator,
+  lower: TokenRow | null,
+  upper: TokenRow | null,
+  loc: SourceLocation,
+): Semantic.types.Node => {
+  const symbol = kind === TokenKind.SummationOperator ? '\u2211' : '\u220F';
+  if (
+    !lower ||
+    !upper ||
+    lower.children.length === 0 ||
+    upper.children.length === 0
+  ) {
+    throw new Error(`'${symbol}' needs a lower and an upper limit`);
+  }
+  const lowerNode = editorParser.parse(lower.children);
+  if (
+    lowerNode.type !== Semantic.NodeType.Equals ||
+    lowerNode.args.length !== 2 ||
+    lowerNode.args[0].type !== Semantic.NodeType.Identifier
+  ) {
+    throw new Error(
+      `The lower limit of '${symbol}' must be of the form 'i=…', where 'i' is a variable`,
+    );
+  }
+  const [bvar, start] = lowerNode.args;
+  const end = editorParser.parse(upper.children);
+  const arg = parseBigOperatorArg(parser, symbol);
+  const builder =
+    kind === TokenKind.SummationOperator
+      ? Semantic.builders.sum
+      : Semantic.builders.product;
+  return builder(arg, bvar, start, end, locFromRange(loc, arg.loc));
+};
+
+/**
+ * Returns 'right' if `node` is a superscript `+`, 'left' if it's a superscript
+ * `-`, or null otherwise.  They mark one-sided limits, e.g. `x \to 0^{+}`.
+ */
+const getApproach = (node: TokenNode): 'left' | 'right' | null => {
+  if (node.type !== NodeType.SubSup) {
+    return null;
+  }
+  const [sub, sup] = node.children;
+  if (sub || sup?.children.length !== 1) {
+    return null;
+  }
+  const [sign] = sup.children;
+  if (sign.type !== 'token') {
+    return null;
+  }
+  if (sign.name === TokenKind.Plus) {
+    return 'right';
+  }
+  return sign.name === TokenKind.Minus ? 'left' : null;
+};
+
+/**
+ * Parses a limit, e.g. `\lim_{x \to 0} f`, whose `lim` and subscript have
+ * already been consumed.  The subscript must be of the form `x→a` where `a`
+ * is a number, optionally followed by a superscript `+` or `-` for a
+ * one-sided limit.
+ */
+const parseLimit = (
+  parser: EditorParser,
+  lower: TokenRow | null,
+  upper: TokenRow | null,
+  loc: SourceLocation,
+): Semantic.types.Node => {
+  const format = "of the form 'x\u2192a'";
+  if (!lower || upper) {
+    throw new Error(`'lim' needs a subscript ${format}`);
+  }
+  const [bvarToken, arrow, ...rest] = lower.children;
+  if (
+    bvarToken?.type !== 'token' ||
+    bvarToken.name !== TokenKind.Identifier ||
+    bvarToken.value.length !== 1 ||
+    bvarToken.value in constants ||
+    arrow?.type !== 'token' ||
+    arrow.name !== TokenKind.RightArrow ||
+    rest.length === 0
+  ) {
+    throw new Error(`The subscript of 'lim' must be ${format}`);
+  }
+  const bvar = Semantic.builders.identifier(
+    bvarToken.value,
+    undefined,
+    bvarToken.loc,
+  );
+  const approach = getApproach(rest[rest.length - 1]) ?? 'both';
+  const to = editorParser.parse(approach === 'both' ? rest : rest.slice(0, -1));
+  // The Limit node only allows a number, or a negated one, as its target.
+  if (
+    to.type !== Semantic.NodeType.Number &&
+    !(
+      to.type === Semantic.NodeType.Neg &&
+      to.arg.type === Semantic.NodeType.Number
+    )
+  ) {
+    throw new Error(
+      "A limit to something other than a number isn't supported yet",
+    );
+  }
+  const arg = parseBigOperatorArg(parser, 'lim');
+  return Semantic.builders.limit(
+    arg,
+    bvar,
+    to,
+    approach,
+    locFromRange(loc, arg.loc),
+  );
+};
+
+/**
  * Parses a delimited node: `(…)` becomes Parens and `|…|` AbsoluteValue.
  */
 const parseDelimited = (node: TokenDelimited): Semantic.types.Node => {
@@ -197,14 +386,23 @@ const getPrefixParselet = (
       switch (node.name) {
         case TokenKind.Identifier: {
           const name = node.value;
-          if (name === '\u03C0') {
-            return { parse: () => Semantic.builders.pi(node.loc) };
+          if (name in constants) {
+            return { parse: () => constants[name](node.loc) };
           }
           if (isFunctionName(name)) {
             return { parse: (parser) => parseFunction(parser, node, name) };
           }
+          if (name === 'lim') {
+            return {
+              parse: (parser) =>
+                parseLimit(parser, ...consumeLimits(parser), node.loc),
+            };
+          }
+          if (name === 'mod') {
+            throw new Error('Missing left operand for mod');
+          }
           if (name.length > 1) {
-            throw new Error(`Unsupported function '${name}'`);
+            return unsupported(name);
           }
           return {
             parse: () =>
@@ -231,6 +429,29 @@ const getPrefixParselet = (
               return Semantic.builders.unaryplusminus(neg, loc);
             },
           };
+        case TokenKind.MinusPlus:
+          return {
+            parse: (parser) => {
+              const neg = parser.parseWithOperator('plusminus');
+              const loc = locFromRange(node.loc, neg.loc);
+              return Semantic.builders.unaryminusplus(neg, loc);
+            },
+          };
+        case TokenKind.SummationOperator:
+        case TokenKind.ProductOperator: {
+          const kind = node.name;
+          return {
+            parse: (parser) =>
+              parseBigOperator(
+                parser,
+                kind,
+                ...consumeLimits(parser),
+                node.loc,
+              ),
+          };
+        }
+        case TokenKind.RightArrow:
+          return unsupported('\u2192');
         case TokenKind.Ellipsis:
           return {
             parse: () => Semantic.builders.ellipsis(node.loc),
@@ -295,11 +516,27 @@ const getPrefixParselet = (
         },
       };
     case NodeType.Accent:
-      throw new Error(`We don't handle '${node.type}' tokens yet`);
-    // TODO: Handle subsup at the start of a row, useful in Chemistry
-    // TODO: Handle limits at the start of a row
-    case NodeType.SubSup:
+      return unsupported(`\\${node.accent}`);
     case NodeType.Limits:
+      return {
+        parse: (parser) => {
+          const { inner } = node;
+          const [lower, upper] = node.children;
+          if (inner.type === 'token' && inner.name === TokenKind.Lim) {
+            return parseLimit(parser, lower, upper, node.loc);
+          }
+          if (
+            inner.type === 'token' &&
+            (inner.name === TokenKind.SummationOperator ||
+              inner.name === TokenKind.ProductOperator)
+          ) {
+            return parseBigOperator(parser, inner.name, lower, upper, node.loc);
+          }
+          throw new Error(`Unexpected '${node.type}' token`);
+        },
+      };
+    // TODO: Handle subsup at the start of a row, useful in Chemistry
+    case NodeType.SubSup:
     case NodeType.Row:
     case NodeType.Macro:
       throw new Error(`Unexpected '${node.type}' token`);
@@ -320,10 +557,46 @@ const getPrefixParselet = (
 //     };
 // };
 
+/**
+ * Builds the node for a chain of additions, subtractions, `±` and `∓`.
+ * `args` are the operands after the first and `ops` the operator before each
+ * one.  Subtracted operands are already negated by parseNaryArgs.
+ *
+ * A chain of only `±`, e.g. `a ± b`, is a PlusMinus node and a chain of only
+ * `∓` a MinusPlus node.  In a mixed chain such as `a + b ± c` each operand
+ * after a `±` or `∓` is wrapped in UnaryPlusMinus or UnaryMinusPlus, like a
+ * subtracted operand is wrapped in Neg.
+ */
+const buildAddChain = (
+  left: Semantic.types.Node,
+  args: OneOrMore<Semantic.types.Node>,
+  ops: readonly NAryOperator[],
+  loc?: SourceLocation,
+): Semantic.types.Node => {
+  if (ops.every((op) => op === 'plusminus')) {
+    return Semantic.builders.plusminus([left, ...args], loc);
+  }
+  if (ops.every((op) => op === 'minusplus')) {
+    return Semantic.builders.minusplus([left, ...args], loc);
+  }
+  const [first, ...rest] = args.map((arg, index) => {
+    switch (ops[index]) {
+      case 'plusminus':
+        return Semantic.builders.unaryplusminus(arg, arg.loc);
+      case 'minusplus':
+        return Semantic.builders.unaryminusplus(arg, arg.loc);
+      default:
+        return arg;
+    }
+  });
+  return Semantic.builders.add([left, first, ...rest], loc);
+};
+
 const parseNaryInfix =
   (op: NAryOperator) =>
   (parser: EditorParser, left: Semantic.types.Node): Semantic.types.Node => {
-    const [right, ...rest] = parseNaryArgs(parser, op);
+    const ops: NAryOperator[] = [];
+    const [right, ...rest] = parseNaryArgs(parser, op, ops);
     const loc = locFromRange(
       left.loc,
       rest.length > 0 ? rest[rest.length - 1].loc : right.loc,
@@ -333,7 +606,8 @@ const parseNaryInfix =
       case 'add':
       case 'sub':
       case 'plusminus':
-        return Semantic.builders.add([left, right, ...rest], loc);
+      case 'minusplus':
+        return buildAddChain(left, [right, ...rest], ops, loc);
       case 'mul.imp':
         return Semantic.builders.mul([left, right, ...rest], true, loc);
       case 'mul.exp':
@@ -352,8 +626,47 @@ const parseNaryInfix =
         return Semantic.builders.gte([left, right, ...rest], loc);
       case 'comma':
         return Semantic.builders.sequence([left, right, ...rest], loc);
+      case 'subset':
+        return Semantic.builders.subset([left, right, ...rest], loc);
+      case 'propersubset':
+        return Semantic.builders.propersubset([left, right, ...rest], loc);
+      case 'superset':
+        return Semantic.builders.superset([left, right, ...rest], loc);
+      case 'propersuperset':
+        return Semantic.builders.propersuperset([left, right, ...rest], loc);
+      case 'union':
+        return Semantic.builders.union([left, right, ...rest], loc);
+      case 'intersection':
+        return Semantic.builders.intersection([left, right, ...rest], loc);
     }
   };
+
+// The tokens that continue a chain of each n-ary operator other than
+// addition and multiplication, e.g. the second `⊂` in `A ⊂ B ⊂ C`.
+const CHAIN_TOKENS: Partial<Record<NAryOperator, TokenKind>> = {
+  eq: TokenKind.Equal,
+  neq: TokenKind.NotEqual,
+  // How do we deal with a mix of lt and lte, e.g. x < y <= z?
+  lt: TokenKind.LessThan,
+  // How do we deal with a mix of gt and gte, e.g. x > y >= z?
+  gt: TokenKind.GreaterThan,
+  comma: TokenKind.Comma,
+  subset: TokenKind.Subset,
+  propersubset: TokenKind.ProperSubset,
+  superset: TokenKind.Superset,
+  propersuperset: TokenKind.ProperSuperset,
+  union: TokenKind.Union,
+  intersection: TokenKind.Intersection,
+};
+
+// Tokens that start an operand that's implicitly multiplied by the one
+// before it, so there's no operator token to consume.
+const IMPLICIT_MUL_TOKENS: readonly TokenKind[] = [
+  TokenKind.Identifier,
+  TokenKind.Number,
+  TokenKind.SummationOperator,
+  TokenKind.ProductOperator,
+];
 
 /**
  * Returns an array or one or more nodes that are arguments for the given
@@ -364,11 +677,14 @@ const parseNaryInfix =
 const parseNaryArgs = (
   parser: EditorParser,
   op: NAryOperator,
+  // The operator before each returned arg is appended to this.
+  ops: NAryOperator[] = [],
 ): OneOrMore<Semantic.types.Node> => {
   // TODO: handle implicit multiplication
   const node = parser.peek();
+  ops.push(op);
   if (node.type === 'token') {
-    if (node.name === TokenKind.Identifier || node.name === TokenKind.Number) {
+    if (IMPLICIT_MUL_TOKENS.includes(node.name)) {
       // implicit multiplication - there is no token to consume
     } else {
       // an explicit operation, e.g. plus, times, etc.
@@ -383,44 +699,28 @@ const parseNaryArgs = (
     if (nextToken.type !== 'token') {
       throw new Error('atom expected');
     }
+    const addOp = ADD_CHAIN_OPS[nextToken.name];
     if (
-      (op === 'add' || op === 'sub' || op === 'plusminus') &&
-      (nextToken.name === TokenKind.Plus ||
-        nextToken.name === TokenKind.Minus ||
-        nextToken.name === TokenKind.PlusMinus)
+      (op === 'add' ||
+        op === 'sub' ||
+        op === 'plusminus' ||
+        op === 'minusplus') &&
+      addOp
     ) {
-      if (nextToken.name === TokenKind.Plus) {
-        op = 'add';
-      } else if (nextToken.name === TokenKind.Minus) {
-        op = 'sub';
-      } else if (nextToken.name === TokenKind.PlusMinus) {
-        op = 'plusminus';
-      } else {
-        throw new Error('unexpected value for nextAtom.kind');
-      }
-      return [expr, ...parseNaryArgs(parser, op)];
+      return [expr, ...parseNaryArgs(parser, addOp, ops)];
     } else if (op === 'mul.exp' && nextToken.name === TokenKind.Times) {
-      return [expr, ...parseNaryArgs(parser, op)];
+      return [expr, ...parseNaryArgs(parser, op, ops)];
     } else if (
       op === 'mul.imp' &&
       nextToken.name === TokenKind.Identifier &&
       // A function ends the argument of an enclosing function, e.g. in
       // `\sin 2x \cos x`, so it's handled by its own infix parselet.
-      !isFunctionToken(nextToken)
+      !isFunctionToken(nextToken) &&
+      !isModToken(nextToken)
     ) {
-      return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'eq' && nextToken.name === TokenKind.Equal) {
-      return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'neq' && nextToken.name === TokenKind.NotEqual) {
-      return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'lt' && nextToken.name === TokenKind.LessThan) {
-      // How do we deal wiht a mix of lt and lte, e.g. x < y <= z?
-      return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'gt' && nextToken.name === TokenKind.GreaterThan) {
-      // How do we deal wiht a mix of gt and gte, e.g. x > y >= z?
-      return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === 'comma' && nextToken.name === TokenKind.Comma) {
-      return [expr, ...parseNaryArgs(parser, op)];
+      return [expr, ...parseNaryArgs(parser, op, ops)];
+    } else if (CHAIN_TOKENS[op] === nextToken.name) {
+      return [expr, ...parseNaryArgs(parser, op, ops)];
     } else {
       return [expr];
       // TODO: deal with frac, subsup, etc.
@@ -442,7 +742,7 @@ const parseNaryArgs = (
           );
     const nextToken = parser.peek();
     if (nextToken.type === 'root' || isIdentifier(nextToken)) {
-      return [expr, ...parseNaryArgs(parser, 'mul.imp')];
+      return [expr, ...parseNaryArgs(parser, 'mul.imp', ops)];
     } else {
       return [expr];
     }
@@ -462,13 +762,47 @@ const parseNaryArgs = (
     const expr = parseDelimited(node);
 
     return nextToken.type === 'delimited'
-      ? [expr, ...parseNaryArgs(parser, op)]
+      ? [expr, ...parseNaryArgs(parser, op, ops)]
       : [expr];
+  } else if (node.type === NodeType.Limits) {
+    // A sum, product or limit, whose prefix parselet consumes the node.
+    return [parser.parseWithOperator(op)];
   } else {
     throw new Error(`we don't handle ${node.type} tokens yet`);
     // TODO: deal with frac, subsup, etc.
   }
 };
+
+// The operators of the tokens that continue a chain of additions.
+const ADD_CHAIN_OPS: Partial<Record<TokenKind, NAryOperator>> = {
+  [TokenKind.Plus]: 'add',
+  [TokenKind.Minus]: 'sub',
+  [TokenKind.PlusMinus]: 'plusminus',
+  [TokenKind.MinusPlus]: 'minusplus',
+};
+
+/**
+ * Returns a parselet for the binary set membership relations: `x ∈ A` and
+ * `x ∉ A`, and `A ∋ x` and `A ∌ x`, which are the same relations with their
+ * arguments swapped.
+ */
+const parseMembership =
+  (kind: TokenKind) =>
+  (parser: EditorParser, left: Semantic.types.Node): Semantic.types.Node => {
+    parser.consume(); // the relation
+    const right = parser.parseWithOperator('in');
+    const loc = locFromRange(left.loc, right.loc);
+    switch (kind) {
+      case TokenKind.ElementOf:
+        return Semantic.builders.in(left, right, loc);
+      case TokenKind.NotElementOf:
+        return Semantic.builders.notin(left, right, loc);
+      case TokenKind.Contains:
+        return Semantic.builders.in(right, left, loc);
+      default:
+        return Semantic.builders.notin(right, left, loc);
+    }
+  };
 
 const getInfixParselet = (
   node: TokenNode,
@@ -485,6 +819,36 @@ const getInfixParselet = (
             op: 'plusminus',
             parse: parseNaryInfix('plusminus'),
           };
+        case TokenKind.MinusPlus:
+          return {
+            op: 'minusplus',
+            parse: parseNaryInfix('minusplus'),
+          };
+        case TokenKind.ElementOf:
+        case TokenKind.NotElementOf:
+        case TokenKind.Contains:
+        case TokenKind.NotContains:
+          return { op: 'in', parse: parseMembership(node.name) };
+        case TokenKind.Subset:
+          return { op: 'subset', parse: parseNaryInfix('subset') };
+        case TokenKind.ProperSubset:
+          return { op: 'propersubset', parse: parseNaryInfix('propersubset') };
+        case TokenKind.Superset:
+          return { op: 'superset', parse: parseNaryInfix('superset') };
+        case TokenKind.ProperSuperset:
+          return {
+            op: 'propersuperset',
+            parse: parseNaryInfix('propersuperset'),
+          };
+        case TokenKind.Union:
+          return { op: 'union', parse: parseNaryInfix('union') };
+        case TokenKind.Intersection:
+          return { op: 'intersection', parse: parseNaryInfix('intersection') };
+        case TokenKind.SummationOperator:
+        case TokenKind.ProductOperator:
+          return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
+        case TokenKind.RightArrow:
+          return unsupported('\u2192');
         case TokenKind.Times:
           return { op: 'mul.exp', parse: parseNaryInfix('mul.exp') };
         case TokenKind.Divide:
@@ -511,6 +875,18 @@ const getInfixParselet = (
         case TokenKind.GreaterThanOrEqual:
           return { op: 'gte', parse: parseNaryInfix('gte') };
         case TokenKind.Identifier:
+          if (node.value === 'mod') {
+            return {
+              op: 'mod',
+              parse: (parser, left): Semantic.types.Node => {
+                parser.consume(); // 'mod'
+                // Like division, mod is left associative.
+                const right = parser.parseWithOperator('mod');
+                const loc = locFromRange(left.loc, right.loc);
+                return Semantic.builders.mod(left, right, loc);
+              },
+            };
+          }
           if (isFunctionName(node.value)) {
             return {
               op: 'mul.func',
@@ -635,9 +1011,11 @@ const getInfixParselet = (
         },
       };
     }
-    case NodeType.Table:
-    case NodeType.Accent:
     case NodeType.Limits:
+      return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
+    case NodeType.Accent:
+      return unsupported(`\\${node.accent}`);
+    case NodeType.Table:
     case NodeType.Row:
     case NodeType.Macro:
       throw new Error(`Unexpected '${node.type}' token`);
@@ -658,13 +1036,25 @@ const getOpPrecedence = (op: Operator): number => {
     case 'lte':
     case 'gt':
     case 'gte':
+    case 'in':
+    case 'subset':
+    case 'propersubset':
+    case 'superset':
+    case 'propersuperset':
       return 2;
     case 'add':
     case 'sub':
     case 'plusminus':
+    case 'minusplus':
+    case 'union':
       return 3;
+    // Intersection binds more tightly than union, so `A ∪ B ∩ C` is
+    // `A ∪ (B ∩ C)`.
+    case 'intersection':
+      return 4;
     case 'mul.exp':
     case 'div.exp':
+    case 'mod':
       return 5;
     case 'div': // this is to encourage wrapping fractions in parens before a negative
       return 6;
