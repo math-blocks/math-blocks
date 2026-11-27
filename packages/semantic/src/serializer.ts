@@ -35,8 +35,8 @@ const symbols = {
   [NodeType.False]: 'F',
   [NodeType.Naturals]: '\u2115',
   [NodeType.Integers]: '\u2124',
-  [NodeType.Rationals]: '\u221a',
-  [NodeType.Reals]: '\u221d',
+  [NodeType.Rationals]: '\u211a',
+  [NodeType.Reals]: '\u211d',
   [NodeType.Complexes]: '\u2102',
 };
 
