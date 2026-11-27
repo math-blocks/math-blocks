@@ -83,7 +83,10 @@ const font = await loadFontSubsets(['calculus'], async (group) =>
 - `getFont(folder)`: the font in `subsets/<folder>/`, or `undefined`.
 - `subsetPath(folder, group)`: a subset file's path inside the package, such
   as `subsets/stix-two-math/base.woff`.
-- Types: `MathFont`, `FontLicense`.
+- `FONT_FOLDERS`: every font's folder, in order. `isFontFolder(folder)`
+  checks a string against it.
+- Types: `MathFont`, `FontFolder` (the union of the folder names, so a typo
+  such as `'stix-two-mat'` is a type error), `FontLicense`.
 
 ## Licences
 
@@ -98,3 +101,8 @@ The subsets are built from the fonts in the repository's `assets/` folder by
 `scripts/subset-fonts.py`, using the list in `src/fonts.json`. To add a font,
 add an entry there, put its source file in `assets/`, and run
 `python3 scripts/subset-fonts.py`.
+
+The script also writes `src/fonts.generated.ts`, which lists the folders as a
+TypeScript `as const` array for the `FontFolder` type: TypeScript reads
+strings imported from JSON as plain `string`. Don't edit it by hand. A unit
+test fails if it doesn't match `fonts.json`.

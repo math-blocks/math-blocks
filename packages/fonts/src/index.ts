@@ -1,4 +1,19 @@
 import data from './fonts.json';
+import { FONT_FOLDERS } from './fonts.generated';
+
+export { FONT_FOLDERS };
+
+/**
+ * The folder in `subsets/` of a font this package ships, such as
+ * "stix-two-math". It comes from fonts.generated.ts, which
+ * scripts/subset-fonts.py writes from fonts.json: TypeScript widens strings
+ * imported from JSON to `string`, so fonts.json alone can't give this type.
+ */
+export type FontFolder = (typeof FONT_FOLDERS)[number];
+
+/** Returns true if `folder` is the folder of a font this package ships. */
+export const isFontFolder = (folder: string): folder is FontFolder =>
+  (FONT_FOLDERS as readonly string[]).includes(folder);
 
 /**
  * The licence a font is distributed under. Each one's text is in this
@@ -20,7 +35,7 @@ export type MathFont = {
    * The folder in `subsets/` that holds this font's subset files, e.g.
    * "stix-two-math".
    */
-  readonly folder: string;
+  readonly folder: FontFolder;
   /**
    * The family name inside the subset files, e.g. "MathBlocks Math A". The
    * subsets are modified versions of the original font, so they're renamed,
@@ -55,6 +70,12 @@ export const fonts: readonly MathFont[] = data.fonts.map((font) => {
   if (!isLicense(font.license)) {
     throw new Error(`Unknown licence for ${font.name}: ${font.license}`);
   }
+  if (!isFontFolder(font.folder)) {
+    // fonts.generated.ts is stale.
+    throw new Error(
+      `${font.folder} isn't in fonts.generated.ts; run scripts/subset-fonts.py`,
+    );
+  }
   return {
     name: font.name,
     folder: font.folder,
@@ -82,9 +103,10 @@ export const getFont = (folder: string): MathFont | undefined =>
  * the package's `subsets/` folder to a static host and load it with
  * `fromBaseUrl`.
  */
-export const subsetPath = (folder: string, group: string): string => {
-  if (!getFont(folder)) {
-    throw new Error(`Unknown font folder: "${folder}"`);
+export const subsetPath = (folder: FontFolder, group: string): string => {
+  // Also checked at runtime, for callers that aren't type-checked.
+  if (!isFontFolder(folder)) {
+    throw new Error(`Unknown font folder: "${String(folder)}"`);
   }
   return `subsets/${folder}/${group}.woff`;
 };

@@ -7,6 +7,7 @@ import {
 } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { fonts } from '@math-blocks/fonts';
+import type { FontFolder } from '@math-blocks/fonts';
 
 // The URL of every WOFF subset in @math-blocks/fonts, keyed by
 // "<folder>/<group>". Vite copies the files into the build, so this works with
@@ -27,7 +28,7 @@ const subsetUrls: Record<string, string> = Object.fromEntries(
 
 export const FONTS = fonts;
 
-export type FontFolder = string;
+export type { FontFolder };
 
 const ALL_GROUPS = glyphGroups.map((group) => group.name);
 

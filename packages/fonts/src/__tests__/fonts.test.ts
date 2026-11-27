@@ -1,7 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
-import { fonts, getFont, subsetPath } from '../index';
+import {
+  FONT_FOLDERS,
+  fonts,
+  getFont,
+  isFontFolder,
+  subsetPath,
+} from '../index';
+import type { FontFolder } from '../index';
+import data from '../fonts.json';
 
 const PACKAGE = path.join(__dirname, '../..');
 
@@ -54,6 +62,19 @@ describe('fonts', () => {
   });
 });
 
+describe('FONT_FOLDERS', () => {
+  // fonts.generated.ts is written by scripts/subset-fonts.py, which CI
+  // doesn't run, so this catches a fonts.json edit without a regeneration.
+  test('matches fonts.json; run scripts/subset-fonts.py if not', () => {
+    expect([...FONT_FOLDERS]).toEqual(data.fonts.map((font) => font.folder));
+  });
+
+  test('isFontFolder accepts only those folders', () => {
+    expect(isFontFolder('stix-two-math')).toBe(true);
+    expect(isFontFolder('comic-sans-math')).toBe(false);
+  });
+});
+
 describe('subsets', () => {
   test('there is a folder for each font, and no others', () => {
     const folders = fs
@@ -82,7 +103,9 @@ describe('subsetPath', () => {
   });
 
   test('throws for an unknown font', () => {
-    expect(() => subsetPath('comic-sans-math', 'base')).toThrow(
+    // A caller that isn't type-checked could pass any string.
+    const unknown = 'comic-sans-math' as FontFolder;
+    expect(() => subsetPath(unknown, 'base')).toThrow(
       'Unknown font folder: "comic-sans-math"',
     );
   });
