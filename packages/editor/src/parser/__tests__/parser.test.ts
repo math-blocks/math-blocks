@@ -767,6 +767,104 @@ describe('EditorParser', () => {
         `);
   });
 
+  describe('implicit products ending in a non-token node', () => {
+    // Two or more atoms followed by a fraction, root or delimited group used
+    // to throw 'atom expected', see #893.
+    const paren = (text: string) =>
+      builders.delimited(util.row(text).children, char('('), char(')'));
+
+    it('ab\\frac{1}{2}', () => {
+      const input = row([char('a'), char('b'), util.frac('1', '2')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          a
+          b
+          (Div 1 2))
+      `);
+    });
+
+    it('2x\\sqrt{2}', () => {
+      const input = row([char('2'), char('x'), util.sqrt('2')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          2
+          x
+          (Root :radicand 2 :index 2))
+      `);
+    });
+
+    it('2a(x+1)', () => {
+      const input = row([char('2'), char('a'), paren('x+1')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          2
+          a
+          (Add x 1))
+      `);
+    });
+
+    it('ab(x)c', () => {
+      const input = row([char('a'), char('b'), paren('x'), char('c')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(mul.imp a b x c)`);
+    });
+
+    it('ab\\frac{1}{2}c', () => {
+      const input = row([char('a'), char('b'), util.frac('1', '2'), char('c')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          a
+          b
+          (Div 1 2)
+          c)
+      `);
+    });
+
+    it('ab\\sqrt{2}\\sqrt{3}', () => {
+      const input = row([char('a'), char('b'), util.sqrt('2'), util.sqrt('3')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          a
+          b
+          (Root :radicand 2 :index 2)
+          (Root :radicand 3 :index 2))
+      `);
+    });
+
+    it('a+bc\\frac{1}{2}', () => {
+      const input = row([
+        char('a'),
+        char('+'),
+        char('b'),
+        char('c'),
+        util.frac('1', '2'),
+      ]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (Add
+          a
+          (mul.imp
+            b
+            c
+            (Div 1 2)))
+      `);
+    });
+
+    it('a function after a parenthesized group ends the product', () => {
+      // \sin 2(x) \cos x is sin(2·x)·cos(x), not sin(2·x·cos(x)).
+      const input = row([
+        char('sin'),
+        char('2'),
+        paren('x'),
+        char('cos'),
+        char('x'),
+      ]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`
+        (mul.imp
+          (Sin (mul.imp 2 x))
+          (Cos x))
+      `);
+    });
+  });
+
   describe('excess parens', () => {
     it('(x)', () => {
       const input = builders.row([
