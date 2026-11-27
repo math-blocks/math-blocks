@@ -121,11 +121,12 @@ const printChildren = (
   return elements;
 };
 
-// Wraps runs of children that are crossed out together (\cancel) in a
-// <menclose>, so screen readers say they're crossed out.
-const printRow = (row: Row | null): React.ReactElement => {
+// A row's elements, with runs of children that are crossed out together
+// (\cancel) wrapped in a <menclose>, so screen readers say they're crossed
+// out. They have no keys; see printElements and printRow.
+const printUnkeyed = (row: Row | null): React.ReactElement[] => {
   if (!row) {
-    return <mrow />;
+    return [];
   }
   const runs: { cancel: number | undefined; nodes: Node[] }[] = [];
   for (const child of row.children) {
@@ -137,18 +138,31 @@ const printRow = (row: Row | null): React.ReactElement => {
       runs.push({ cancel, nodes: [child] });
     }
   }
-  const elements = runs.flatMap((run, index) => {
+  return runs.flatMap((run) => {
     const printed = printChildren(run.nodes);
     if (run.cancel === undefined) {
       return printed;
     }
-    return [
-      <menclose key={index} notation="updiagonalstrike">
-        {keyed(printed)}
-      </menclose>,
-    ];
+    const crossedOut = (
+      <menclose notation="updiagonalstrike">{keyed(printed)}</menclose>
+    );
+    return [crossedOut];
   });
-  return <mrow>{keyed(elements)}</mrow>;
+};
+
+// A row's elements, keyed, for elements such as <msqrt>, <mtd> and <math>
+// that wrap their children in an implied <mrow>.
+const printElements = (row: Row | null): React.ReactElement[] =>
+  keyed(printUnkeyed(row));
+
+// A row as one element: an <mrow> around its elements, or the element itself
+// when there's only one, since an <mrow> with one child means the same as
+// the child. Used where MathML expects exactly one element, such as each part
+// of a fraction or script. A lone element is returned without a key, since
+// it's placed next to its siblings, not in an array.
+const printRow = (row: Row | null): React.ReactElement => {
+  const elements = printUnkeyed(row);
+  return elements.length === 1 ? elements[0] : <mrow>{keyed(elements)}</mrow>;
 };
 
 const printSubSup = (
@@ -197,7 +211,11 @@ const printTable = (node: Editor.types.CharTable): React.ReactElement => {
   for (let i = 0; i < rowCount; i++) {
     const cells: React.ReactElement[] = [];
     for (let j = 0; j < colCount; j++) {
-      cells.push(<mtd key={j}>{printRow(children[i * colCount + j])}</mtd>);
+      // <mtd>, like <msqrt> and <math>, wraps its children in an implied
+      // <mrow>, so they don't need one.
+      cells.push(
+        <mtd key={j}>{printElements(children[i * colCount + j])}</mtd>,
+      );
     }
     rows.push(<mtr key={i}>{cells}</mtr>);
   }
@@ -235,7 +253,7 @@ const printNode = (node: Node): React.ReactElement => {
     case NodeType.Root: {
       const [index, radicand] = node.children;
       if (!index || index.children.length === 0) {
-        return <msqrt>{printRow(radicand)}</msqrt>;
+        return <msqrt>{printElements(radicand)}</msqrt>;
       }
       return (
         <mroot>
@@ -326,7 +344,7 @@ type Props = {
 export const HiddenMathml: React.FC<Props> = ({ row, display }) => (
   <span style={VISUALLY_HIDDEN}>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display={display}>
-      {printRow(row)}
+      {printElements(row)}
     </math>
   </span>
 );

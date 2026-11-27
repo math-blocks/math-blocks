@@ -32,7 +32,7 @@ MathML, hidden visually but not from assistive technology, and marks the SVG
 <MathRenderer row={row} />
 // <svg aria-hidden="true" ...>...</svg>
 // <span style="position: absolute; width: 1px; height: 1px; ...">
-//   <math display="block"><mrow><mfrac>...</mfrac></mrow></math>
+//   <math display="block"><mfrac>...</mfrac></math>
 // </span>
 ```
 

@@ -148,8 +148,16 @@ describe('MathRenderer accessibility', () => {
     expect(markup).toMatch(/^<svg [^>]*aria-hidden="true"/);
     expect(markup).toContain(
       '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">' +
-        '<mrow><msup><mi>x</mi><mrow><mn>2</mn></mrow></msup></mrow></math>',
+        '<msup><mi>x</mi><mn>2</mn></msup></math>',
     );
+  });
+
+  test('renders without React warnings', () => {
+    // A fraction of two single elements once gave both parts the same key.
+    const error = vi.spyOn(console, 'error');
+    render(withFont(<MathRenderer row={parseTex('\\frac{1}{2}+x_1^2')} />));
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
   });
 
   test('a forwarded ref still points at the SVG', () => {
