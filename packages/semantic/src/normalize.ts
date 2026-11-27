@@ -31,6 +31,18 @@ export const print = (ast: Node): string => {
     case 'ArcCot':
     case 'ArcSec':
     case 'ArcCsc':
+    case 'Sinh':
+    case 'Cosh':
+    case 'Tanh':
+    case 'Coth':
+    case 'Sech':
+    case 'Csch':
+    case 'ArSinh':
+    case 'ArCosh':
+    case 'ArTanh':
+    case 'ArCoth':
+    case 'ArSech':
+    case 'ArCsch':
     case 'Parens':
     case 'Determinant':
     case 'Transpose':

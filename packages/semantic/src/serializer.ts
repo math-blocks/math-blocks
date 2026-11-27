@@ -86,6 +86,18 @@ const print = (
     case 'ArcCot':
     case 'ArcSec':
     case 'ArcCsc':
+    case 'Sinh':
+    case 'Cosh':
+    case 'Tanh':
+    case 'Coth':
+    case 'Sech':
+    case 'Csch':
+    case 'ArSinh':
+    case 'ArCosh':
+    case 'ArTanh':
+    case 'ArCoth':
+    case 'ArSech':
+    case 'ArCsch':
     case 'LogicalNot':
     case 'AbsoluteValue':
     case 'Parens':

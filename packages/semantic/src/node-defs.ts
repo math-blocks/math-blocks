@@ -169,6 +169,20 @@ export const definitions: Record<string, Descriptor> = {
   ArcCot: Operation('ArcCot', 'unary', 'arith'),
   ArcSec: Operation('ArcSec', 'unary', 'arith'),
   ArcCsc: Operation('ArcCsc', 'unary', 'arith'),
+  // Hyperbolic functions and their inverses, e.g. arsinh, the area
+  // hyperbolic sine.
+  Sinh: Operation('Sinh', 'unary', 'arith'),
+  Cosh: Operation('Cosh', 'unary', 'arith'),
+  Tanh: Operation('Tanh', 'unary', 'arith'),
+  Coth: Operation('Coth', 'unary', 'arith'),
+  Sech: Operation('Sech', 'unary', 'arith'),
+  Csch: Operation('Csch', 'unary', 'arith'),
+  ArSinh: Operation('ArSinh', 'unary', 'arith'),
+  ArCosh: Operation('ArCosh', 'unary', 'arith'),
+  ArTanh: Operation('ArTanh', 'unary', 'arith'),
+  ArCoth: Operation('ArCoth', 'unary', 'arith'),
+  ArSech: Operation('ArSech', 'unary', 'arith'),
+  ArCsch: Operation('ArCsch', 'unary', 'arith'),
 
   Log: Operation('Log', 'binary', 'arith', ['base', 'arg']),
   Ln: Operation('Ln', 'unary', 'arith'),
