@@ -1,5 +1,16 @@
 # @math-blocks/typesetter
 
+## 0.1.1
+
+### Patch Changes
+
+- cc25bba: Lint fix from `prefer-nullish-coalescing`: `findIntersections` defaults `translation` with `??=`. No change in behavior.
+- Updated dependencies [cc25bba]
+- Updated dependencies [cc25bba]
+- Updated dependencies [ec79e2f]
+  - @math-blocks/editor@0.1.1
+  - @math-blocks/opentype@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

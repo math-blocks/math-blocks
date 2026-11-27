@@ -1,5 +1,17 @@
 # @math-blocks/opentype
 
+## 0.2.0
+
+### Minor Changes
+
+- ec79e2f: Read WOFF 1.0 fonts. `parse` (and so `loadFontSubsets`) now accepts a `.woff` file as well as a raw OpenType `.otf` file, decompressing its tables with `DecompressionStream`.
+
+  Breaking: `fromBaseUrl` now fetches `${baseUrl}/${group}.woff` by default instead of `.otf`. Pass the new `{format: 'otf'}` option to keep fetching `.otf` files. The new `FontFormat` and `FromBaseUrlOptions` types are exported.
+
+### Patch Changes
+
+- cc25bba: Lint fix from `prefer-nullish-coalescing`: the CFF table parser creates its shared `TextDecoder` with `??=`. No change in behavior.
+
 ## 0.1.0
 
 ### Minor Changes

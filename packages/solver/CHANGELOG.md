@@ -1,5 +1,11 @@
 # @math-blocks/solver
 
+## 0.1.1
+
+### Patch Changes
+
+- cc25bba: Lint fix from `prefer-nullish-coalescing`: the `multiply-powers` and `divide-powers` transforms use `??` instead of `||` for array fallbacks. No change in behavior.
+
 ## 0.1.0
 
 ### Minor Changes

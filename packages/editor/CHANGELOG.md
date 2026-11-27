@@ -1,5 +1,11 @@
 # @math-blocks/editor
 
+## 0.1.1
+
+### Patch Changes
+
+- cc25bba: Lint fixes from `prefer-nullish-coalescing`: the `subsup` reducer and the token builders use `??` instead of `||` for object fallbacks. No change in behavior.
+
 ## 0.1.0
 
 ### Minor Changes
