@@ -343,20 +343,20 @@ describe('Lexer', () => {
     });
 
     it.each([
-      ['\u2213', 'MinusPlus'],
-      ['\u2208', 'ElementOf'],
-      ['\u2209', 'NotElementOf'],
-      ['\u220b', 'Contains'],
-      ['\u220c', 'NotContains'],
-      ['\u2286', 'Subset'],
-      ['\u2282', 'ProperSubset'],
-      ['\u2287', 'Superset'],
-      ['\u2283', 'ProperSuperset'],
-      ['\u222a', 'Union'],
-      ['\u2229', 'Intersection'],
-      ['\u2192', 'RightArrow'],
-      ['\u2026', 'Ellipsis'],
-      ['\u22ef', 'Ellipsis'],
+      ['\u2213', 'MinusPlus'], // ∓ minus-plus sign (\mp)
+      ['\u2208', 'ElementOf'], // ∈ element of (\in)
+      ['\u2209', 'NotElementOf'], // ∉ not an element of (\notin)
+      ['\u220b', 'Contains'], // ∋ contains as member (\ni)
+      ['\u220c', 'NotContains'], // ∌ does not contain as member (\notni)
+      ['\u2286', 'Subset'], // ⊆ subset of or equal to (\subseteq)
+      ['\u2282', 'ProperSubset'], // ⊂ subset of (\subset)
+      ['\u2287', 'Superset'], // ⊇ superset of or equal to (\supseteq)
+      ['\u2283', 'ProperSuperset'], // ⊃ superset of (\supset)
+      ['\u222a', 'Union'], // ∪ union (\cup)
+      ['\u2229', 'Intersection'], // ∩ intersection (\cap)
+      ['\u2192', 'RightArrow'], // → rightwards arrow (\to)
+      ['\u2026', 'Ellipsis'], // … horizontal ellipsis (\ldots)
+      ['\u22ef', 'Ellipsis'], // ⋯ midline horizontal ellipsis (\cdots)
     ])('should lex %s as %s', (symbol, expected) => {
       const glyphTree = row([char('a'), char(symbol), char('b')]);
       const [, token] = Lexer.lexRow(glyphTree).children;
@@ -365,13 +365,13 @@ describe('Lexer', () => {
 
     // The parser decides which constant each of these stands for.
     it.each([
-      '\u221e',
-      '\u2205',
-      '\u2115',
-      '\u2124',
-      '\u211a',
-      '\u211d',
-      '\u2102',
+      '\u221e', // ∞ infinity (\infty)
+      '\u2205', // ∅ empty set (\emptyset)
+      '\u2115', // ℕ natural numbers (\N)
+      '\u2124', // ℤ integers (\Z)
+      '\u211a', // ℚ rational numbers (\Q)
+      '\u211d', // ℝ real numbers (\R)
+      '\u2102', // ℂ complex numbers (\C)
     ])('should lex %s as an identifier', (symbol) => {
       const [token] = Lexer.lexRow(row([char(symbol)])).children;
       expect(token).toMatchObject({
@@ -392,18 +392,18 @@ describe('Lexer', () => {
       [']', "']' isn't supported yet"],
       ['{', "'{' isn't supported yet"],
       ['}', "'}' isn't supported yet"],
-      ['\u2190', "'\u2190' isn't supported yet"],
-      ['\u2191', "'\u2191' isn't supported yet"],
-      ['\u2193', "'\u2193' isn't supported yet"],
-      ['\u210d', "'\u210d' isn't supported yet"],
-      ['\u2119', "'\u2119' isn't supported yet"],
-      ['\u222b', "'\u222b' isn't supported yet"],
-      ['\u222c', "'\u222c' isn't supported yet"],
-      ['\u222d', "'\u222d' isn't supported yet"],
-      ['\u2248', "'\u2248' isn't supported yet"],
-      ['\u22a5', "'\u22a5' isn't supported yet"],
-      ['\u2225', "'\u2225' isn't supported yet"],
-      ['\u2218', "'\u2218' isn't supported yet"],
+      ['\u2190', "'\u2190' isn't supported yet"], // ← leftwards arrow (\leftarrow)
+      ['\u2191', "'\u2191' isn't supported yet"], // ↑ upwards arrow (\uparrow)
+      ['\u2193', "'\u2193' isn't supported yet"], // ↓ downwards arrow (\downarrow)
+      ['\u210d', "'\u210d' isn't supported yet"], // ℍ quaternions (\H)
+      ['\u2119', "'\u2119' isn't supported yet"], // ℙ primes (\P)
+      ['\u222b', "'\u222b' isn't supported yet"], // ∫ integral (\int)
+      ['\u222c', "'\u222c' isn't supported yet"], // ∬ double integral (\iint)
+      ['\u222d', "'\u222d' isn't supported yet"], // ∭ triple integral (\iiint)
+      ['\u2248', "'\u2248' isn't supported yet"], // ≈ almost equal to (\approx)
+      ['\u22a5', "'\u22a5' isn't supported yet"], // ⊥ perpendicular (\perp)
+      ['\u2225', "'\u2225' isn't supported yet"], // ∥ parallel to (\parallel)
+      ['\u2218', "'\u2218' isn't supported yet"], // ∘ ring operator (\circ)
       ['?', "Unexpected character '?' (U+003F)"],
     ])('should throw on %s', (symbol, message) => {
       const glyphTree = row([char('a'), char(symbol), char('b')]);
