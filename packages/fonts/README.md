@@ -21,7 +21,7 @@ import { FontDataContext, MathRenderer } from '@math-blocks/react';
 
 const font = await loadFontSubsets(
   ['base', 'calculus'],
-  fromBaseUrl('/fonts/stix-two-math', { format: 'woff' }),
+  fromBaseUrl('/fonts/stix-two-math'),
 );
 
 <FontDataContext.Provider value={getFontData(font, 'stix-two-math')}>
@@ -36,7 +36,7 @@ Ways to get the files to a URL:
   rspack or webpack. The copied files don't get hashed names, so include the
   package version in the folder name or set suitable cache headers.
 - **An npm CDN**, with no copying:
-  `fromBaseUrl('https://cdn.jsdelivr.net/npm/@math-blocks/fonts@<version>/subsets/stix-two-math', { format: 'woff' })`.
+  `fromBaseUrl('https://cdn.jsdelivr.net/npm/@math-blocks/fonts@<version>/subsets/stix-two-math')`.
 
 For server rendering, read the files from disk instead: `subsetPath(folder,
 group)` gives a file's path inside the package, for

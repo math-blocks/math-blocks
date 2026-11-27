@@ -1,7 +1,7 @@
 {
     "name": "@math-blocks/fonts",
     "version": "0.0.0",
-    "description": "Math font subsets (OpenType and WOFF) for rendering math with math-blocks",
+    "description": "Math font subsets (WOFF) for rendering math with math-blocks",
     "license": "MIT AND OFL-1.1 AND LPPL-1.3c",
     "repository": {
         "type": "git",
