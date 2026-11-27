@@ -183,7 +183,7 @@ const parseDelimited = (node: TokenDelimited): Semantic.types.Node => {
     throw new Error('Mismatched delimiters');
   }
   const result = editorParser.parse(inner.children);
-  // TODO: what should `loc` be here?
+  // TODO(#887): give Parens a `loc`, e.g. `node.loc` like Abs below.
   return isBar(leftDelim)
     ? Semantic.builders.abs(result, node.loc)
     : Semantic.builders.parens(result);
