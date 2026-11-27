@@ -196,4 +196,19 @@ describe('print', () => {
 
     expect(output).toEqual('\\left|x\\right|');
   });
+
+  // https://github.com/math-blocks/math-blocks/issues/869
+  test.each([
+    ['\u222a', '\\cup'],
+    ['\u2229', '\\cap'],
+    ['\u2205', '\\emptyset'],
+    ['\u2026', '\\ldots'],
+    ['\u22ef', '\\cdots'],
+    // `\to` is a synonym, but `\rightarrow` is printed.
+    ['\u2192', '\\rightarrow'],
+    ['{', '\\{'],
+    ['}', '\\}'],
+  ])('%s prints as %s', (char, expected) => {
+    expect(print(builders.row([builders.char(char)]))).toEqual(expected);
+  });
 });

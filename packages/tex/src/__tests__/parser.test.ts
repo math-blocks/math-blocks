@@ -498,4 +498,24 @@ describe('Parser', () => {
       true,
     );
   });
+
+  // https://github.com/math-blocks/math-blocks/issues/869
+  test.each([
+    ['\\cup', '\u222a'],
+    ['\\cap', '\u2229'],
+    ['\\emptyset', '\u2205'],
+    ['\\ldots', '\u2026'],
+    ['\\cdots', '\u22ef'],
+    ['\\to', '\u2192'],
+    ['\\approx', '\u2248'],
+    ['\\perp', '\u22a5'],
+    ['\\parallel', '\u2225'],
+    ['\\circ', '\u2218'],
+    ['\\{', '{'],
+    ['\\}', '}'],
+  ])('%s becomes the char %s', (tex, expected) => {
+    expect(
+      util.isEqual(parse(tex), builders.row([builders.char(expected)])),
+    ).toBe(true);
+  });
 });

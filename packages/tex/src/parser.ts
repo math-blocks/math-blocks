@@ -305,6 +305,12 @@ class Parser {
         if (name === 'right') {
           throw new Error('unexpected right delimiter');
         }
+        // `\{` and `\}` are literal braces, e.g. for sets.
+        if (name === '' && (this.peek() === '{' || this.peek() === '}')) {
+          const brace = this.peek();
+          this.consume(); // brace
+          return builders.char(brace);
+        }
         throw new Error(`unknown command: ${name}`);
     }
   }
