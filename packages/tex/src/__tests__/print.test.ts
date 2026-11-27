@@ -1,6 +1,7 @@
 import { builders, AccentType } from '@math-blocks/editor';
 
 import { print } from '../printer';
+import { parse } from '../parser';
 
 describe('print', () => {
   test('subsup', () => {
@@ -125,6 +126,13 @@ describe('print', () => {
 
     expect(output).toEqual('\\sin');
   });
+
+  test.each(['sinh', 'cosh', 'tanh', 'coth', 'sech', 'csch', 'arsinh'])(
+    'prints the hyperbolic function %s as a command',
+    (name) => {
+      expect(print(parse(`\\${name} x`))).toEqual(`\\${name} x`);
+    },
+  );
 
   describe('command names', () => {
     test('a letter after a command name is separated by a space', () => {

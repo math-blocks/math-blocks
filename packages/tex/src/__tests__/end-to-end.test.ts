@@ -166,6 +166,31 @@ describe('Editor.parse(Tex.parse(...))', () => {
         expectParse('\\arcsin x', b.arcsin(x));
       });
 
+      test.each([
+        ['\\sinh x', b.sinh(x)],
+        ['\\cosh x', b.cosh(x)],
+        ['\\tanh x', b.tanh(x)],
+        ['\\coth x', b.coth(x)],
+        ['\\sech x', b.sech(x)],
+        ['\\csch x', b.csch(x)],
+        ['\\arsinh x', b.arsinh(x)],
+        ['\\arcosh x', b.arcosh(x)],
+        ['\\artanh x', b.artanh(x)],
+        ['\\arcoth x', b.arcoth(x)],
+        ['\\arsech x', b.arsech(x)],
+        ['\\arcsch x', b.arcsch(x)],
+        ['\\sinh^{-1} x', b.arsinh(x)],
+        ['\\tanh^{-1} x', b.artanh(x)],
+        ['\\cosh^2 x', b.pow(b.cosh(x), num('2'))],
+        ['\\sinh 2x', b.sinh(b.mul([num('2'), x], true))],
+      ])('%s', (tex, expected) => {
+        expectParse(tex, expected);
+      });
+
+      test('\\sin hx is still sin of h times x', () => {
+        expectParse('\\sin hx', b.sin(b.mul([b.identifier('h'), x], true)));
+      });
+
       test('\\sin(x)', () => {
         expectParse('\\sin(x)', b.sin(x));
         expectParse('\\sin\\left(x\\right)', b.sin(x));
