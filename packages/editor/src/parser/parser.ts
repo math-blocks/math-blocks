@@ -1107,18 +1107,44 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 };
 
 /**
+ * Options for {@link parse}.
+ */
+export type ParseOptions = {
+  /**
+   * Whether a function or operator name such as `sin`, `ln` or `mod` must
+   * come from a single char that holds the whole name, e.g. the char that
+   * `Tex.parse` creates for `\sin` or that the editor creates when `\sin` is
+   * typed.
+   *
+   * When it's `false`, the default, a name is also recognized when it's
+   * typed one letter at a time, so `sinx` is `sin(x)`.  The longest name
+   * that matches wins, and names are case-sensitive, so `arcsinx` is
+   * `arcsin(x)` and `SINx` is `S·I·N·x`.  Typed names without a semantic
+   * node yet, such as `max`, throw `'max' isn't supported yet`, as `\max`
+   * does.
+   *
+   * When it's `true`, letters typed one at a time are always single-letter
+   * identifiers, so `sinx` is `s·i·n·x`.
+   */
+  readonly requireBackslash?: boolean;
+};
+
+/**
  * Parses an editor tree into a semantic tree.
  *
  * Throws an error if `input` is empty, contains a char it doesn't recognize,
- * or isn't a valid expression.
+ * or isn't a valid expression.  See {@link ParseOptions} for `options`.
  *
  * Relations are n-ary.  A chain of the same relation is parsed as a single
  * node with one arg per side, e.g. `2x=5=100` becomes an `Equals` node with
  * three args: `2x`, `5`, and `100`.  Callers that expect exactly two sides
  * should check `args.length`.
  */
-export const parse = (input: CharRow): Semantic.types.Node => {
-  const tokenRow = Lexer.lexRow(input);
+export const parse = (
+  input: CharRow,
+  options: ParseOptions = {},
+): Semantic.types.Node => {
+  const tokenRow = Lexer.lexRow(input, [], options);
   if (tokenRow.children.length === 0) {
     throw new Error('Empty input');
   }

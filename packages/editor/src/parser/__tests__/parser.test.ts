@@ -1046,6 +1046,56 @@ describe('EditorParser', () => {
       expect(parser.parse(util.row('sinx'))).toMatchInlineSnapshot(`(Sin x)`);
     });
 
+    test('a trig function typed one letter at a time', () => {
+      expect(parser.parse(util.row('cotx'))).toMatchInlineSnapshot(`(Cot x)`);
+    });
+
+    test('ln typed one letter at a time', () => {
+      expect(parser.parse(util.row('lnx'))).toMatchInlineSnapshot(`(Ln x)`);
+    });
+
+    test('log typed one letter at a time', () => {
+      expect(parser.parse(util.row('logx'))).toMatchInlineSnapshot(`(Log x)`);
+    });
+
+    test('the longest name wins', () => {
+      // Not a·r·c·sin(x).
+      expect(parser.parse(util.row('arcsinx'))).toMatchInlineSnapshot(
+        `(ArcSin x)`,
+      );
+    });
+
+    test('mod typed one letter at a time', () => {
+      expect(parser.parse(util.row('amodn'))).toMatchInlineSnapshot(
+        `(Modulo a n)`,
+      );
+    });
+
+    test('names are case-sensitive', () => {
+      expect(parser.parse(util.row('SINx'))).toMatchInlineSnapshot(
+        `(mul.imp S I N x)`,
+      );
+    });
+
+    test('an unsupported name typed one letter at a time throws', () => {
+      expect(() => parser.parse(util.row('maxx'))).toThrow(
+        "'max' isn't supported yet",
+      );
+    });
+
+    test('requireBackslash makes typed letters single identifiers', () => {
+      const options = { requireBackslash: true };
+      expect(parser.parse(util.row('sinx'), options)).toMatchInlineSnapshot(
+        `(mul.imp s i n x)`,
+      );
+      expect(parser.parse(util.row('maxx'), options)).toMatchInlineSnapshot(
+        `(mul.imp m a x x)`,
+      );
+      expect(
+        parser.parse(row([char('sin'), char('x')]), options),
+      ).toMatchInlineSnapshot(`(Sin x)`);
+    });
+
     test('a function stored in a single char', () => {
       const input = row([char('ln'), char('x')]);
       const ast = parser.parse(input);

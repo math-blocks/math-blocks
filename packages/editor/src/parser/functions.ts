@@ -1,6 +1,8 @@
 /**
- * The named functions that the parser knows about.  This is the one place
- * each function is listed.
+ * The named functions and operators that the parser knows about.  This is
+ * the one place each name is listed: the parser uses the builders, and the
+ * lexer uses the names to recognize them when they're typed one letter at a
+ * time.
  */
 import * as Semantic from '@math-blocks/semantic';
 
@@ -44,5 +46,37 @@ export const functions: Record<string, FunctionDef> = {
   det: { build: b.determinant },
 };
 
+// Names that the parser handles itself rather than through a table: `log`
+// takes an optional base, `mod` is a binary operator and `lim` takes a
+// subscript such as `x→0`.
+export const SPECIAL_NAMES: readonly string[] = ['log', 'mod', 'lim'];
+
+// Named functions and operators that `Tex.parse` has macros for, but that
+// have no semantic node yet.  The parser throws `'max' isn't supported yet`
+// for these.
+export const UNSUPPORTED_NAMES: readonly string[] = [
+  'arg',
+  'min',
+  'max',
+  'lcm',
+  'gcd',
+  'limsup',
+  'liminf',
+  'span',
+  'rank',
+  'null',
+  'adj',
+  'proj',
+  'ker',
+  'dim',
+];
+
 export const isFunctionName = (name: string): boolean =>
   name === 'log' || name in functions;
+
+// Every name that's a single word, whether or not the parser supports it.
+export const WORD_OPERATORS: readonly string[] = [
+  ...Object.keys(functions),
+  ...SPECIAL_NAMES,
+  ...UNSUPPORTED_NAMES,
+];

@@ -11,6 +11,8 @@ import type { OneOrMore } from '@math-blocks/core';
 
 import * as types from '../char/types';
 
+import { WORD_OPERATORS } from './functions';
+
 import { TokenKind } from '../token/types';
 import { NodeType } from '../shared-types';
 
@@ -137,30 +139,54 @@ export const summation = (loc: SourceLocation): TokenAtom =>
 export const product = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.ProductOperator }, loc);
 
-// Single chars that each become a token with no value.  `⊂` and `⊃` are
-// proper subsets and supersets, and `⊆` and `⊇` are subsets and supersets
-// that may be equal, as in OpenMath's set1 content dictionary.
-const SYMBOL_TOKENS: Record<string, (loc: SourceLocation) => TokenAtom> = {
-  '\u2213': minusplus, // ∓
-  '\u2208': elementOf, // ∈
-  '\u2209': notElementOf, // ∉
-  '\u220B': contains, // ∋
-  '\u220C': notContains, // ∌
-  '\u2286': subset, // ⊆
-  '\u2282': properSubset, // ⊂
-  '\u2287': superset, // ⊇
-  '\u2283': properSuperset, // ⊃
-  '\u222A': union, // ∪
-  '\u2229': intersection, // ∩
-  '\u2192': rightArrow, // →
+type TokenBuilder = (loc: SourceLocation) => TokenAtom;
+
+// Every single char that becomes a token with no value.  This is the only
+// place such a symbol is listed.  `⊂` and `⊃` are proper subsets and
+// supersets, and `⊆` and `⊇` are subsets and supersets that may be equal, as
+// in OpenMath's set1 content dictionary.
+const SYMBOL_TOKENS: ReadonlyMap<string, TokenBuilder> = new Map([
+  ['+', plus],
+  // Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as
+  // minus.
+  ['\u2212', minus], // −
+  ['-', minus],
+  ['\u00B1', plusminus], // ±
+  ['\u2213', minusplus], // ∓
+  ['*', times],
+  ['\u00B7', times], // · middle dot (interpunct)
+  ['\u00D7', times], // × multiplication sign
+  ['\u22C5', times], // ⋅ dot operator
+  ['\u00F7', divide], // ÷
+  ['=', eq],
+  ['\u2260', neq], // ≠
+  ['<', lt],
+  ['\u2264', lte], // ≤
+  ['>', gt],
+  ['\u2265', gte], // ≥
+  [',', comma],
+  ['(', lparens],
+  [')', rparens],
+  ['\u2208', elementOf], // ∈
+  ['\u2209', notElementOf], // ∉
+  ['\u220B', contains], // ∋
+  ['\u220C', notContains], // ∌
+  ['\u2286', subset], // ⊆
+  ['\u2282', properSubset], // ⊂
+  ['\u2287', superset], // ⊇
+  ['\u2283', properSuperset], // ⊃
+  ['\u222A', union], // ∪
+  ['\u2229', intersection], // ∩
+  ['\u2192', rightArrow], // →
   // `Tex.parse` and the editor use the n-ary summation and product signs,
   // but the Greek capitals Σ and Π are also accepted as the operator of a
   // limits node, see `lex`.
-  '\u2211': summation, // ∑
-  '\u220F': product, // ∏
-  '\u2026': ellipsis, // … (\ldots)
-  '\u22EF': ellipsis, // ⋯ (\cdots)
-};
+  ['\u2211', summation], // ∑
+  ['\u220F', product], // ∏
+  // Three `.` chars in a row are also an ellipsis, see `tokenizeChars`.
+  ['\u2026', ellipsis], // … (\ldots)
+  ['\u22EF', ellipsis], // ⋯ (\cdots)
+]);
 
 /**
  * Throws an error saying that `symbol` isn't supported yet, with an optional
@@ -202,18 +228,52 @@ const UNSUPPORTED_CHARS: Record<string, string | undefined> = {
   '\u2218': undefined, // ∘ \circ
 };
 
-// TODO: allow different decimal and list separators
-// Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as minus.
-// Identifiers are single latin or greek letters, the names of some functions
-// spelled out one char at a time, or symbols for constants: ∞, ∅, and the
-// number sets ℕ, ℤ, ℚ, ℝ and ℂ.  The parser decides what each identifier
-// means.
-const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\u2260|\*|\u00B7|\u00D7|\u22C5|\u00F7|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.|[\u2213\u2208\u2209\u220B\u220C\u2286\u2282\u2287\u2283\u222A\u2229\u2192\u2211\u220F\u2026\u22EF])|(sin|cos|tan|[a-z]|[\u03B1-\u03C9]|[\u221E\u2205\u2115\u2124\u211A\u211D\u2102])/gi;
+/**
+ * Options for lexing, see `ParseOptions` in parser.ts.
+ */
+export type LexOptions = {
+  readonly requireBackslash?: boolean;
+};
+
+// The names of functions and operators, such as `sin`, `ln` or `mod`, that
+// are recognized when they're typed one letter at a time, longest first.
+// They're matched case-sensitively, and the longest name that matches wins,
+// so `arcsin` isn't `a`, `r`, `c`, `sin`.  A name in a single char, such as
+// the char that `Tex.parse` creates for `\ln`, is always a word.
+const WORD_NAMES: readonly string[] = [...WORD_OPERATORS].sort(
+  (a, b) => [...b].length - [...a].length,
+);
+
+// Symbols for constants that are lexed as identifiers: ∞, ∅, and the number
+// sets ℕ, ℤ, ℚ, ℝ and ℂ.  The parser decides what each one means.
+const CONSTANT_CHARS: ReadonlySet<string> = new Set([
+  '\u221E', // ∞
+  '\u2205', // ∅
+  '\u2115', // ℕ
+  '\u2124', // ℤ
+  '\u211A', // ℚ
+  '\u211D', // ℝ
+  '\u2102', // ℂ
+]);
+
+/**
+ * Returns whether `value` is a char that's lexed as a single-letter
+ * identifier: a latin letter, a lowercase Greek letter, or a constant.
+ * Capital Greek letters aren't identifiers.  Σ and Π are only accepted as
+ * the operator of a limits node.
+ */
+const isIdentifierChar = (value: string): boolean =>
+  /^[a-zA-Z\u03B1-\u03C9]$/.test(value) || CONSTANT_CHARS.has(value);
+
+const isDigit = (value: string | undefined): boolean =>
+  value !== undefined && /^[0-9]$/.test(value);
+
+const isWhitespace = (value: string): boolean => /^\s$/.test(value);
 
 /**
  * Throws an error naming `char`, a character the lexer doesn't recognize, or
- * saying that it isn't supported yet if it's valid math.
+ * saying that it isn't supported yet if it's valid math.  This is the only
+ * place the lexer reports an unknown char.
  */
 const unexpectedChar = (char: string): never => {
   if (char in UNSUPPORTED_CHARS) {
@@ -224,27 +284,6 @@ const unexpectedChar = (char: string): never => {
   throw new Error(`Unexpected character '${char}' (U+${hex})`);
 };
 
-/**
- * Throws if `str.slice(start, end)`, the text between two token matches (or
- * before the first or after the last one), contains anything other than
- * whitespace.  Without
- * this check the lexer would silently drop chars it doesn't recognize, e.g.
- * parsing "a?b" as "ab".
- */
-const assertOnlyWhitespace = (
-  str: string,
-  start: number,
-  end: number,
-): void => {
-  // Iterating the string, rather than indexing it, gives whole code points,
-  // so a char outside the BMP such as U+1D465 isn't split into surrogates.
-  for (const char of str.slice(start, end)) {
-    if (!/\s/.test(char)) {
-      unexpectedChar(char);
-    }
-  }
-};
-
 // The operators of a limits node that are lexed as summation and product
 // operators: the n-ary signs that `Tex.parse` and the editor create, and the
 // Greek capitals.
@@ -252,9 +291,23 @@ const SUMMATION_CHARS = ['\u2211', '\u03a3'];
 const PRODUCT_CHARS = ['\u220f', '\u03a0'];
 
 // TODO: include ids of source chars in parsed tokens
+// TODO: allow different decimal and list separators
 
 /**
- * Converts a run of chars to tokens.
+ * Converts a run of chars to tokens by scanning the chars one at a time.
+ * Each token's location is the range of indices of its chars, plus `offset`,
+ * the index of the first char in the run.
+ *
+ * - Whitespace ends a number or a word, but is never required between
+ *   tokens, e.g. `sinx` is `sin`, `x` and `sin hx` is `sin`, `h`, `x`.
+ * - A number is a run of digits with at most one decimal point, e.g. `12`,
+ *   `1.5`, `.5` or `1.`.  A `.` that starts an ellipsis isn't part of the
+ *   number, so `1...` is `1` followed by an ellipsis.
+ * - Three `.` chars in a row are an ellipsis.
+ * - Each symbol in `SYMBOL_TOKENS` is a token.
+ * - Letters are single-letter identifiers, except that the longest name in
+ *   `wordNames` that matches is a single identifier.  `wordNames` is empty
+ *   when the `requireBackslash` option is set.
  *
  * Most chars hold a single character, but `Tex.parse` creates a single char
  * for each named function, e.g. "\\sin" becomes a char with the value "sin".
@@ -265,137 +318,129 @@ const tokenizeChars = (
   chars: readonly types.Char[],
   path: readonly number[],
   offset: number,
+  wordNames: readonly string[],
 ): readonly TokenAtom[] => {
   const tokens: TokenAtom[] = [];
-  let runStart = 0;
-  chars.forEach((char, index) => {
+  const valueAt = (index: number): string | undefined => chars[index]?.value;
+  const loc = (start: number, end: number): SourceLocation =>
+    location(path, offset + start, offset + end);
+  const isEllipsisAt = (index: number): boolean =>
+    valueAt(index) === '.' &&
+    valueAt(index + 1) === '.' &&
+    valueAt(index + 2) === '.';
+
+  /**
+   * Returns the index after the end of the number that starts at `start`.
+   */
+  const scanNumber = (start: number): number => {
+    let i = start;
+    while (isDigit(valueAt(i))) {
+      i++;
+    }
+    // A `.` followed by another `.` might start an ellipsis, so the number
+    // ends before it.
+    if (valueAt(i) === '.' && valueAt(i + 1) !== '.') {
+      i++;
+      while (isDigit(valueAt(i))) {
+        i++;
+      }
+      // Any `.` after the decimal point that doesn't start an ellipsis
+      // would be a second decimal point, e.g. `1.2.3`.  Lexing that as
+      // `1.2` followed by `.3` would silently change its meaning.
+      if (valueAt(i) === '.' && !isEllipsisAt(i)) {
+        let end = i;
+        while (isDigit(valueAt(end)) || valueAt(end) === '.') {
+          end++;
+        }
+        const text = chars
+          .slice(start, end)
+          .map((char) => char.value)
+          .join('');
+        throw new Error(`'${text}' has more than one decimal point`);
+      }
+    }
+    return i;
+  };
+
+  /**
+   * Returns the longest name in `wordNames` spelled out by the chars starting
+   * at `start`, or undefined if there isn't one.  `wordNames` is sorted
+   * longest first.
+   */
+  const matchFunctionName = (start: number): string | undefined =>
+    wordNames.find((name) =>
+      [...name].every((letter, j) => valueAt(start + j) === letter),
+    );
+
+  let i = 0;
+  while (i < chars.length) {
+    const { value } = chars[i];
+
     // Count code points rather than UTF-16 code units, so that a single char
     // outside the BMP, such as U+1D465, isn't mistaken for a function name.
-    if ([...char.value].length > 1) {
-      tokens.push(
-        ...tokenizeRun(chars.slice(runStart, index), path, offset + runStart),
-      );
-      if (!/^[a-z]+$/i.test(char.value)) {
-        throw new Error(`Unexpected symbol '${char.value}'`);
+    if ([...value].length > 1) {
+      if (!/^[a-z]+$/i.test(value)) {
+        throw new Error(`Unexpected symbol '${value}'`);
       }
-      const loc = location(path, offset + index, offset + index + 1);
-      tokens.push(identifier(char.value, loc));
-      runStart = index + 1;
+      tokens.push(identifier(value, loc(i, i + 1)));
+      i++;
+      continue;
     }
-  });
-  tokens.push(...tokenizeRun(chars.slice(runStart), path, offset + runStart));
-  return tokens;
-};
 
-/**
- * Converts a run of chars that each hold a single character to tokens.
- */
-const tokenizeRun = (
-  chars: readonly types.Char[],
-  path: readonly number[],
-  offset: number,
-): readonly TokenAtom[] => {
-  const tokens: TokenAtom[] = [];
-  if (chars.length > 0) {
-    const str = chars.map((char) => char.value).join('');
-    const matches = str.matchAll(TOKEN_REGEX);
-    let prevEnd = 0;
-
-    for (const match of matches) {
-      const [, value, sym, name] = match;
-      const { index } = match;
-      if (typeof index !== 'number') {
-        // Should we throw if there's match?
-        continue;
-      }
-      assertOnlyWhitespace(str, prevEnd, index);
-      prevEnd = index + match[0].length;
-      if (value) {
-        const loc = location(
-          path,
-          offset + index,
-          offset + index + value.length,
-        );
-        tokens.push(number(value, loc));
-      } else if (sym) {
-        const loc = location(path, offset + index, offset + index + sym.length);
-        switch (sym) {
-          case ',':
-            tokens.push(comma(loc));
-            break;
-          case '=':
-            tokens.push(eq(loc));
-            break;
-          case '<':
-            tokens.push(lt(loc));
-            break;
-          case '≤':
-            tokens.push(lte(loc));
-            break;
-          case '>':
-            tokens.push(gt(loc));
-            break;
-          case '≥':
-            tokens.push(gte(loc));
-            break;
-          case '+':
-            tokens.push(plus(loc));
-            break;
-          case '*':
-          case '\u00B7': // middle dot (interpunct)
-          case '\u00D7': // multiplication sign
-          case '\u22C5': // dot operator
-            tokens.push(times(loc));
-            break;
-          case '\u2212':
-          case '-':
-            tokens.push(minus(loc));
-            break;
-          case '\u00F7':
-            tokens.push(divide(loc));
-            break;
-          case '\u2260':
-            tokens.push(neq(loc));
-            break;
-          case '\u00B1':
-            tokens.push(plusminus(loc));
-            break;
-          case '...':
-            tokens.push(ellipsis(loc));
-            break;
-          case '(':
-            tokens.push(lparens(loc));
-            break;
-          case ')':
-            tokens.push(rparens(loc));
-            break;
-          default:
-            if (sym in SYMBOL_TOKENS) {
-              tokens.push(SYMBOL_TOKENS[sym](loc));
-              break;
-            }
-            throw new Error(`Unexpected symbol token: ${sym}`);
-        }
-      } else if (name) {
-        const loc = location(
-          path,
-          offset + index,
-          offset + index + name.length,
-        );
-        tokens.push(identifier(name, loc));
-      }
+    if (isWhitespace(value)) {
+      i++;
+      continue;
     }
-    assertOnlyWhitespace(str, prevEnd, str.length);
-    chars = [];
+
+    if (isDigit(value) || (value === '.' && isDigit(valueAt(i + 1)))) {
+      const end = scanNumber(i);
+      const text = chars
+        .slice(i, end)
+        .map((char) => char.value)
+        .join('');
+      tokens.push(number(text, loc(i, end)));
+      i = end;
+      continue;
+    }
+
+    if (isEllipsisAt(i)) {
+      tokens.push(ellipsis(loc(i, i + 3)));
+      i += 3;
+      continue;
+    }
+
+    const symbol = SYMBOL_TOKENS.get(value);
+    if (symbol) {
+      tokens.push(symbol(loc(i, i + 1)));
+      i++;
+      continue;
+    }
+
+    const name = matchFunctionName(i);
+    if (name !== undefined) {
+      const end = i + [...name].length;
+      tokens.push(identifier(name, loc(i, end)));
+      i = end;
+      continue;
+    }
+
+    if (isIdentifierChar(value)) {
+      tokens.push(identifier(value, loc(i, i + 1)));
+      i++;
+      continue;
+    }
+
+    unexpectedChar(value);
   }
-
   return tokens;
 };
 
 const lexChildren = (
   nodes: readonly types.CharNode[],
   path: readonly number[],
+  options: LexOptions,
 ): TokenNode[] => {
+  const wordNames = options.requireBackslash ? [] : WORD_NAMES;
   // TODO: assert that nodes.length > 0
 
   const tokens: TokenNode[] = [];
@@ -407,14 +452,14 @@ const lexChildren = (
       chars.push(node);
     } else {
       const offset = index - chars.length;
-      tokens.push(...tokenizeChars(chars, path, offset));
-      tokens.push(lex(node, path, index));
+      tokens.push(...tokenizeChars(chars, path, offset, wordNames));
+      tokens.push(lex(node, path, index, options));
       chars = [];
     }
   });
 
   const offset = nodes.length - chars.length;
-  tokens.push(...tokenizeChars(chars, path, offset));
+  tokens.push(...tokenizeChars(chars, path, offset, wordNames));
 
   return tokens;
 };
@@ -431,11 +476,12 @@ function assertOneOrMore<T>(
 export const lexRow = (
   row: types.CharRow,
   path: readonly number[] = [],
+  options: LexOptions = {},
 ): TokenRow => {
   // assertOneOrMore(row.children, "rows cannot be empty");
   return {
     type: NodeType.Row,
-    children: lexChildren(row.children, path),
+    children: lexChildren(row.children, path, options),
     loc: location(path, 0, row.children.length),
   };
 };
@@ -444,6 +490,7 @@ const lex = (
   node: types.CharNode,
   path: readonly number[],
   offset: number,
+  options: LexOptions,
 ): TokenNode => {
   switch (node.type) {
     case NodeType.Row:
@@ -452,7 +499,7 @@ const lex = (
       assertOneOrMore(node.children, 'rows cannot be empty');
       return {
         type: node.type,
-        children: lexChildren(node.children, path),
+        children: lexChildren(node.children, path, options),
         loc: location(path, offset, offset + 1),
       };
     case NodeType.SubSup: {
@@ -461,8 +508,8 @@ const lex = (
         type: node.type,
         // TODO: use null-coalescing
         children: [
-          sub ? lexRow(sub, [...path, offset, 0]) : null,
-          sup ? lexRow(sup, [...path, offset, 1]) : null,
+          sub ? lexRow(sub, [...path, offset, 0], options) : null,
+          sup ? lexRow(sup, [...path, offset, 1], options) : null,
         ],
         loc: location(path, offset, offset + 1),
       };
@@ -498,8 +545,8 @@ const lex = (
       return {
         type: node.type,
         children: [
-          lexRow(lower, [...path, offset, 0]),
-          upper ? lexRow(upper, [...path, offset, 1]) : null,
+          lexRow(lower, [...path, offset, 0], options),
+          upper ? lexRow(upper, [...path, offset, 1], options) : null,
         ],
         inner,
         loc,
@@ -510,8 +557,8 @@ const lex = (
       return {
         type: node.type,
         children: [
-          lexRow(numerator, [...path, offset, 0]),
-          lexRow(denominator, [...path, offset, 1]),
+          lexRow(numerator, [...path, offset, 0], options),
+          lexRow(denominator, [...path, offset, 1], options),
         ],
         loc: location(path, offset, offset + 1),
       };
@@ -521,8 +568,8 @@ const lex = (
       return {
         type: node.type,
         children: [
-          index ? lexRow(index, [...path, offset, 1]) : null,
-          lexRow(radicand, [...path, offset, 0]),
+          index ? lexRow(index, [...path, offset, 1], options) : null,
+          lexRow(radicand, [...path, offset, 0], options),
         ],
         loc: location(path, offset, offset + 1),
       };
@@ -545,7 +592,7 @@ const lex = (
           : rparens(delimLoc);
       return {
         type: node.type,
-        children: [lexRow(node.children[0], [...path, offset, 0])],
+        children: [lexRow(node.children[0], [...path, offset, 0], options)],
         leftDelim: leftDelim,
         rightDelim: rightDelim,
         loc: location(path, offset, offset + 1),
@@ -557,7 +604,8 @@ const lex = (
         colCount: node.colCount,
         rowCount: node.rowCount,
         children: node.children.map(
-          (child, index) => child && lexRow(child, [...path, offset, index]),
+          (child, index) =>
+            child && lexRow(child, [...path, offset, index], options),
         ),
         loc: location(path, offset, offset + 1),
       };
@@ -565,7 +613,7 @@ const lex = (
     case NodeType.Macro:
       return {
         type: node.type,
-        children: [lexRow(node.children[0], [...path, offset, 0])],
+        children: [lexRow(node.children[0], [...path, offset, 0], options)],
         loc: location(path, offset, offset + 1),
       };
     case NodeType.Accent:
@@ -573,7 +621,7 @@ const lex = (
         type: node.type,
         accent: node.accent,
         wide: false,
-        children: [lexRow(node.children[0], [...path, offset, 0])],
+        children: [lexRow(node.children[0], [...path, offset, 0], options)],
         loc: location(path, offset, offset + 1),
       };
     case 'char':
