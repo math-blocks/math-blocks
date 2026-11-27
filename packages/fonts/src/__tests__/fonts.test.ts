@@ -10,6 +10,7 @@ import {
 } from '../index';
 import type { FontFolder } from '../index';
 import data from '../fonts.json';
+import { toMathFont } from '../font-list';
 
 const PACKAGE = path.join(__dirname, '../..');
 
@@ -59,6 +60,28 @@ describe('fonts', () => {
       licenseFile: 'licenses/OFL-1.1.txt',
     });
     expect(getFont('comic-sans-math')).toBeUndefined();
+  });
+});
+
+describe('toMathFont', () => {
+  const entry = {
+    name: 'STIX Two Math',
+    folder: 'stix-two-math',
+    source: 'STIX2Math.otf',
+    letter: 'A',
+    license: 'OFL-1.1',
+  };
+
+  test('rejects an unknown licence', () => {
+    expect(() => toMathFont({ ...entry, license: 'GPL' })).toThrow(
+      'Unknown licence for STIX Two Math: GPL',
+    );
+  });
+
+  test('rejects a folder that fonts.generated.ts lacks', () => {
+    expect(() => toMathFont({ ...entry, folder: 'new-math' })).toThrow(
+      "new-math isn't in fonts.generated.ts; run scripts/subset-fonts.py",
+    );
   });
 });
 
