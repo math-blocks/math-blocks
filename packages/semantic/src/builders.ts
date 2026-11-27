@@ -5,7 +5,7 @@ import type { Node, NodeTypes, NumericRelation } from './types';
 import { NodeType } from './enums';
 import { SourceLocation } from './types';
 import { getId } from '@math-blocks/core';
-import type { TwoOrMore } from '@math-blocks/core';
+import type { OneOrMore, TwoOrMore } from '@math-blocks/core';
 
 const builders = {
   identifier: (name: string, subscript?: Node, loc?: SourceLocation): NodeTypes['Identifier'] => ({
@@ -247,6 +247,20 @@ const builders = {
     type: 'Exp',
     id: getId(),
     arg,
+    loc,
+  }),
+  max: (args: OneOrMore<Node>, condition?: Node, loc?: SourceLocation): NodeTypes['Max'] => ({
+    type: 'Max',
+    id: getId(),
+    args,
+    condition,
+    loc,
+  }),
+  min: (args: OneOrMore<Node>, condition?: Node, loc?: SourceLocation): NodeTypes['Min'] => ({
+    type: 'Min',
+    id: getId(),
+    args,
+    condition,
     loc,
   }),
   gt: (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Gt'] => ({

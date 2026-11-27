@@ -139,6 +139,20 @@ const print = (
     case 'ScalarProduct':
     case 'Sequence':
       return printArgs(ast.type, ast.args, serialize, indent);
+    case 'Max':
+    case 'Min': {
+      if (!ast.condition) {
+        return printArgs(ast.type, ast.args, serialize, indent);
+      }
+      // e.g. (Max x :condition n), or with each part on its own line.
+      const isLeaf = (node: Node): boolean =>
+        node.type === NodeType.Identifier || node.type === NodeType.Number;
+      const args = ast.args.map((arg) => print(arg, serialize, indent));
+      const condition = `:condition ${print(ast.condition, serialize, indent)}`;
+      return ast.args.every(isLeaf) && isLeaf(ast.condition)
+        ? `(${ast.type} ${args.join(' ')} ${condition})`
+        : `(${ast.type}\n${[...args, condition].map(indent).join('\n')})`;
+    }
     case 'Root': {
       const radicand = print(ast.radicand, serialize, indent);
       const index = print(ast.index, serialize, indent);

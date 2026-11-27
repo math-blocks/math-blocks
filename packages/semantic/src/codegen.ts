@@ -12,7 +12,7 @@ const generateNodeTypes = () => {
   lines.push('');
   lines.push('/* oxlint-disable no-shadow-restricted-names */');
   lines.push('');
-  lines.push("import type { TwoOrMore } from '@math-blocks/core';");
+  lines.push("import type { OneOrMore, TwoOrMore } from '@math-blocks/core';");
   lines.push('');
   lines.push('export type SourceLocation = {');
   lines.push('  readonly path: readonly number[];');
@@ -53,6 +53,9 @@ const generateNodeTypes = () => {
             break;
           case 'nary':
             properties.push(`readonly args: TwoOrMore<Node>`);
+            break;
+          case 'variadic':
+            properties.push(`readonly args: OneOrMore<Node>`);
             break;
         }
       }
@@ -169,7 +172,7 @@ const generateNodeBuilders = () => {
   lines.push("import { NodeType } from './enums';");
   lines.push("import { SourceLocation } from './types';");
   lines.push("import { getId } from '@math-blocks/core';");
-  lines.push("import type { TwoOrMore } from '@math-blocks/core';");
+  lines.push("import type { OneOrMore, TwoOrMore } from '@math-blocks/core';");
   lines.push('');
 
   lines.push('const builders = {');
@@ -199,6 +202,9 @@ const generateNodeBuilders = () => {
             break;
           case 'nary':
             params.push(['args', 'TwoOrMore<Node>']);
+            break;
+          case 'variadic':
+            params.push(['args', 'OneOrMore<Node>']);
             break;
         }
       }

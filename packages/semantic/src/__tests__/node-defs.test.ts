@@ -158,8 +158,9 @@ describe('node definitions', () => {
           expect(node.args).toEqual([x, y]);
         }
 
+        // A name that ends in `?` is an optional property.
         optionNames.forEach((name, i) => {
-          expect(node[name]).toBe(optionValues[i]);
+          expect(node[name.replace(/\?$/, '')]).toBe(optionValues[i]);
         });
       },
     );

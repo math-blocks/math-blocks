@@ -341,6 +341,34 @@ describe('builders', () => {
     });
   });
 
+  describe('max and min', () => {
+    test.each([
+      ['max', 'Max'],
+      ['min', 'Min'],
+    ] as const)('%s creates a %s node', (name, type) => {
+      const build = builders[name];
+      const cond = builders.in(x, builders.reals());
+
+      // A list of args, which can be a single arg, e.g. a set.
+      expect(build([x, y, z])).toEqual({
+        type,
+        id: expect.any(Number),
+        args: [x, y, z],
+        condition: undefined,
+        loc: undefined,
+      });
+      expect(build([x]).args).toEqual([x]);
+      // An arg and a condition, e.g. max_{x ∈ ℝ} x.
+      expect(build([x], cond, loc)).toEqual({
+        type,
+        id: expect.any(Number),
+        args: [x],
+        condition: cond,
+        loc,
+      });
+    });
+  });
+
   describe('constants', () => {
     test.each([
       ['infinity', 'Infinity'],

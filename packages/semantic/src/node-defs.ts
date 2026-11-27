@@ -1,6 +1,9 @@
 import type { Mutable } from 'utility-types';
 
-type Arity = 'unary' | 'binary' | 'nary';
+// 'nary' nodes have two or more args and 'variadic' nodes one or more.
+type Arity = 'unary' | 'binary' | 'nary' | 'variadic';
+// Only operations and relations can be variadic.
+type ConstructorArity = Exclude<Arity, 'variadic'>;
 
 type IdentifierDesc = {
   readonly kind: 'identifier';
@@ -24,6 +27,8 @@ type OperationDesc = {
   readonly name: string;
   readonly arity: Arity;
   readonly argNames?: readonly string[];
+  // The type of each extra property, keyed by its name.  A name that ends in
+  // `?` is an optional property, e.g. `condition?`.
   readonly options?: Record<string, string>;
 };
 
@@ -45,7 +50,7 @@ type ConstantDesc = {
 type ConstructorDesc = {
   readonly kind: 'constructor';
   readonly name: string;
-  readonly arity: Arity;
+  readonly arity: ConstructorArity;
   readonly options?: Record<string, 'boolean' | 'number' | 'string'>;
 };
 
@@ -114,7 +119,7 @@ const Constant = <Name extends string>(
 
 const Constructor = <Name extends string>(
   name: Name,
-  arity: Arity,
+  arity: ConstructorArity,
   options?: Record<string, 'boolean' | 'number' | 'string'>,
 ): ConstructorDesc => {
   const result: Mutable<ConstructorDesc> = {
@@ -187,6 +192,19 @@ export const definitions: Record<string, Descriptor> = {
   Log: Operation('Log', 'binary', 'arith', ['base', 'arg']),
   Ln: Operation('Ln', 'unary', 'arith'),
   Exp: Operation('Exp', 'unary', 'arith'),
+
+  // The maximum or minimum of a list, e.g. max(a, b, c), or of a single
+  // argument that's a set, e.g. max S.  With a `condition` they're the
+  // maximum or minimum of their one arg over the values that satisfy the
+  // condition, e.g. `\max_{x ∈ S} f(x)` has the arg f(x) and the condition
+  // x ∈ S.  This follows MathML's <max/> and <min/>, which take either a
+  // list of arguments or a <condition> and an expression.
+  Max: Operation('Max', 'variadic', 'arith', undefined, {
+    'condition?': 'Node',
+  }),
+  Min: Operation('Min', 'variadic', 'arith', undefined, {
+    'condition?': 'Node',
+  }),
 
   Gt: Relation('GreaterThan', 'nary', ['arith']),
   Gte: Relation('GreaterThanOrEquals', 'nary', ['arith']),

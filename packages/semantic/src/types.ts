@@ -3,7 +3,7 @@
 
 /* oxlint-disable no-shadow-restricted-names */
 
-import type { TwoOrMore } from '@math-blocks/core';
+import type { OneOrMore, TwoOrMore } from '@math-blocks/core';
 
 export type SourceLocation = {
   readonly path: readonly number[];
@@ -89,6 +89,14 @@ export interface NodeTypes {
   },
   readonly Ln: Common<'Ln'> & {readonly arg: Node}
   readonly Exp: Common<'Exp'> & {readonly arg: Node}
+  readonly Max: Common<'Max'> & {
+    readonly args: OneOrMore<Node>,
+    readonly condition?: Node,
+  },
+  readonly Min: Common<'Min'> & {
+    readonly args: OneOrMore<Node>,
+    readonly condition?: Node,
+  },
   readonly Gt: Common<'GreaterThan'> & {readonly args: TwoOrMore<Node>}
   readonly Gte: Common<'GreaterThanOrEquals'> & {readonly args: TwoOrMore<Node>}
   readonly Lt: Common<'LessThan'> & {readonly args: TwoOrMore<Node>}
@@ -233,6 +241,8 @@ export type ArcCsch = NodeTypes['ArcCsch'];
 export type Log = NodeTypes['Log'];
 export type Ln = NodeTypes['Ln'];
 export type Exp = NodeTypes['Exp'];
+export type Max = NodeTypes['Max'];
+export type Min = NodeTypes['Min'];
 export type Gt = NodeTypes['Gt'];
 export type Gte = NodeTypes['Gte'];
 export type Lt = NodeTypes['Lt'];
