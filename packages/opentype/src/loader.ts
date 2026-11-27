@@ -94,24 +94,25 @@ export type FontFormat = 'otf' | 'woff';
 
 export type FromBaseUrlOptions = {
   /**
-   * Which file to fetch for each subset: `'otf'` (the default) for raw
-   * OpenType, or `'woff'` for WOFF, which is smaller to download.
+   * Which file to fetch for each subset: `'woff'` (the default) for WOFF, or
+   * `'otf'` for raw OpenType. WOFF files are smaller to download, but need
+   * `DecompressionStream`, which current browsers and Node 18+ have.
    */
   readonly format?: FontFormat;
 };
 
 /**
- * Returns a LoadGroup that fetches `${baseUrl}/${group}.otf`, for subsets
+ * Returns a LoadGroup that fetches `${baseUrl}/${group}.woff`, for subsets
  * hosted in one folder, such as a copy of the `subsets/stix-two-math/` folder
  * of `@math-blocks/fonts`.
- * Pass `{format: 'woff'}` to fetch `${baseUrl}/${group}.woff` instead.
+ * Pass `{format: 'otf'}` to fetch `${baseUrl}/${group}.otf` instead.
  */
 export const fromBaseUrl = (
   baseUrl: string,
   options: FromBaseUrlOptions = {},
 ): LoadGroup => {
   const base = baseUrl.replace(/\/+$/, '');
-  const format = options.format ?? 'otf';
+  const format = options.format ?? 'woff';
   return async (group) => {
     const url = `${base}/${group}.${format}`;
     const response = await fetch(url);
