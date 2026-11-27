@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 141 42" width="141" height="42" style="vertical-align:-3px" role="img" aria-label="theta plus 1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 141 42" width="141" height="42" style="vertical-align:-3px" aria-hidden="true">
     <defs>
-        <path id="mbR0-STIX2-102" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z"></path>
-        <path id="mbR0-STIX2-92" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z"></path>
+        <path id="mbR1-STIX2-102" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z"></path>
+        <path id="mbR1-STIX2-92" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z"></path>
     </defs>
-    <g fill="currentColor" stroke="none" transform="translate(0,0.18)" aria-hidden="true">
+    <g fill="currentColor" stroke="none" transform="translate(0,0.18)">
         <g transform="translate(0,39.42)" id="20">
             <g transform="translate(35.58,0)" id="18"></g>
         </g>
@@ -14,9 +14,9 @@
                 <path d="M 224,170 L 224,186 C 224,295 385,373 385,520C 385,624 298,669 200,669C 99,669 30,612 30,531C 30,484 49,461 81,461C 105,461 126,474 126,505C 126,543 105,544 105,577C 105,608 132,631 191,631C 255,631 295,596 295,517C 295,363 184,326 184,196L 184,170 ZM 262,48 C 262,79 241,107 206,107C 169,107 147,80 147,48C 147,15 166,-8 205,-8C 241,-8 262,16 262,48Z" transform="translate(9.075,-5.829) scale(0.041999999999999996,-0.041999999999999996)"></path>
             </g>
             <g transform="translate(35.58,0)" id="18">
-                <use aria-hidden="true" href="#mbR0-STIX2-102" transform="translate(15,0) scale(0.06,-0.06)"></use>
+                <use aria-hidden="true" href="#mbR1-STIX2-102" transform="translate(15,0) scale(0.06,-0.06)"></use>
             </g>
-            <use id="19" aria-hidden="true" href="#mbR0-STIX2-92" transform="translate(108.78,0) scale(0.06,-0.06)"></use>
+            <use id="19" aria-hidden="true" href="#mbR1-STIX2-92" transform="translate(108.78,0) scale(0.06,-0.06)"></use>
         </g>
     </g>
 </svg>

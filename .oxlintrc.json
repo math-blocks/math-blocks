@@ -160,7 +160,11 @@
     "react/no-render-return-value": "error",
     "react/no-string-refs": "error",
     "react/no-unescaped-entities": "error",
-    "react/no-unknown-property": "error",
+    "react/no-unknown-property": [
+      "error",
+      // MathML attributes that editor-mathml.tsx in packages/react uses.
+      { "ignore": ["accent", "fence", "notation"] }
+    ],
     "react/react-in-jsx-scope": "error",
     "react/require-render-return": "error",
     "react/rules-of-hooks": "error",

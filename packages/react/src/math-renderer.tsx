@@ -7,7 +7,7 @@ import { macros } from '@math-blocks/tex';
 import { useFontData } from './font-data-context';
 import { useMissingGlyphs } from './use-missing-glyphs';
 import SceneRenderer from './scene-renderer';
-import { getSpokenText } from './spoken-text';
+import { HiddenMathml } from './editor-mathml';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -32,15 +32,9 @@ type Props = {
   // loaded. It's called again only when the set of missing characters changes.
   readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
 
-  // The text screen readers announce for the math. The SVG is exposed as a
-  // single image (role="img") with this as its name. Defaults to a spoken
-  // description generated from `row`, such as "x squared plus 1"; see
-  // getSpokenText. Pass your own to use different wording or another language.
-  readonly 'aria-label'?: string;
-
   // Hides the math from screen readers entirely, for example when it's
-  // decorative or the page already provides an accessible alternative such as
-  // MathML. The SVG then has aria-hidden="true" and no role or label.
+  // decorative or the page already provides its own accessible alternative.
+  // The hidden MathML is then left out.
   readonly 'aria-hidden'?: boolean;
 };
 
@@ -82,22 +76,30 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       verticalAlign = -Math.ceil(depth);
     }
 
+    // Screen readers read the math from Presentation MathML that's rendered
+    // next to the SVG but hidden visually. The SVG is only a picture of the
+    // math, so it's hidden from them, and the math isn't read twice.
     return (
-      <SceneRenderer
-        ref={ref}
-        scene={scene}
-        showHitboxes={showHitboxes}
-        accessibilityHidden={props['aria-hidden']}
-        accessibleLabel={
-          props['aria-hidden']
-            ? undefined
-            : (props['aria-label'] ?? getSpokenText(props.row))
-        }
-        style={{
-          ...style,
-          verticalAlign,
-        }}
-      />
+      <>
+        <SceneRenderer
+          ref={ref}
+          scene={scene}
+          showHitboxes={showHitboxes}
+          accessibilityHidden={true}
+          style={{
+            ...style,
+            verticalAlign,
+          }}
+        />
+        {!props['aria-hidden'] && (
+          <HiddenMathml
+            row={props.row}
+            display={
+              mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline'
+            }
+          />
+        )}
+      </>
     );
   },
 );

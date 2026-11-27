@@ -1,14 +1,14 @@
 /**
  * @vitest-environment jsdom
  */
-// MathRenderer exposes its SVG to screen readers as one image whose name is a
-// spoken description of the math, and hides the drawn glyphs from them. See
+// MathRenderer renders Presentation MathML for screen readers next to its SVG,
+// visually hidden, and hides the SVG from them so the math is read once. See
 // https://github.com/math-blocks/math-blocks/issues/86.
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 // In the jsdom environment, Vitest resolves 'buffer' to the npm polyfill, which
 // has no Blob, so ask for Node's module.
 import { Blob } from 'node:buffer';
@@ -33,13 +33,21 @@ beforeAll(async () => {
   fontData = getFontData(font, 'STIX2');
 });
 
-const renderMath = (element: React.ReactElement): void => {
-  render(
-    <FontDataContext.Provider value={fontData}>
-      {element}
-    </FontDataContext.Provider>,
-  );
+// The <math> element. Testing Library's getByRole can't be used for it: jsdom
+// doesn't give MathML elements the style its role lookup reads.
+const getMath = (container: HTMLElement): Element => {
+  const math = container.querySelector('math');
+  if (!math) {
+    throw new Error('No <math> element');
+  }
+  return math;
 };
+
+const withFont = (element: React.ReactElement): React.ReactElement => (
+  <FontDataContext.Provider value={fontData}>
+    {element}
+  </FontDataContext.Provider>
+);
 
 // Whether the element or one of its ancestors is hidden from assistive
 // technology.
@@ -47,107 +55,115 @@ const isHidden = (element: Element): boolean =>
   element.closest('[aria-hidden="true"]') !== null;
 
 describe('MathRenderer accessibility', () => {
-  test.each([
-    ['x^2+1', 'x squared plus 1'],
-    ['\\frac{x+1}{2}', 'the fraction x plus 1 over 2, end fraction'],
-    ['\\sqrt{x+1}', 'the square root of x plus 1, end root'],
-    ['\\left(a+b\\right)^2', 'open paren a plus b close paren squared'],
-    ['\\sum_{i=1}^{n}i', 'sum from i equals 1 to n of i'],
-  ])('%s is an image named "%s"', (tex, name) => {
-    renderMath(<MathRenderer row={parseTex(tex)} />);
-
-    const img = screen.getByRole('img', { name });
-    expect(img.tagName).toBe('svg');
-    expect(img).toHaveAttribute('aria-label', name);
-  });
-
-  test('the drawn content is hidden from assistive technology', () => {
-    renderMath(<MathRenderer row={parseTex('\\frac{1}{\\sqrt{2}}')} />);
-
-    const svg = screen.getByRole('img');
-    const drawn = svg.querySelectorAll('use, path, line, rect, g');
-    expect(drawn.length).toBeGreaterThan(0);
-    for (const element of drawn) {
-      // <defs> isn't rendered, so its paths don't need hiding.
-      if (element.closest('defs')) {
-        continue;
-      }
-      expect(isHidden(element)).toBe(true);
-    }
-    // The SVG itself isn't hidden: it carries the name.
-    expect(isHidden(svg)).toBe(false);
-  });
-
-  test('the hitboxes are hidden too', () => {
-    renderMath(<MathRenderer row={parseTex('x+1')} showHitboxes={true} />);
-
-    const svg = screen.getByRole('img', { name: 'x plus 1' });
-    const rects = svg.querySelectorAll('rect');
-    expect(rects.length).toBeGreaterThan(0);
-    for (const rect of rects) {
-      expect(isHidden(rect)).toBe(true);
-    }
-  });
-
-  test('the aria-label prop overrides the generated label', () => {
-    renderMath(
-      <MathRenderer row={parseTex('x^2')} aria-label="x al cuadrado" />,
-    );
-
-    expect(screen.getByRole('img', { name: 'x al cuadrado' })).toBeVisible();
-    expect(screen.queryByRole('img', { name: 'x squared' })).toBeNull();
-  });
-
-  test('aria-hidden hides the whole SVG', () => {
+  test('the SVG is hidden from assistive technology', () => {
     const { container } = render(
-      <FontDataContext.Provider value={fontData}>
-        <MathRenderer row={parseTex('x^2')} aria-hidden={true} />
-      </FontDataContext.Provider>,
+      withFont(<MathRenderer row={parseTex('\\frac{1}{\\sqrt{2}}')} />),
     );
 
-    expect(screen.queryByRole('img')).toBeNull();
     const svg = container.querySelector('svg');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).not.toHaveAttribute('role');
     expect(svg).not.toHaveAttribute('aria-label');
   });
 
-  test('the label updates when the math changes', () => {
-    const { rerender } = render(
-      <FontDataContext.Provider value={fontData}>
-        <MathRenderer row={parseTex('x')} />
-      </FontDataContext.Provider>,
+  test('screen readers get MathML for the math instead', () => {
+    const { container } = render(
+      withFont(<MathRenderer row={parseTex('x^2+1')} />),
     );
-    expect(screen.getByRole('img', { name: 'x' })).toBeInTheDocument();
+
+    const math = getMath(container);
+    expect(math.tagName.toLowerCase()).toBe('math');
+    expect(math.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML');
+    expect(isHidden(math)).toBe(false);
+    expect(math.querySelector('msup')).not.toBeNull();
+    expect(math.textContent).toBe('x2+1');
+    // It comes right after the SVG, so a screen reader finds it where the
+    // math is drawn.
+    expect(container.querySelector('svg')?.nextElementSibling).toBe(
+      math.parentElement,
+    );
+  });
+
+  test('the MathML is hidden visually, but not with display or visibility', () => {
+    const { container } = render(
+      withFont(<MathRenderer row={parseTex('x')} />),
+    );
+
+    const wrapper = getMath(container).parentElement;
+    expect(wrapper?.tagName).toBe('SPAN');
+    expect(wrapper?.style.position).toBe('absolute');
+    expect(wrapper?.style.width).toBe('1px');
+    expect(wrapper?.style.height).toBe('1px');
+    expect(wrapper?.style.overflow).toBe('hidden');
+    expect(wrapper?.style.clipPath).toBe('inset(50%)');
+    // display: none or visibility: hidden would hide it from screen readers.
+    expect(wrapper?.style.display).toBe('');
+    expect(wrapper?.style.visibility).toBe('');
+  });
+
+  test('display matches the math style', () => {
+    const { container, rerender } = render(
+      withFont(<MathRenderer row={parseTex('x')} />),
+    );
+    expect(getMath(container).getAttribute('display')).toBe('block');
 
     rerender(
-      <FontDataContext.Provider value={fontData}>
-        <MathRenderer row={parseTex('y')} />
-      </FontDataContext.Provider>,
+      withFont(
+        <MathRenderer
+          row={parseTex('x')}
+          mathStyle={Typesetter.MathStyle.Text}
+        />,
+      ),
     );
-    expect(screen.getByRole('img', { name: 'y' })).toBeInTheDocument();
+    expect(getMath(container).getAttribute('display')).toBe('inline');
   });
 
-  test('the role and label are in server-rendered markup', () => {
+  test('aria-hidden leaves out the MathML', () => {
+    const { container } = render(
+      withFont(<MathRenderer row={parseTex('x^2')} aria-hidden={true} />),
+    );
+
+    expect(container.querySelector('math')).toBeNull();
+    expect(container.querySelector('svg')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+  });
+
+  test('the MathML updates when the math changes', () => {
+    const { container, rerender } = render(
+      withFont(<MathRenderer row={parseTex('x')} />),
+    );
+    expect(getMath(container).textContent).toBe('x');
+
+    rerender(withFont(<MathRenderer row={parseTex('y')} />));
+    expect(getMath(container).textContent).toBe('y');
+  });
+
+  test('the MathML is in server-rendered markup', () => {
     const markup = ReactDOMServer.renderToStaticMarkup(
-      <FontDataContext.Provider value={fontData}>
-        <MathRenderer row={parseTex('x^2')} />
-      </FontDataContext.Provider>,
+      withFont(<MathRenderer row={parseTex('x^2')} />),
     );
 
-    expect(markup).toMatch(/^<svg [^>]*role="img" aria-label="x squared"/);
+    expect(markup).toMatch(/^<svg [^>]*aria-hidden="true"/);
+    expect(markup).toContain(
+      '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">' +
+        '<mrow><msup><mi>x</mi><mrow><mn>2</mn></mrow></msup></mrow></math>',
+    );
   });
 
-  test('a forwarded ref points at the labelled SVG', () => {
+  test('a forwarded ref still points at the SVG', () => {
     const ref = React.createRef<SVGSVGElement>();
-    renderMath(<MathRenderer ref={ref} row={parseTex('x')} />);
+    const { container } = render(
+      withFont(<MathRenderer ref={ref} row={parseTex('x')} />),
+    );
 
-    expect(ref.current).toBe(screen.getByRole('img', { name: 'x' }));
+    expect(ref.current).toBe(container.querySelector('svg'));
   });
 });
 
-describe('SceneRenderer without a label', () => {
-  test('adds no role or hidden content, as MathEditor relies on', () => {
+describe('SceneRenderer', () => {
+  test("doesn't hide its SVG unless asked, as MathEditor relies on", () => {
     const scene = Typesetter.typeset(parseTex('x'), {
       fontData,
       baseFontSize: 64,
@@ -158,15 +174,6 @@ describe('SceneRenderer without a label', () => {
     });
     const { container } = render(<SceneRenderer scene={scene} />);
 
-    const svg = container.querySelector('svg');
-    expect(svg).not.toHaveAttribute('role');
-    expect(svg).not.toHaveAttribute('aria-label');
-    const groups = Array.from(svg?.children ?? []).filter(
-      (child) => child.tagName === 'g',
-    );
-    expect(groups.length).toBeGreaterThan(0);
-    for (const group of groups) {
-      expect(group).not.toHaveAttribute('aria-hidden');
-    }
+    expect(container.querySelector('svg')).not.toHaveAttribute('aria-hidden');
   });
 });
