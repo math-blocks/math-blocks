@@ -6,7 +6,7 @@ import type { Mutable } from 'utility-types';
 
 import * as Lexer from './lexer';
 import { unsupported } from './lexer';
-import { functions, isFunctionName } from './functions';
+import { functions, isFunctionName, listOperators } from './functions';
 import { locFromRange } from '../token/util';
 import { TokenKind } from '../token/types';
 
@@ -90,10 +90,16 @@ const constants: Record<string, (loc?: SourceLocation) => Semantic.types.Node> =
     '\u2102': Semantic.builders.complexes, // ℂ
   };
 
+// Names that are applied like a function, e.g. `\sin x` or `\max(a, b)`.  A
+// function name ends the argument of the function before it, so
+// `\sin x \max(a, b)` is `sin(x)·max(a, b)`.
+const isFunctionLikeName = (name: string): boolean =>
+  isFunctionName(name) || name in listOperators;
+
 const isFunctionToken = (node: TokenNode): boolean =>
   node.type === 'token' &&
   node.name === TokenKind.Identifier &&
-  isFunctionName(node.value);
+  isFunctionLikeName(node.value);
 
 // `mod` is a binary operator, e.g. `a \mod n`, rather than a function.
 const isModToken = (node: TokenNode): boolean =>
@@ -208,6 +214,62 @@ const parseBigOperatorArg = (
     throw new Error(`Missing argument for ${symbol}`);
   }
   return parser.parseWithOperator('add');
+};
+
+/**
+ * Parses an operator from `listOperators`, such as max, whose name has
+ * already been consumed.  It takes one of:
+ *
+ * - a list of arguments in parens, e.g. `\max(a, b, c)`.  The parens bind
+ *   tightly, so `\max(a, b)^2` is `(max(a, b))^2` and `\max(a, b) + 1` is
+ *   `max(a, b) + 1`.
+ * - a single argument, e.g. the set in `\max S` or `\max(S)`.  Without
+ *   parens it extends like a function's argument, so `\max S + 1` is
+ *   `max(S) + 1`.
+ * - a subscript holding a condition, followed by an expression, e.g.
+ *   `\max_{x \in S} f(x)` or `\min_{0 \le x \le 1} g(x)`.  The expression
+ *   extends like the argument of a sum.
+ */
+const parseListOperator = (
+  parser: EditorParser,
+  token: TokenAtom,
+  name: string,
+): Semantic.types.Node => {
+  const build = listOperators[name];
+  const [sub, sup] = consumeLimits(parser);
+  if (sup) {
+    throw new Error(`'${name}' can't have a superscript`);
+  }
+  if (sub) {
+    if (sub.children.length === 0) {
+      throw new Error(`The subscript of '${name}' can't be empty`);
+    }
+    const condition = editorParser.parse(sub.children);
+    const arg = parseBigOperatorArg(parser, name);
+    return build([arg], condition, locFromRange(token.loc, arg.loc));
+  }
+
+  const next = parser.peek();
+  if (
+    next.type === NodeType.Delimited &&
+    next.leftDelim.name === TokenKind.LeftParens
+  ) {
+    parser.consume();
+    const [inner] = next.children;
+    if (inner.children.length === 0) {
+      throw new Error(`Missing argument for ${name}`);
+    }
+    const list = editorParser.parse(inner.children);
+    const args: OneOrMore<Semantic.types.Node> =
+      list.type === 'Sequence' ? list.args : [list];
+    return build(args, undefined, locFromRange(token.loc, next.loc));
+  }
+
+  if (next.type === 'token' && !ARG_START_TOKENS.includes(next.name)) {
+    throw new Error(`Missing argument for ${name}`);
+  }
+  const arg = parser.parseWithOperator('func.arg');
+  return build([arg], undefined, locFromRange(token.loc, arg.loc));
 };
 
 /**
@@ -361,6 +423,11 @@ const getPrefixParselet = (
           }
           if (isFunctionName(name)) {
             return { parse: (parser) => parseFunction(parser, node, name) };
+          }
+          if (name in listOperators) {
+            return {
+              parse: (parser) => parseListOperator(parser, node, name),
+            };
           }
           if (name === 'lim') {
             return {
@@ -857,7 +924,7 @@ const getInfixParselet = (
               },
             };
           }
-          if (isFunctionName(node.value)) {
+          if (isFunctionLikeName(node.value)) {
             return {
               op: 'mul.func',
               parse: (parser, left): Semantic.types.Node => {
@@ -1120,7 +1187,7 @@ export type ParseOptions = {
    * typed one letter at a time, so `sinx` is `sin(x)`.  The longest name
    * that matches wins, and names are case-sensitive, so `arcsinx` is
    * `arcsin(x)` and `SINx` is `S·I·N·x`.  Typed names without a semantic
-   * node yet, such as `max`, throw `'max' isn't supported yet`, as `\max`
+   * node yet, such as `gcd`, throw `'gcd' isn't supported yet`, as `\gcd`
    * does.
    *
    * When it's `true`, letters typed one at a time are always single-letter

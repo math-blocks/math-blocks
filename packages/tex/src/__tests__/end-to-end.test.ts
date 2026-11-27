@@ -259,7 +259,7 @@ describe('Editor.parse(Tex.parse(...))', () => {
       });
 
       test('an unsupported function throws', () => {
-        expect(() => parse('\\max x')).toThrow("'max' isn't supported yet");
+        expect(() => parse('\\gcd x')).toThrow("'gcd' isn't supported yet");
       });
 
       test('a subscript on a function other than log throws', () => {
@@ -425,6 +425,21 @@ describe('Editor.parse(Tex.parse(...))', () => {
     });
   });
 
+  // Editor.print doesn't handle Max and Min, or named functions in general,
+  // yet, so these only round trip through Tex.print of the editor tree.
+  describe('max and min round trip through Tex.print', () => {
+    test.each([
+      ['\\max(a, b, c)', '\\max\\left(a,b,c\\right)'],
+      ['\\min A', '\\min A'],
+      ['\\min_{x\\in A} x^2', '\\min_{x\\isin A}x^{2}'],
+      ['\\max_{n} a_n', '\\max_{n}a_{n}'],
+    ])('%s prints as %s and re-parses to the same tree', (tex, expected) => {
+      const printed = texPrint(texParse(tex));
+      expect(printed).toEqual(expected);
+      expect(strip(parse(printed))).toEqual(strip(parse(tex)));
+    });
+  });
+
   describe('symbols', () => {
     const A = b.identifier('A');
     const B = b.identifier('B');
@@ -522,6 +537,35 @@ describe('Editor.parse(Tex.parse(...))', () => {
       ['\\lim_{x\\to 0^{+}} x', b.limit(x, x, b.number('0'), 'right')],
       ['\\lim_{x\\to 0^{-}} x', b.limit(x, x, b.number('0'), 'left')],
 
+      // max and min with a list of arguments
+      ['\\max(a, b, c)', b.max([a, b.identifier('b'), b.identifier('c')])],
+      ['\\min(1, x)', b.min([num('1'), x])],
+      ['\\max\\left(x, y\\right)', b.max([x, y])],
+      ['\\max(x, y)+1', b.add([b.max([x, y]), num('1')])],
+      ['\\max(x, y)^2', b.pow(b.max([x, y]), num('2'))],
+      ['2\\min(x, y)', b.mul([num('2'), b.min([x, y])], true)],
+      ['\\max(\\min(x, y), z)', b.max([b.min([x, y]), z])],
+      // max and min of a single argument, e.g. a set
+      ['\\max(A)', b.max([A])],
+      ['\\max A', b.max([A])],
+      ['\\min A+1', b.add([b.min([A]), num('1')])],
+      // max and min with a condition in their subscript
+      ['\\max_{x\\in A} x^2', b.max([b.pow(x, num('2'))], b.in(x, A))],
+      [
+        '\\max_{x \\in A} f(x)',
+        b.max([b.mul([b.identifier('f'), x], true)], b.in(x, A)),
+      ],
+      [
+        // `0 \le x \le 1` is parsed as `(0 ≤ x) ≤ 1`, see LessThanOrEquals.
+        '\\min_{0 \\le x \\le 1} x^2',
+        b.min([b.pow(x, num('2'))], b.lte([b.lte([num('0'), x]), num('1')])),
+      ],
+      ['\\max_{n} a_n', b.max([b.identifier('a', n)], n)],
+      [
+        '\\max_{i} 2i+1',
+        b.add([b.max([b.mul([num('2'), i], true)], i), num('1')]),
+      ],
+
       // mod and det
       ['a\\mod n', b.mod(a, n)],
       ['7\\mod 3=1', b.eq([b.mod(num('7'), num('3')), num('1')])],
@@ -549,10 +593,16 @@ describe('Editor.parse(Tex.parse(...))', () => {
       ['\\iint x', "'∬' isn't supported yet"],
       ['\\iiint x', "'∭' isn't supported yet"],
 
+      // max and min without an argument
+      ['\\max', 'Missing argument for max'],
+      ['\\max()', 'Missing argument for max'],
+      ['\\min_{x}', 'Missing argument for min'],
+      ['\\max_{x\\in A}', 'Missing argument for max'],
+      ['\\max_{} x', "The subscript of 'max' can't be empty"],
+      ['\\max^2 x', "'max' can't have a superscript"],
+
       // named functions
       ['\\arg z', "'arg' isn't supported yet"],
-      ['\\min x', "'min' isn't supported yet"],
-      ['\\max x', "'max' isn't supported yet"],
       ['\\lcm x', "'lcm' isn't supported yet"],
       ['\\gcd x', "'gcd' isn't supported yet"],
       ['\\limsup x', "'limsup' isn't supported yet"],

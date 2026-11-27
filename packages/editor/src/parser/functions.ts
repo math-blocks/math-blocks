@@ -4,6 +4,7 @@
  * lexer uses the names to recognize them when they're typed one letter at a
  * time.
  */
+import type { OneOrMore } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
 import type { SourceLocation } from '../token/types';
@@ -42,7 +43,7 @@ export type FunctionDef = {
  *
  * `log` isn't here because it takes an optional base as a subscript, see
  * `SPECIAL_NAMES`.  Functions that take a list of arguments, such as `max`,
- * aren't here either.
+ * are in `listOperators`.
  */
 export const functions: Record<string, FunctionDef> = {
   sin: { build: b.sin, inverse: b.arcsin },
@@ -73,18 +74,33 @@ export const functions: Record<string, FunctionDef> = {
   det: { build: b.determinant },
 };
 
+export type ListBuilder = (
+  args: OneOrMore<Semantic.types.Node>,
+  condition?: Semantic.types.Node,
+  loc?: SourceLocation,
+) => Semantic.types.Node;
+
+/**
+ * Operators that take either a list of arguments, e.g. `\max(a, b, c)`, or a
+ * subscript holding a condition followed by an expression, e.g.
+ * `\max_{x \in S} f(x)`.  A single argument, as in `\max S` or `\max(S)`,
+ * is allowed, since it's the maximum of a set.
+ */
+export const listOperators: Record<string, ListBuilder> = {
+  max: b.max,
+  min: b.min,
+};
+
 // Names that the parser handles itself rather than through a table: `log`
 // takes an optional base, `mod` is a binary operator and `lim` takes a
 // subscript such as `x→0`.
 export const SPECIAL_NAMES: readonly string[] = ['log', 'mod', 'lim'];
 
 // Named functions and operators that `Tex.parse` has macros for, but that
-// have no semantic node yet.  The parser throws `'max' isn't supported yet`
+// have no semantic node yet.  The parser throws `'gcd' isn't supported yet`
 // for these.
 export const UNSUPPORTED_NAMES: readonly string[] = [
-  // TODO(#888): min, max, limsup and liminf.
-  'min',
-  'max',
+  // TODO(#888): limsup and liminf.
   'limsup',
   'liminf',
   // TODO(#883): gcd and lcm.
@@ -107,6 +123,7 @@ export const isFunctionName = (name: string): boolean =>
 // Every name that's a single word, whether or not the parser supports it.
 export const WORD_OPERATORS: readonly string[] = [
   ...Object.keys(functions),
+  ...Object.keys(listOperators),
   ...SPECIAL_NAMES,
   ...UNSUPPORTED_NAMES,
 ];
