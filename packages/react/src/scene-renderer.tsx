@@ -327,10 +327,13 @@ type Props = {
   readonly scene: SceneGraph.Scene;
   readonly style?: React.CSSProperties;
   readonly showHitboxes?: boolean;
+  // Hides the whole SVG from assistive technology, for when the page provides
+  // its own accessible alternative, such as MathRenderer's hidden MathML.
+  readonly accessibilityHidden?: boolean;
 };
 
 const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
-  const { scene, style, showHitboxes } = props;
+  const { scene, style, showHitboxes, accessibilityHidden } = props;
   const { width, height } = scene;
   const padding = CURSOR_WIDTH / 2;
   const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
@@ -376,6 +379,7 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
       height={height}
       style={style}
       ref={ref}
+      aria-hidden={accessibilityHidden ? true : undefined}
     >
       {!shared && glyphDefs.length > 0 && (
         <defs>

@@ -39,7 +39,10 @@ const AccessibleMath: React.FC<Props> = (props) => {
 
   return (
     <div style={{ position: 'relative' }}>
-      <MathRenderer row={math} ref={mathRef} />
+      {/* Screen readers read the MathML laid over the SVG below, so
+          aria-hidden leaves out MathRenderer's own hidden MathML, and the math
+          isn't read twice. */}
+      <MathRenderer row={math} ref={mathRef} aria-hidden={true} />
       <div
         style={{
           position: 'absolute',

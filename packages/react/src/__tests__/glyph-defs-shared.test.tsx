@@ -63,10 +63,12 @@ const EXPRESSIONS = [
 ];
 
 // The provider's hidden <svg>s, and the SVGs drawn by renderers and editors.
+// Renderers' SVGs are aria-hidden too (screen readers read their hidden
+// MathML instead), so the provider's are told apart by focusable="false".
 const hiddenSvgs = (root: ParentNode): readonly Element[] =>
-  Array.from(root.querySelectorAll('svg[aria-hidden="true"]'));
+  Array.from(root.querySelectorAll('svg[focusable="false"]'));
 const mathSvgs = (root: ParentNode): readonly Element[] =>
-  Array.from(root.querySelectorAll('svg:not([aria-hidden])'));
+  Array.from(root.querySelectorAll('svg:not([focusable="false"])'));
 
 const sharedDefs = (root: ParentNode): ReadonlyMap<string, string> =>
   new Map(hiddenSvgs(root).flatMap((svg) => [...readGlyphDefs(svg.outerHTML)]));
@@ -259,7 +261,7 @@ describe('GlyphDefsProvider', () => {
 
     // Every SVG but the provider's hidden one.
     const svgs = (serverHtml.match(/<svg.*?<\/svg>/g) ?? []).filter(
-      (svg) => !svg.includes('aria-hidden="true" focusable="false"'),
+      (svg) => !svg.includes('focusable="false"'),
     );
     expect(svgs).toHaveLength(EXPRESSIONS.length);
     for (const svg of svgs) {

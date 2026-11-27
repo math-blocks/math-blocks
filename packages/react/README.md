@@ -21,6 +21,39 @@ it a `className` or `style` prop.
 
 ## MathRenderer
 
+### Accessibility
+
+`MathRenderer` draws math as an SVG of glyph outlines, which screen readers
+can't read. So next to the SVG it renders the same math as Presentation
+MathML, hidden visually but not from assistive technology, and marks the SVG
+`aria-hidden` so the math is read once:
+
+```tsx
+<MathRenderer row={row} />
+// <svg aria-hidden="true" ...>...</svg>
+// <span style="position: absolute; width: 1px; height: 1px; ...">
+//   <math display="block"><mfrac>...</mfrac></math>
+// </span>
+```
+
+The MathML is built from `row`, the same tree that's drawn, so it works for
+incomplete input such as an empty fraction slot.
+
+Screen readers with MathML support read the math, let users move through its
+parts (a fraction's numerator, an exponent, ...), and can show it in braille:
+VoiceOver with Safari, NVDA with MathCAT, and JAWS. Support is weaker
+elsewhere, notably TalkBack on Android. An `aria-label` mode for those
+cases is planned in
+[#878](https://github.com/math-blocks/math-blocks/issues/878).
+
+Pass `aria-hidden` when the math is decorative, or when the page provides
+its own accessible alternative. The SVG stays hidden and the MathML is left
+out.
+
+The `<math>` element follows the SVG in the DOM, so `MathRenderer` renders two
+elements: the SVG (which a forwarded `ref` points at) and the visually hidden
+`<span>`. The `<span>` is absolutely positioned, so it takes up no space.
+
 ## MathEditor
 
 TODO:

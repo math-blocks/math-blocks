@@ -120,7 +120,13 @@ expect.extend({
     // whereas jest-snapshots can be multi-test per file.
 
     // TODO: format the output
-    const output = ReactDOMServer.renderToStaticMarkup(element);
+    // MathRenderer renders hidden MathML for screen readers after its SVG.
+    // The snapshots are SVG images, so they only hold the SVG; the MathML is
+    // checked in editor-mathml.test.tsx and accessibility.test.tsx.
+    const output = ReactDOMServer.renderToStaticMarkup(element).replace(
+      /<span [^>]*><math [\s\S]*<\/math><\/span>$/,
+      '',
+    );
     // Throws if a <use> references a missing glyph definition or if a
     // definition is never used.
     TestUtil.expandGlyphUses(output);

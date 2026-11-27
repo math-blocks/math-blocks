@@ -7,6 +7,7 @@ import { macros } from '@math-blocks/tex';
 import { useFontData } from './font-data-context';
 import { useMissingGlyphs } from './use-missing-glyphs';
 import SceneRenderer from './scene-renderer';
+import { HiddenMathml } from './editor-mathml';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -30,6 +31,11 @@ type Props = {
   // placeholder instead. `group` is set when the character's glyph group isn't
   // loaded. It's called again only when the set of missing characters changes.
   readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
+
+  // Hides the math from screen readers entirely, for example when it's
+  // decorative or the page already provides its own accessible alternative.
+  // The hidden MathML is then left out.
+  readonly 'aria-hidden'?: boolean;
 };
 
 // TODO: expose other settings such as display style as props
@@ -70,16 +76,30 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       verticalAlign = -Math.ceil(depth);
     }
 
+    // Screen readers read the math from Presentation MathML that's rendered
+    // next to the SVG but hidden visually. The SVG is only a picture of the
+    // math, so it's hidden from them, and the math isn't read twice.
     return (
-      <SceneRenderer
-        ref={ref}
-        scene={scene}
-        showHitboxes={showHitboxes}
-        style={{
-          ...style,
-          verticalAlign,
-        }}
-      />
+      <>
+        <SceneRenderer
+          ref={ref}
+          scene={scene}
+          showHitboxes={showHitboxes}
+          accessibilityHidden={true}
+          style={{
+            ...style,
+            verticalAlign,
+          }}
+        />
+        {!props['aria-hidden'] && (
+          <HiddenMathml
+            row={props.row}
+            display={
+              mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline'
+            }
+          />
+        )}
+      </>
     );
   },
 );

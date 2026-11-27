@@ -191,8 +191,11 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
   const getSharedStats = (page: Page): Promise<SharedStats> =>
     page.evaluate(() => {
       const svgs = Array.from(document.querySelectorAll('svg'));
-      const hidden = svgs.filter((svg) => svg.getAttribute('aria-hidden'));
-      const math = svgs.filter((svg) => !svg.getAttribute('aria-hidden'));
+      // The GlyphDefsProvider's hidden <svg> is the one with
+      // focusable="false". (Renderers' SVGs are aria-hidden too, since screen
+      // readers read their hidden MathML instead.)
+      const hidden = svgs.filter((svg) => svg.getAttribute('focusable'));
+      const math = svgs.filter((svg) => !svg.getAttribute('focusable'));
       const defIds = hidden.flatMap((svg) =>
         Array.from(svg.querySelectorAll('defs > path')).map((p) => p.id),
       );
@@ -244,13 +247,13 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
         const svgs = Array.from(document.querySelectorAll('svg'));
         const defIds = new Set(
           svgs
-            .filter((svg) => svg.getAttribute('aria-hidden'))
+            .filter((svg) => svg.getAttribute('focusable'))
             .flatMap((svg) =>
               Array.from(svg.querySelectorAll('defs > path')).map((p) => p.id),
             ),
         );
         const hrefs = svgs
-          .filter((svg) => !svg.getAttribute('aria-hidden'))
+          .filter((svg) => !svg.getAttribute('focusable'))
           .flatMap((svg) =>
             Array.from(svg.querySelectorAll('use')).map((use) =>
               (use.getAttribute('href') ?? '').slice(1),
@@ -264,7 +267,7 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
       requestAnimationFrame(check);
     });
     await openWorksheet(page);
-    await expect(page.locator('svg:not([aria-hidden]) use')).not.toHaveCount(0);
+    await expect(page.locator('svg:not([focusable]) use')).not.toHaveCount(0);
     // Let a few more frames go by after the math appears.
     await expect
       .poll(() =>
@@ -293,7 +296,7 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
 
   test('the hidden <svg> takes no space', async ({ page }) => {
     await openWorksheet(page);
-    const box = await page.locator('svg[aria-hidden="true"]').boundingBox();
+    const box = await page.locator('svg[focusable="false"]').boundingBox();
     expect(box?.width).toBe(0);
     expect(box?.height).toBe(0);
   });
@@ -317,7 +320,7 @@ test.describe('shared definitions (GlyphDefsProvider)', () => {
         );
         return svgs
           .filter(
-            (svg) => !svg.getAttribute('aria-hidden') && svg !== editorSvgs[1],
+            (svg) => !svg.getAttribute('focusable') && svg !== editorSvgs[1],
           )
           .map((svg) => svg.outerHTML);
       });
