@@ -1,19 +1,46 @@
 # @math-blocks/fonts
 
-The math font subsets that `@math-blocks/react` renders with, as WOFF
-(`.woff`) files, plus a list of the fonts.
+The math fonts that `@math-blocks/react` renders with. You don't use these
+files directly: they're loaded with `loadFontSubsets` from
+`@math-blocks/opentype` and passed to `@math-blocks/react` through
+`FontDataContext`. A simpler setup in `@math-blocks/react` is planned in
+[#881](https://github.com/math-blocks/math-blocks/issues/881).
 
-Each font is split into one small file per glyph group (see `glyphGroups` in
-`@math-blocks/opentype`), so an app only downloads the characters it uses.
-WOFF holds the same font tables as OpenType, compressed, so the files are
-about a third smaller than `.otf` ones would be. `@math-blocks/opentype` reads
-them wherever `DecompressionStream` is available: current browsers and
-Node 18+.
+Each font is split into one small WOFF file per glyph group (see `glyphGroups`
+in `@math-blocks/opentype`), so a page only downloads the characters it uses.
+They need `DecompressionStream`, which current browsers and Node 18+ have.
 
-The repository also builds `.otf` versions of the subsets, for its own tests,
-but they aren't published. If you need them, for a runtime without
-`DecompressionStream`, build them with `scripts/subset-fonts.py` in the
-repository.
+## Using the fonts with `@math-blocks/react`
+
+Make the package's `subsets/` folder available at a URL, load the glyph
+groups you need, and provide the result:
+
+```tsx
+import { fromBaseUrl, getFontData, loadFontSubsets } from '@math-blocks/opentype';
+import { FontDataContext, MathRenderer } from '@math-blocks/react';
+
+const font = await loadFontSubsets(
+  ['base', 'calculus'],
+  fromBaseUrl('/fonts/stix-two-math', { format: 'woff' }),
+);
+
+<FontDataContext.Provider value={getFontData(font, 'stix-two-math')}>
+  <MathRenderer row={row} />
+</FontDataContext.Provider>;
+```
+
+Ways to get the files to a URL:
+
+- **Your app's static folder.** Copy `node_modules/@math-blocks/fonts/subsets/`
+  into it, e.g. `public/fonts/` with Vite or rsbuild, or with a copy plugin in
+  rspack or webpack. The copied files don't get hashed names, so include the
+  package version in the folder name or set suitable cache headers.
+- **An npm CDN**, with no copying:
+  `fromBaseUrl('https://cdn.jsdelivr.net/npm/@math-blocks/fonts@<version>/subsets/stix-two-math', { format: 'woff' })`.
+
+For server rendering, read the files from disk instead: `subsetPath(folder,
+group)` gives a file's path inside the package, for
+`require.resolve('@math-blocks/fonts/' + subsetPath(...))`.
 
 ## What's in the package
 
@@ -28,50 +55,6 @@ subsets/
   tex-gyre-termes-math/
 licenses/
   OFL-1.1.txt  GUST-FONT-LICENSE.txt  LPPL-1.3c.txt
-```
-
-The package doesn't include the full original fonts.
-
-## Loading the fonts
-
-The package doesn't fetch anything itself. Serve the files however suits your
-app, then load them with `loadFontSubsets` from `@math-blocks/opentype`.
-
-### In a browser
-
-Copy `node_modules/@math-blocks/fonts/subsets/` to your static files or CDN,
-for example as `/fonts/`, and fetch the `.woff` files from there:
-
-```ts
-import { loadFontSubsets, fromBaseUrl, getFontData } from '@math-blocks/opentype';
-
-const font = await loadFontSubsets(
-  ['calculus'],
-  fromBaseUrl('/fonts/stix-two-math', { format: 'woff' }),
-);
-const fontData = getFontData(font, 'stix-two-math');
-```
-
-With a bundler that supports asset URLs, you can import a file's URL instead.
-In Vite, for example:
-`import url from '@math-blocks/fonts/subsets/stix-two-math/base.woff?url'`.
-
-### In Node
-
-```ts
-import fs from 'fs';
-import { createRequire } from 'module';
-import { subsetPath } from '@math-blocks/fonts';
-import { loadFontSubsets } from '@math-blocks/opentype';
-
-const require = createRequire(import.meta.url);
-const font = await loadFontSubsets(['calculus'], async (group) =>
-  new Uint8Array(
-    fs.readFileSync(
-      require.resolve(`@math-blocks/fonts/${subsetPath('stix-two-math', group)}`),
-    ),
-  ).buffer,
-);
 ```
 
 ## Exports
@@ -98,7 +81,9 @@ and the TeX Gyre fonts are under the GUST Font License. See
 ## Updating the subsets
 
 The subsets are built from the fonts in the repository's `assets/` folder by
-`scripts/subset-fonts.py`, using the list in `src/fonts.json`. To add a font,
+`scripts/subset-fonts.py`, using the list in `src/fonts.json`. The script also
+builds `.otf` versions, which the repository's tests compare with the original
+fonts. They aren't published. To add a font,
 add an entry there, put its source file in `assets/`, and run
 `python3 scripts/subset-fonts.py`.
 
