@@ -8,7 +8,7 @@ import { parse as parseTex } from '@math-blocks/tex';
 
 import { HiddenMathml } from '../editor-mathml';
 
-const { char, row, subsup, limits, macro } = Editor.builders;
+const { char, row, subsup, limits, macro, delimited, matrix } = Editor.builders;
 
 // The MathML inside <math>, without the wrapper that hides it.
 const mathml = (math: Editor.types.CharRow): string => {
@@ -99,7 +99,7 @@ describe('HiddenMathml', () => {
 
   test('a macro being typed is shown with its backslash', () => {
     expect(mathml(row([macro(chars('sq'))]))).toEqual(
-      '<mrow><mo>\\</mo><mrow><mi>s</mi><mi>q</mi></mrow></mrow>',
+      '<mrow><mo>\\</mo><mi>s</mi><mi>q</mi></mrow>',
     );
   });
 
@@ -119,6 +119,43 @@ describe('HiddenMathml', () => {
     // An <mrow> with one child means the same as the child.
     expect(mathml(parseTex('\\frac{1}{2}'))).toEqual(
       '<mfrac><mn>1</mn><mn>2</mn></mfrac>',
+    );
+  });
+
+  test('delimiters around one element group them without another <mrow>', () => {
+    expect(mathml(parseTex('\\left(x\\right)'))).toEqual(
+      '<mrow><mo fence="true" form="prefix">(</mo><mi>x</mi><mo fence="true" form="postfix">)</mo></mrow>',
+    );
+  });
+
+  test('empty delimiters have no empty <mrow> between them', () => {
+    expect(mathml(parseTex('\\left(\\right)'))).toEqual(
+      '<mrow><mo fence="true" form="prefix">(</mo><mo fence="true" form="postfix">)</mo></mrow>',
+    );
+  });
+
+  test('a missing delimiter is left out', () => {
+    expect(mathml(row([delimited(chars('x+1'), char('('), char(''))]))).toEqual(
+      '<mrow><mo fence="true" form="prefix">(</mo><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mrow>',
+    );
+    // With neither delimiter, the contents need no <mrow> of their own.
+    expect(mathml(row([delimited([char('x')], char(''), char(''))]))).toEqual(
+      '<mi>x</mi>',
+    );
+  });
+
+  test('a matrix with empty delimiters is just the <mtable>', () => {
+    expect(
+      mathml(
+        row([
+          matrix([row([char('1')]), row([char('2')])], 2, 1, {
+            left: char(''),
+            right: char(''),
+          }),
+        ]),
+      ),
+    ).toEqual(
+      '<mtable><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr></mtable>',
     );
   });
 

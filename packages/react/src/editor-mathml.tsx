@@ -160,10 +160,8 @@ const printElements = (row: Row | null): React.ReactElement[] =>
 // the child. Used where MathML expects exactly one element, such as each part
 // of a fraction or script. A lone element is returned without a key, since
 // it's placed next to its siblings, not in an array.
-const printRow = (row: Row | null): React.ReactElement => {
-  const elements = printUnkeyed(row);
-  return elements.length === 1 ? elements[0] : <mrow>{keyed(elements)}</mrow>;
-};
+const printRow = (row: Row | null): React.ReactElement =>
+  group(printUnkeyed(row));
 
 const printSubSup = (
   base: React.ReactElement,
@@ -198,12 +196,31 @@ const printSubSup = (
   return base;
 };
 
-const fence = (value: string, form: 'prefix' | 'postfix'): React.ReactNode =>
+const fence = (
+  value: string,
+  form: 'prefix' | 'postfix',
+): React.ReactElement | null =>
   value ? (
     <mo fence="true" form={form}>
       {value}
     </mo>
   ) : null;
+
+// Groups elements in an <mrow>, leaving out any that are null, or returns the
+// element itself if there's only one.
+const group = (
+  parts: readonly (React.ReactElement | null)[],
+): React.ReactElement => {
+  const elements = parts.filter(
+    (part): part is React.ReactElement => part !== null,
+  );
+  return elements.length === 1 ? elements[0] : <mrow>{keyed(elements)}</mrow>;
+};
+
+// The contents of a pair of delimiters, or null when there's nothing between
+// them, so that "()" is <mo>(</mo><mo>)</mo> without an empty <mrow>.
+const printContents = (row: Row): React.ReactElement | null =>
+  row.children.length === 0 ? null : printRow(row);
 
 const printTable = (node: Editor.types.CharTable): React.ReactElement => {
   const { rowCount, colCount, children, delimiters } = node;
@@ -223,13 +240,11 @@ const printTable = (node: Editor.types.CharTable): React.ReactElement => {
   if (!delimiters) {
     return table;
   }
-  return (
-    <mrow>
-      {fence(delimiters.left.value, 'prefix')}
-      {table}
-      {fence(delimiters.right.value, 'postfix')}
-    </mrow>
-  );
+  return group([
+    fence(delimiters.left.value, 'prefix'),
+    table,
+    fence(delimiters.right.value, 'postfix'),
+  ]);
 };
 
 const printNode = (node: Node): React.ReactElement => {
@@ -263,14 +278,15 @@ const printNode = (node: Node): React.ReactElement => {
       );
     }
     case NodeType.Delimited: {
+      // The contents keep their own <mrow> when there's more than one
+      // element, as in the MathML spec's examples, so screen readers can move
+      // into what's between the delimiters as one part.
       const [inner] = node.children;
-      return (
-        <mrow>
-          {fence(node.leftDelim.value, 'prefix')}
-          {printRow(inner)}
-          {fence(node.rightDelim.value, 'postfix')}
-        </mrow>
-      );
+      return group([
+        fence(node.leftDelim.value, 'prefix'),
+        printContents(inner),
+        fence(node.rightDelim.value, 'postfix'),
+      ]);
     }
     case NodeType.Accent: {
       const [inner] = node.children;
@@ -302,14 +318,11 @@ const printNode = (node: Node): React.ReactElement => {
     }
     case NodeType.Table:
       return printTable(node);
-    case NodeType.Macro:
+    case NodeType.Macro: {
       // A macro that's still being typed, such as "\sq".
-      return (
-        <mrow>
-          <mo>\</mo>
-          {printRow(node.children[0])}
-        </mrow>
-      );
+      const backslash = <mo>\</mo>;
+      return group([backslash, ...printUnkeyed(node.children[0])]);
+    }
     default:
       throw new UnreachableCaseError(node);
   }
