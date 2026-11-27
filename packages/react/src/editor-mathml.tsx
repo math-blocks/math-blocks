@@ -43,16 +43,23 @@ const isDigit = (value: string): boolean => /^[0-9]$/.test(value);
 const isLetter = (value: string): boolean => /^\p{L}$/u.test(value);
 
 // Returns the named operator that the chars starting at `start` spell, if any.
+// All of its letters must be crossed out (\cancel) alike.
 const namedOperatorAt = (
   children: readonly Node[],
   start: number,
-): string | undefined =>
-  NAMED_OPERATORS.find((name) =>
+): string | undefined => {
+  const { cancel } = children[start].style;
+  return NAMED_OPERATORS.find((name) =>
     [...name].every((letter, j) => {
       const child = children[start + j];
-      return child?.type === 'char' && child.value === letter;
+      return (
+        child?.type === 'char' &&
+        child.value === letter &&
+        child.style.cancel === cancel
+      );
     }),
   );
+};
 
 const char = (value: string): React.ReactElement => {
   if (value.length > 1 || isLetter(value)) {
@@ -68,16 +75,34 @@ const char = (value: string): React.ReactElement => {
 const keyed = (elements: readonly React.ReactElement[]): React.ReactElement[] =>
   elements.map((element, index) => React.cloneElement(element, { key: index }));
 
+// Wraps an element in a crossed-out <menclose> if it's crossed out (\cancel),
+// so screen readers say so.
+const crossOut = (
+  element: React.ReactElement,
+  cancel: number | undefined,
+): React.ReactElement =>
+  cancel === undefined ? (
+    element
+  ) : (
+    <menclose notation="updiagonalstrike">{element}</menclose>
+  );
+
+// An element of a row, with the cancel ID (\cancel) of the nodes it came from.
+type Printed = {
+  readonly element: React.ReactElement;
+  readonly cancel: number | undefined;
+};
+
 // A row's children in order, with digits merged into numbers, letters that
 // spell a named operator merged into one <mi>, and each subsup wrapped around
-// the element before it, which is its base.
-const printChildren = (
-  children: readonly Node[],
-): readonly React.ReactElement[] => {
-  const elements: React.ReactElement[] = [];
+// the element before it, which is its base. Nodes are only merged when
+// they're crossed out alike.
+const printChildren = (children: readonly Node[]): Printed[] => {
+  const printed: Printed[] = [];
   let i = 0;
   while (i < children.length) {
     const child = children[i];
+    const { cancel } = child.style;
 
     if (child.type === 'char' && isDigit(child.value)) {
       // Digits next to each other, and a decimal point between them, are one
@@ -85,66 +110,81 @@ const printChildren = (
       let number = '';
       while (i < children.length) {
         const next = children[i];
-        if (next.type !== 'char') {
+        if (next.type !== 'char' || next.style.cancel !== cancel) {
           break;
         }
         const after = children[i + 1];
         const isPoint =
-          next.value === '.' && after?.type === 'char' && isDigit(after.value);
+          next.value === '.' &&
+          after?.type === 'char' &&
+          after.style.cancel === cancel &&
+          isDigit(after.value);
         if (!isDigit(next.value) && !isPoint) {
           break;
         }
         number += next.value;
         i++;
       }
-      elements.push(<mn>{number}</mn>);
+      printed.push({ element: <mn>{number}</mn>, cancel });
       continue;
     }
 
     const name = namedOperatorAt(children, i);
     if (name) {
-      elements.push(<mi>{name}</mi>);
+      printed.push({ element: <mi>{name}</mi>, cancel });
       i += name.length;
       continue;
     }
 
     if (child.type === NodeType.SubSup) {
-      const base = elements.pop() ?? <mrow />;
-      elements.push(printSubSup(base, child));
+      const base = printed.pop() ?? { element: <mrow />, cancel };
+      if (base.cancel === cancel) {
+        printed.push({ element: printSubSup(base.element, child), cancel });
+      } else {
+        // The base and its scripts are crossed out differently, so each is
+        // crossed out on its own, inside the script element.
+        printed.push({
+          element: printSubSup(
+            crossOut(base.element, base.cancel),
+            child,
+            cancel,
+          ),
+          cancel: undefined,
+        });
+      }
       i++;
       continue;
     }
 
-    elements.push(printNode(child));
+    printed.push({ element: printNode(child), cancel });
     i++;
   }
-  return elements;
+  return printed;
 };
 
-// A row's elements, with runs of children that are crossed out together
-// (\cancel) wrapped in a <menclose>, so screen readers say they're crossed
+// A row's elements, with runs of elements that are crossed out together
+// (\cancel) wrapped in one <menclose>, so screen readers say they're crossed
 // out. They have no keys; see printElements and printRow.
 const printUnkeyed = (row: Row | null): React.ReactElement[] => {
   if (!row) {
     return [];
   }
-  const runs: { cancel: number | undefined; nodes: Node[] }[] = [];
-  for (const child of row.children) {
-    const { cancel } = child.style;
+  const runs: { cancel: number | undefined; elements: React.ReactElement[] }[] =
+    [];
+  for (const { element, cancel } of printChildren(row.children)) {
     const last = runs[runs.length - 1];
     if (last && last.cancel === cancel) {
-      last.nodes.push(child);
+      last.elements.push(element);
     } else {
-      runs.push({ cancel, nodes: [child] });
+      runs.push({ cancel, elements: [element] });
     }
   }
   return runs.flatMap((run) => {
-    const printed = printChildren(run.nodes);
     if (run.cancel === undefined) {
-      return printed;
+      return run.elements;
     }
     const crossedOut = (
-      <menclose notation="updiagonalstrike">{keyed(printed)}</menclose>
+      <menclose notation="updiagonalstrike">{keyed(run.elements)}</menclose>
     );
     return [crossedOut];
   });
@@ -163,17 +203,23 @@ const printElements = (row: Row | null): React.ReactElement[] =>
 const printRow = (row: Row | null): React.ReactElement =>
   group(printUnkeyed(row));
 
+// Wraps a subsup's scripts around its base. `cancel` crosses out the scripts
+// on their own, for when they're crossed out (\cancel) but the base isn't, or
+// the other way around; otherwise the whole element is crossed out together.
 const printSubSup = (
   base: React.ReactElement,
   node: Editor.types.CharSubSup,
+  cancel?: number,
 ): React.ReactElement => {
-  const [sub, sup] = node.children;
+  const [subRow, supRow] = node.children;
+  const sub = subRow && crossOut(printRow(subRow), cancel);
+  const sup = supRow && crossOut(printRow(supRow), cancel);
   if (sub && sup) {
     return (
       <msubsup>
         {base}
-        {printRow(sub)}
-        {printRow(sup)}
+        {sub}
+        {sup}
       </msubsup>
     );
   }
@@ -181,7 +227,7 @@ const printSubSup = (
     return (
       <msub>
         {base}
-        {printRow(sub)}
+        {sub}
       </msub>
     );
   }
@@ -189,7 +235,7 @@ const printSubSup = (
     return (
       <msup>
         {base}
-        {printRow(sup)}
+        {sup}
       </msup>
     );
   }

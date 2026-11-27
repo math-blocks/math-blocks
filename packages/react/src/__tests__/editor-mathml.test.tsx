@@ -159,6 +159,55 @@ describe('HiddenMathml', () => {
     );
   });
 
+  describe('crossed-out (\\cancel) nodes', () => {
+    const crossed = <T extends Editor.types.CharNode>(node: T): T => ({
+      ...node,
+      style: { cancel: 1 },
+    });
+    const STRIKE = '<menclose notation="updiagonalstrike">';
+
+    test('a crossed-out script keeps its base', () => {
+      expect(
+        mathml(
+          row([char('x'), crossed(subsup(undefined, [char('2')])), char('+')]),
+        ),
+      ).toEqual(
+        `<msup><mi>x</mi>${STRIKE}<mn>2</mn></menclose></msup><mo>+</mo>`,
+      );
+    });
+
+    test('a crossed-out base keeps its script', () => {
+      expect(
+        mathml(row([crossed(char('x')), subsup(undefined, [char('2')])])),
+      ).toEqual(`<msup>${STRIKE}<mi>x</mi></menclose><mn>2</mn></msup>`);
+    });
+
+    test('each crossed-out script of a subsup is crossed out', () => {
+      expect(
+        mathml(row([char('x'), crossed(subsup([char('i')], [char('2')]))])),
+      ).toEqual(
+        `<msubsup><mi>x</mi>${STRIKE}<mi>i</mi></menclose>${STRIKE}<mn>2</mn></menclose></msubsup>`,
+      );
+    });
+
+    test('a base and script crossed out together are one <menclose>', () => {
+      expect(
+        mathml(
+          row([crossed(char('x')), crossed(subsup(undefined, [char('2')]))]),
+        ),
+      ).toEqual(`${STRIKE}<msup><mi>x</mi><mn>2</mn></msup></menclose>`);
+    });
+
+    test('digits and named operators split where crossing out changes', () => {
+      expect(
+        mathml(row([char('1'), crossed(char('2')), crossed(char('3'))])),
+      ).toEqual(`<mn>1</mn>${STRIKE}<mn>23</mn></menclose>`);
+      expect(mathml(row([char('s'), crossed(char('i')), char('n')]))).toEqual(
+        `<mi>s</mi>${STRIKE}<mi>i</mi></menclose><mi>n</mi>`,
+      );
+    });
+  });
+
   test('sets display on <math>', () => {
     const markup = (display: 'block' | 'inline'): string =>
       ReactDOMServer.renderToStaticMarkup(
