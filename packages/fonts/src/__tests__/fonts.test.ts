@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { fonts, formats, getFont, subsetPath } from '../index';
+import { fonts, getFont, subsetPath } from '../index';
 
 const PACKAGE = path.join(__dirname, '../..');
 
@@ -19,6 +19,9 @@ const groupNames = (
 const packageJson = JSON.parse(
   fs.readFileSync(path.join(PACKAGE, 'package.json'), 'utf8'),
 ) as { files: string[]; exports: Record<string, unknown> };
+
+// scripts/subset-fonts.py builds each subset as .otf and .woff. The repo's
+// tests read the .otf files, but only the .woff ones are published.
 
 describe('fonts', () => {
   test('each font has its own name, folder and family', () => {
@@ -60,9 +63,9 @@ describe('subsets', () => {
     expect(folders).toEqual(fonts.map((font) => font.folder).sort());
   });
 
-  test.each(fonts)('$folder has every glyph group in every format', (font) => {
+  test.each(fonts)('$folder has every glyph group in both formats', (font) => {
     const expected = groupNames
-      .flatMap((group) => formats.map((format) => `${group}.${format}`))
+      .flatMap((group) => [`${group}.otf`, `${group}.woff`])
       .sort();
     const files = fs
       .readdirSync(path.join(PACKAGE, 'subsets', font.folder))
@@ -73,10 +76,7 @@ describe('subsets', () => {
 
 describe('subsetPath', () => {
   test('returns the path of a subset file in the package', () => {
-    expect(subsetPath('stix-two-math', 'base')).toEqual(
-      'subsets/stix-two-math/base.otf',
-    );
-    const woff = subsetPath('latin-modern-math', 'calculus', 'woff');
+    const woff = subsetPath('latin-modern-math', 'calculus');
     expect(woff).toEqual('subsets/latin-modern-math/calculus.woff');
     expect(fs.existsSync(path.join(PACKAGE, woff))).toBe(true);
   });
@@ -89,9 +89,9 @@ describe('subsetPath', () => {
 });
 
 describe('package.json', () => {
-  test('publishes the subsets and licences', () => {
-    expect(packageJson.files).toEqual(
-      expect.arrayContaining(['dist', 'subsets', 'licenses', 'LICENSE.md']),
+  test('publishes the .woff subsets, not the .otf ones, and the licences', () => {
+    expect(packageJson.files.sort()).toEqual(
+      ['LICENSE.md', 'dist', 'licenses', 'subsets/**/*.woff'].sort(),
     );
   });
 

@@ -38,16 +38,6 @@ export type MathFont = {
   readonly licenseFile: string;
 };
 
-/**
- * The formats each subset is shipped in: raw OpenType (`.otf`) and WOFF 1.0
- * (`.woff`), which is the same font compressed and is smaller to download.
- * `@math-blocks/opentype` reads both.
- */
-export const formats = ['otf', 'woff'] as const;
-
-/** A format that each subset is shipped in. */
-export type FontFormat = (typeof formats)[number];
-
 const LICENSE_FILES: Record<FontLicense, string> = {
   'OFL-1.1': 'licenses/OFL-1.1.txt',
   'GUST-Font-License': 'licenses/GUST-FONT-LICENSE.txt',
@@ -84,18 +74,17 @@ export const getFont = (folder: string): MathFont | undefined =>
  * `subsets/stix-two-math/base.woff`. `group` is a glyph group's name from
  * `glyphGroups` in `@math-blocks/opentype`.
  *
+ * The subsets are WOFF 1.0 files, which `@math-blocks/opentype` reads
+ * wherever `DecompressionStream` is available (current browsers and Node 18+).
+ *
  * Resolve the path against the installed package, e.g. with
  * `require.resolve(`@math-blocks/fonts/${subsetPath(...)}`)` in Node, or copy
  * the package's `subsets/` folder to a static host and load it with
  * `fromBaseUrl`.
  */
-export const subsetPath = (
-  folder: string,
-  group: string,
-  format: FontFormat = 'otf',
-): string => {
+export const subsetPath = (folder: string, group: string): string => {
   if (!getFont(folder)) {
     throw new Error(`Unknown font folder: "${folder}"`);
   }
-  return `subsets/${folder}/${group}.${format}`;
+  return `subsets/${folder}/${group}.woff`;
 };

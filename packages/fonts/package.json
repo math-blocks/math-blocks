@@ -30,7 +30,7 @@
     },
     "files": [
         "dist",
-        "subsets",
+        "subsets/**/*.woff",
         "licenses",
         "LICENSE.md"
     ],

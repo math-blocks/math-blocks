@@ -1,19 +1,26 @@
 # @math-blocks/fonts
 
-The math font subsets that `@math-blocks/react` renders with, in OpenType
-(`.otf`) and WOFF (`.woff`) formats, plus a list of the fonts.
+The math font subsets that `@math-blocks/react` renders with, as WOFF
+(`.woff`) files, plus a list of the fonts.
 
 Each font is split into one small file per glyph group (see `glyphGroups` in
 `@math-blocks/opentype`), so an app only downloads the characters it uses.
-The `.woff` files hold the same fonts compressed and are about a third
-smaller. `@math-blocks/opentype` reads both formats.
+WOFF holds the same font tables as OpenType, compressed, so the files are
+about a third smaller than `.otf` ones would be. `@math-blocks/opentype` reads
+them wherever `DecompressionStream` is available: current browsers and
+Node 18+.
+
+The repository also builds `.otf` versions of the subsets, for its own tests,
+but they aren't published. If you need them, for a runtime without
+`DecompressionStream`, build them with `scripts/subset-fonts.py` in the
+repository.
 
 ## What's in the package
 
 ```
 subsets/
   stix-two-math/
-    base.otf  base.woff  calculus.otf  calculus.woff  ...
+    base.woff  calculus.woff  linear-algebra.woff  ...
   latin-modern-math/
   tex-gyre-bonum-math/
   tex-gyre-pagella-math/
@@ -74,10 +81,9 @@ const font = await loadFontSubsets(['calculus'], async (group) =>
   `source` font it was made from, its `license`, and the `licenseFile` that
   holds the licence's text.
 - `getFont(folder)`: the font in `subsets/<folder>/`, or `undefined`.
-- `subsetPath(folder, group, format = 'otf')`: a subset file's path inside the
-  package, such as `subsets/stix-two-math/base.otf`.
-- `formats`: `['otf', 'woff']`.
-- Types: `MathFont`, `FontFormat`, `FontLicense`.
+- `subsetPath(folder, group)`: a subset file's path inside the package, such
+  as `subsets/stix-two-math/base.woff`.
+- Types: `MathFont`, `FontLicense`.
 
 ## Licences
 
