@@ -290,8 +290,8 @@ const unexpectedChar = (char: string): never => {
 const SUMMATION_CHARS = ['\u2211', '\u03a3'];
 const PRODUCT_CHARS = ['\u220f', '\u03a0'];
 
-// TODO: include ids of source chars in parsed tokens
-// TODO: allow different decimal and list separators
+// TODO(#922): include the ids of the source chars in each token.
+// TODO(#921): allow locale-specific decimal and list separators, e.g. `1,5` and `;`.
 
 /**
  * Converts a run of chars to tokens by scanning the chars one at a time.
