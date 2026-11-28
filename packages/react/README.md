@@ -21,6 +21,35 @@ it a `className` or `style` prop.
 
 ## MathRenderer
 
+### Selecting
+
+Users can select math by dragging across it. The selection follows the math's
+structure, the way it does in `MathEditor`: part of a row, a whole fraction,
+and so on. It's highlighted the way the editor highlights a selection, and a
+mouse down anywhere else clears it.
+
+Copying a selection puts it on the clipboard twice:
+
+- as TeX in `text/plain`, from `print` in `@math-blocks/tex`, e.g. `x^{2}+1`,
+  for calculators, documents and messages;
+- as MathML in `text/html`, for apps that paste real math, such as Word.
+
+The page's own text selection takes in math too. A selection across text and
+math highlights all of each expression it covers, and copying it gives the
+text with each expression's TeX in its place, in order, set off by `$…$`
+(or `$$…$$` for display-style math): `Solve $x^{2}+1=0$ for x`. The HTML gets
+each expression's MathML. A drag that starts in the math and leaves it for
+the text around it becomes such a selection.
+
+The MathML for screen readers can't be selected, so a text selection never
+copies its text (e.g. `x2+1` for x² + 1), even before the page is hydrated.
+Until then, the math is left out of what's copied.
+
+Pass `selectable={false}` for math that's decorative or part of a control.
+It's then left out of what's copied.
+Pass `selection` to draw a selection of your own; it's drawn in place of
+anything the user selects.
+
 ### Accessibility
 
 `MathRenderer` draws math as an SVG of glyph outlines, which screen readers

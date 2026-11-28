@@ -170,4 +170,196 @@ test.describe('editor', () => {
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
+
+  test('dragging across the math highlights a selection', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/editor');
+    const svg = mathEditor(page).locator('svg');
+    await expect(svg.locator('use').first()).toBeAttached();
+    // The selection is drawn as rectangles behind the glyphs.
+    await expect(svg.locator('rect')).toHaveCount(0);
+
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width * 0.1, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('renderer', () => {
+  test('dragging across the math selects it', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    // The first renderer on the page sits between "Hello," and "world!".
+    const svg = page.locator('p svg').first();
+    await expect(svg.locator('use').first()).toBeAttached();
+    // The selection is drawn as rectangles behind the glyphs.
+    await expect(svg.locator('rect')).toHaveCount(0);
+    const mathml = await page.locator('math').first().innerHTML();
+
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + 5, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.4, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    // The browser didn't start a text selection of its own.
+    expect(await page.evaluate(() => String(window.getSelection()))).toBe('');
+    // What screen readers get is unchanged.
+    expect(await page.locator('math').first().innerHTML()).toEqual(mathml);
+
+    // Clicking elsewhere clears the selection.
+    await page.getByRole('heading').click();
+    await expect(svg.locator('rect')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('copying puts the selected math on the clipboard', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    const svg = page.locator('p svg').first();
+    await expect(svg.locator('use').first()).toBeAttached();
+
+    // Record what's put on the clipboard. Reading the system clipboard needs
+    // permissions that not every browser grants to tests, but a `copy`
+    // listener can read what the page's own listeners put there.
+    await page.evaluate(() => {
+      const w = window as unknown as Record<string, unknown>;
+      window.addEventListener('copy', (e) => {
+        w.copied = {
+          text: e.clipboardData?.getData('text/plain'),
+          html: e.clipboardData?.getData('text/html'),
+        };
+      });
+    });
+
+    // Drag from before the math to its middle, which selects 2x+ (the
+    // fraction after it is wider than it is tall, so its middle is further
+    // right).
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + 2, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.3, y, { steps: 5 });
+    await page.mouse.up();
+    await expect(svg.locator('rect').first()).toBeAttached();
+
+    await page.keyboard.press('ControlOrMeta+c');
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => (window as unknown as Record<string, unknown>).copied,
+        ),
+      )
+      .toEqual({
+        text: '2x+',
+        html:
+          '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">' +
+          '<mn>2</mn><mi>x</mi><mo>+</mo></math>',
+      });
+    expect(errors).toEqual([]);
+  });
+
+  // The TeX for the math on the baseline page.
+  const TEX = '2x+\\frac{t_{n-j}}{b^{2}+x}=10';
+
+  // Records what's put on the clipboard; see the test above.
+  const recordCopies = (page: Page): Promise<void> =>
+    page.evaluate(() => {
+      window.addEventListener('copy', (e) => {
+        (window as unknown as Record<string, unknown>).copied = {
+          text: e.clipboardData?.getData('text/plain'),
+          html: e.clipboardData?.getData('text/html'),
+        };
+      });
+    });
+
+  const copied = (page: Page): Promise<unknown> =>
+    page.evaluate(() => (window as unknown as Record<string, unknown>).copied);
+
+  test('a text selection across the math highlights it and copies its TeX', async ({
+    page,
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    const paragraph = page.locator('p').nth(1);
+    const svg = paragraph.locator('svg');
+    await expect(svg.locator('use').first()).toBeAttached();
+    await recordCopies(page);
+
+    // Drag from the start of "Hello," to past the end of "world!".
+    const start = await paragraph.boundingBox();
+    const math = await svg.boundingBox();
+    if (!start || !math) {
+      throw new Error('the paragraph has no bounding box');
+    }
+    const y = math.y + math.height / 2;
+    await page.mouse.move(start.x + 1, y);
+    await page.mouse.down();
+    await page.mouse.move(math.x + math.width + 200, y, { steps: 10 });
+    await page.mouse.up();
+
+    // All of the math is highlighted.
+    await expect(svg.locator('rect').first()).toBeAttached();
+
+    await page.keyboard.press('ControlOrMeta+c');
+    await expect
+      .poll(() => copied(page))
+      .toEqual({
+        text: `Hello, $$${TEX}$$ world!`,
+        html: expect.stringContaining(
+          '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">',
+        ),
+      });
+
+    // Clicking elsewhere clears the selection and the highlight.
+    await page.getByRole('heading').click();
+    await expect(svg.locator('rect')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('dragging from the math into the text selects the text and all of the math', async ({
+    page,
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    const paragraph = page.locator('p').nth(1);
+    const svg = paragraph.locator('svg');
+    await expect(svg.locator('use').first()).toBeAttached();
+    await recordCopies(page);
+
+    const math = await svg.boundingBox();
+    if (!math) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = math.y + math.height / 2;
+    await page.mouse.move(math.x + math.width * 0.6, y);
+    await page.mouse.down();
+    await page.mouse.move(math.x + math.width + 200, y, { steps: 10 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    await page.keyboard.press('ControlOrMeta+c');
+    await expect
+      .poll(() => copied(page))
+      .toMatchObject({ text: `$$${TEX}$$ world!` });
+    expect(errors).toEqual([]);
+  });
 });

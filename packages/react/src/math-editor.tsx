@@ -10,6 +10,7 @@ import { useMissingGlyphs } from './use-missing-glyphs';
 import styles from './editor.module.css';
 import SceneRenderer from './scene-renderer';
 import useEventListener from './use-event-listener';
+import { useMouseSelection } from './use-mouse-selection';
 
 import type { EditingEvent } from './math-keypad';
 
@@ -117,7 +118,6 @@ export const MathEditor = (props: Props): React.ReactNode => {
 
   const [state, setState] = useState<Editor.State>(memoizedState);
   const [active, setActive] = useState<boolean>(false);
-  const [mouseDown, setMouseDown] = useState<boolean>(false);
 
   const fontData = useFontData('MathEditor');
   const recordMissingGlyph = useMissingGlyphs(props.onMissingGlyph);
@@ -248,26 +248,11 @@ export const MathEditor = (props: Props): React.ReactNode => {
     [handleEditing], // Re-run if the handler changes
   );
 
-  const positionCursor = (e: React.MouseEvent, selecting: boolean): void => {
-    if (!svgRef?.current) {
-      return;
-    }
-    const bounds = svgRef.current.getBoundingClientRect();
-    const point = { x: e.clientX - bounds.x, y: e.clientY - bounds.y };
-
-    const intersections = Typesetter.SceneGraph.findIntersections(
-      point,
-      scene.hitboxes,
-    );
-
-    // TODO: handle select === true
-    const newState = reducer(state, {
-      type: 'UpdateSelection',
-      intersections,
-      selecting,
-    });
-    setState(newState);
-  };
+  const mouseSelection = useMouseSelection({
+    svgRef,
+    getScene: () => scene,
+    dispatch: (action) => setState(reducer(state, action)),
+  });
 
   // We need to update the state.zipper when props.zipper changes otherwise
   // it looks like fast-refresh is broken.
@@ -323,17 +308,11 @@ export const MathEditor = (props: Props): React.ReactNode => {
       onMouseDown={(e) => {
         e.preventDefault(); // prevent blurring the input
         setActive(true);
-        setMouseDown(true);
-        positionCursor(e, e.shiftKey);
+        mouseSelection.onMouseDown(e, e.shiftKey);
       }}
-      onMouseMove={(e) => {
-        if (mouseDown) {
-          positionCursor(e, true);
-        }
-      }}
+      onMouseMove={mouseSelection.onMouseMove}
       onMouseUp={(e) => {
-        setMouseDown(false);
-        setState(reducer(state, { type: 'StopSelecting' }));
+        mouseSelection.onMouseUp();
 
         console.log(state.selection);
         console.log(Editor.SelectionUtils.getPathAndRange(state.selection));
