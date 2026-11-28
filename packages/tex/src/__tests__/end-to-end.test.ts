@@ -79,7 +79,6 @@ describe('Editor.parse(Tex.parse(...))', () => {
     });
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/730
   describe('TeX from math input fields', () => {
     describe('\\div', () => {
       test('x\\div2=3', () => {
