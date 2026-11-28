@@ -215,6 +215,16 @@ describe('serializer', () => {
     );
   });
 
+  it.each([
+    { name: 'naturals', node: Semantic.builders.naturals(), symbol: 'ℕ' },
+    { name: 'integers', node: Semantic.builders.integers(), symbol: 'ℤ' },
+    { name: 'rationals', node: Semantic.builders.rationals(), symbol: 'ℚ' },
+    { name: 'reals', node: Semantic.builders.reals(), symbol: 'ℝ' },
+    { name: 'complexes', node: Semantic.builders.complexes(), symbol: 'ℂ' },
+  ])('$name serializes to $symbol', ({ node, symbol }) => {
+    expect(printNode(node)).toBe(symbol);
+  });
+
   describe('test', () => {
     test('matches semantic nodes', () => {
       expect(serializer.test(Semantic.builders.number('1'))).toBe(true);
