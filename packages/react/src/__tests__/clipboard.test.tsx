@@ -139,6 +139,16 @@ describe('toMarkup', () => {
     expect(() => toMarkup(<span onClick={() => undefined}>x</span>)).toThrow();
   });
 
+  test('writes nothing for empty children', () => {
+    expect(toMarkup(null)).toBe('');
+    expect(toMarkup(false)).toBe('');
+    expect(toMarkup(<mi>{null}</mi>)).toBe('<mi></mi>');
+  });
+
+  test('refuses things that are neither elements nor text', () => {
+    expect(() => toMarkup(new Map() as unknown as React.ReactNode)).toThrow();
+  });
+
   test('only serializes elements and text', () => {
     const Component = (): React.ReactElement => <mi>x</mi>;
     expect(() => toMarkup(<Component />)).toThrow();
@@ -174,6 +184,12 @@ describe('writeToClipboard', () => {
     });
     expect(event.defaultPrevented).toBe(true);
   });
+});
+
+test('writeToClipboard does nothing without a clipboard', () => {
+  const event = new Event('copy', { cancelable: true }) as ClipboardEvent;
+  writeToClipboard(event, { text: 'x', html: '<math></math>' });
+  expect(event.defaultPrevented).toBe(false);
 });
 
 describe('copying from a MathRenderer', () => {

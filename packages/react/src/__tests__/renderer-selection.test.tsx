@@ -269,3 +269,17 @@ test('the ref still points at the SVG', () => {
 
   expect(ref.current).toBe(getSvg(container));
 });
+
+test('a callback ref gets the SVG too', () => {
+  let svg: SVGSVGElement | null = null;
+  const { container } = renderMath(
+    <MathRenderer
+      row={math}
+      ref={(element) => {
+        svg = element;
+      }}
+    />,
+  );
+
+  expect(svg).toBe(getSvg(container));
+});
