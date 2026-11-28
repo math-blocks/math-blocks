@@ -68,6 +68,15 @@ export type Action =
   // nothing, and returns the same state, when the cursor is in the top-level
   // row.
   | { readonly type: 'ExitRow'; readonly direction: 'forward' | 'backward' }
+  // Move by row, the way moving by word works in a text field: to the start
+  // (`'backward'`) or end (`'forward'`) of the current row, or, when the
+  // cursor is already there, into the previous or next row and to its start
+  // or end. Pressed repeatedly, it visits each row in turn.
+  | {
+      readonly type: 'MoveByRow';
+      readonly direction: 'forward' | 'backward';
+      readonly extend?: boolean;
+    }
   // Select the whole formula.
   | { readonly type: 'SelectAll' }
   | { readonly type: 'ArrowUp' }

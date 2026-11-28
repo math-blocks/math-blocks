@@ -247,3 +247,55 @@ describe('ArrowLeft and ArrowRight with extend', () => {
     );
   });
 });
+
+describe('MoveByRow', () => {
+  const backward = { type: 'MoveByRow', direction: 'backward' } as const;
+  const forward = { type: 'MoveByRow', direction: 'forward' } as const;
+
+  it('moves to the start of the current row first', () => {
+    const newState = reducer(stateAt([2, 1], 2), backward);
+    expect(newState.selection).toEqual(SelectionUtils.makeSelection([2, 1], 0));
+  });
+
+  it('keeps going backward: denominator, numerator, then the parent row', () => {
+    let state = reducer(stateAt([2, 1], 2), backward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([2, 1], 0));
+
+    state = reducer(state, backward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([2, 0], 0));
+
+    state = reducer(state, backward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([], 0));
+  });
+
+  it('keeps going forward: numerator, denominator, then the parent row', () => {
+    let state = reducer(stateAt([2, 0], 0), forward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([2, 0], 1));
+
+    state = reducer(state, forward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([2, 1], 3));
+
+    state = reducer(state, forward);
+    expect(state.selection).toEqual(SelectionUtils.makeSelection([], 4));
+  });
+
+  it('returns the same state at the start or end of the formula', () => {
+    const start = stateAt([], 0);
+    expect(reducer(start, backward)).toBe(start);
+    const end = stateAt([], 4);
+    expect(reducer(end, forward)).toBe(end);
+  });
+
+  it('extends the selection, out to the parent row', () => {
+    let state = reducer(stateAt([2, 1], 2), { ...backward, extend: true });
+    expect(state.selection).toEqual(
+      SelectionUtils.makeSelection2([2, 1], 2, [2, 1], 0),
+    );
+
+    state = reducer(state, { ...backward, extend: true });
+    expect(state.selection).toEqual(
+      SelectionUtils.makeSelection2([2, 1], 2, [], 0),
+    );
+    expect(state.selecting).toBe(false);
+  });
+});

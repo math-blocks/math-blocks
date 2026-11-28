@@ -15,7 +15,13 @@ import { root } from './reducers/root';
 import { insertChar } from './reducers/insert-char';
 import { color } from './reducers/color';
 import { setSelection } from './reducers/set-selection';
-import { moveToStart, moveToEnd, exitRow, selectAll } from './reducers/move-to';
+import {
+  moveToStart,
+  moveToEnd,
+  moveByRow,
+  exitRow,
+  selectAll,
+} from './reducers/move-to';
 import { startMacro, completeMacro } from './reducers/macro';
 
 import type { Action, State } from './types';
@@ -61,6 +67,13 @@ export const getReducer =
         return moveToStart(state, action.scope, action.extend ?? false);
       case 'MoveToEnd':
         return moveToEnd(state, action.scope, action.extend ?? false);
+      case 'MoveByRow':
+        return moveByRow(
+          state,
+          action.direction,
+          action.extend ?? false,
+          action.direction === 'backward' ? moveLeft : moveRight,
+        );
       case 'ExitRow':
         return exitRow(state, action.direction);
       case 'SelectAll':
