@@ -232,6 +232,10 @@ importers:
       '@math-blocks/editor':
         specifier: workspace:^
         version: link:../editor
+    devDependencies:
+      '@math-blocks/semantic':
+        specifier: workspace:^
+        version: link:../semantic
 
   packages/typesetter:
     dependencies:

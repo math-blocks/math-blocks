@@ -169,6 +169,60 @@ describe('EditorParser', () => {
         `);
   });
 
+  it('should parse an ASCII hyphen-minus as subtraction', () => {
+    // util.row() converts '-' to '\u2212' so we build the row by hand.
+    const input = row([char('a'), char('-'), char('b')]);
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`
+      (Add
+        a
+        (neg.sub b))
+    `);
+  });
+
+  it('should parse an ASCII hyphen-minus as negation', () => {
+    const input = row([char('-'), char('3'), char('x')]);
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`(neg (mul.imp 3 x))`);
+  });
+
+  it('should throw on a char it does not recognize', () => {
+    expect(() =>
+      parser.parse(util.row('a?b')),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected character '?' (U+003F)]`,
+    );
+  });
+
+  it('should throw on an unrecognized char at the end of a row', () => {
+    expect(() =>
+      parser.parse(util.row('ab$')),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected character '$' (U+0024)]`,
+    );
+  });
+
+  it('should throw on an unrecognized char inside a fraction', () => {
+    const input = row([builders.frac([char('1')], [char('#')])]);
+    expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected character '#' (U+0023)]`,
+    );
+  });
+
+  it('should ignore whitespace between tokens', () => {
+    const ast = parser.parse(util.row('2 x = 10'));
+
+    expect(ast).toMatchInlineSnapshot(`
+      (Equals
+        (mul.imp 2 x)
+        10)
+    `);
+  });
+
   it('should parse expressions containing unary minus', () => {
     const input = util.row('1+-2+3');
 

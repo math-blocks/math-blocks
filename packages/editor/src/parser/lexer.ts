@@ -87,8 +87,32 @@ export const comma = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.Comma }, loc);
 
 // TODO: allow different decimal and list separators
+// Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as minus.
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\*|\u00B7|\u00D7|\u22C5|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+
+/**
+ * Throws if `str.slice(start, end)`, the text between two token matches (or
+ * before the first or after the last one), contains anything other than
+ * whitespace.  Without
+ * this check the lexer would silently drop chars it doesn't recognize, e.g.
+ * parsing "a?b" as "ab".
+ */
+const assertOnlyWhitespace = (
+  str: string,
+  start: number,
+  end: number,
+): void => {
+  // Iterating the string, rather than indexing it, gives whole code points,
+  // so a char outside the BMP such as U+1D465 isn't split into surrogates.
+  for (const char of str.slice(start, end)) {
+    if (!/\s/.test(char)) {
+      const codePoint = char.codePointAt(0) ?? 0;
+      const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
+      throw new Error(`Unexpected character '${char}' (U+${hex})`);
+    }
+  }
+};
 
 // TODO: include ids of source chars in parsed tokens
 
@@ -101,6 +125,7 @@ const tokenizeChars = (
   if (chars.length > 0) {
     const str = chars.map((char) => char.value).join('');
     const matches = str.matchAll(TOKEN_REGEX);
+    let prevEnd = 0;
 
     for (const match of matches) {
       const [, value, sym, name] = match;
@@ -109,6 +134,8 @@ const tokenizeChars = (
         // Should we throw if there's match?
         continue;
       }
+      assertOnlyWhitespace(str, prevEnd, index);
+      prevEnd = index + match[0].length;
       if (value) {
         const loc = location(
           path,
@@ -147,6 +174,7 @@ const tokenizeChars = (
             tokens.push(times(loc));
             break;
           case '\u2212':
+          case '-':
             tokens.push(minus(loc));
             break;
           case '\u00B1':
@@ -172,9 +200,8 @@ const tokenizeChars = (
         );
         tokens.push(identifier(name, loc));
       }
-      // TODO: check if there are leftover characters between token matches
     }
-    // TODO: check if there are leftover characters after the last token match
+    assertOnlyWhitespace(str, prevEnd, str.length);
     chars = [];
   }
 

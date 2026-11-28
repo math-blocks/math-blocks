@@ -86,7 +86,7 @@ describe('isTermOfIdent', () => {
   });
 
   test('(1/2)x', () => {
-    const ast = parse('(1/2)x');
+    const ast = parse('(\\frac{1}{2})x');
     const ident = builders.identifier('x');
 
     expect(isTermOfIdent(ast, ident)).toBeTruthy();
