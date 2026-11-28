@@ -60,6 +60,78 @@ TODO:
 - Selection
 - Click to position cursor
 
+### Keyboard shortcuts
+
+`MathEditor` has these keyboard shortcuts. `Mod` is Cmd on macOS and Ctrl
+elsewhere.
+
+| Action | Shortcut |
+| --- | --- |
+| Start / end of the current part of the formula (numerator, exponent, root, …) | `Home` / `End` |
+| Start / end of the whole formula | `Mod+Home` / `Mod+End` |
+| Move out of the current part, forward / backward | `Tab` / `Shift+Tab` |
+| Extend the selection left / right | `Shift+ArrowLeft` / `Shift+ArrowRight` |
+| Select to the start / end of the current part | `Shift+Home` / `Shift+End` |
+| Select to the start / end of the whole formula | `Mod+Shift+Home` / `Mod+Shift+End` |
+| Select all | `Mod+A` |
+| Undo / redo | `Mod+Z` / `Mod+Shift+Z` or `Mod+Y` |
+
+They only fire while the editor has focus, so they don't clash with the page's
+own shortcuts. `Tab` and `Shift+Tab` only apply while the cursor is inside a
+part of the formula, so otherwise they move focus out of the editor as usual.
+A read-only editor has no shortcuts.
+
+Undo and redo step through changes to the math. Moving the cursor isn't a
+step, and undo puts the cursor back where it was before the change. Passing a
+new `row` starts a new history.
+
+#### Changing them
+
+Pass `shortcuts={false}` to turn them all off. To rebind or turn off some of
+them, pass an object keyed by command. A value is a hotkey, a list of hotkeys,
+or `null` to turn that shortcut off. Commands you leave out keep their
+defaults.
+
+```tsx
+<MathEditor
+  row={row}
+  readonly={false}
+  shortcuts={{
+    redo: ['Mod+Shift+Z'], // drop Mod+Y
+    selectAll: null, // turn Select All off
+    // Add Emacs-style Ctrl+A. Only do this on macOS, where Mod+A is Cmd+A.
+    moveToRowStart: ['Home', 'Control+A'],
+  }}
+/>
+```
+
+The commands are `moveToRowStart`, `moveToRowEnd`, `moveToFormulaStart`,
+`moveToFormulaEnd`, `exitRowForward`, `exitRowBackward`, `extendLeft`,
+`extendRight`, `extendToRowStart`, `extendToRowEnd`, `extendToFormulaStart`,
+`extendToFormulaEnd`, `selectAll`, `undo` and `redo`. `DEFAULT_SHORTCUTS` has
+the default hotkeys for each.
+
+A hotkey is modifiers and a key joined by `+`, such as `Mod+Shift+Z`. The
+modifiers are `Mod`, `Control`, `Alt`, `Shift` and `Meta`, and the key is a
+character or a `KeyboardEvent.key` name such as `Home` or `ArrowLeft`.
+
+#### Listing them
+
+`getShortcuts` lists the active shortcuts for a help screen or cheatsheet.
+Pass it the same value as the `shortcuts` prop:
+
+```tsx
+const shortcuts = getShortcuts(myShortcuts);
+// [{command: 'undo', description: 'Undo', hotkeys: ['Mod+Z'], labels: ['⌘ Z']}, ...]
+```
+
+`labels` are formatted for the user's platform. Pass `{platform: 'mac'}` (or
+`'windows'` or `'linux'`) as the second argument to pick one, for example when
+rendering on the server.
+
+The shortcuts are built on [TanStack Hotkeys](https://tanstack.com/hotkeys),
+but none of its types are part of this package's API.
+
 ## GlyphDefsProvider
 
 Wrap a page with lots of math on it in a `GlyphDefsProvider`. Every

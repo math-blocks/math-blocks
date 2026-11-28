@@ -170,4 +170,29 @@ test.describe('editor', () => {
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
+
+  test('Mod+Z undoes typing and Mod+Shift+Z redoes it', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/editor');
+    const editor = mathEditor(page);
+    await expect(editor.locator('use').first()).toBeAttached();
+    const glyphCount = await editor.locator('use').count();
+
+    await editor.click();
+    await page.keyboard.type('+1');
+    await expect
+      .poll(() => editor.locator('use').count())
+      .toBeGreaterThan(glyphCount);
+    const typedCount = await editor.locator('use').count();
+
+    // ControlOrMeta is Cmd on macOS and Ctrl elsewhere, like the editor's Mod.
+    await page.keyboard.press('ControlOrMeta+z');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => editor.locator('use').count()).toBe(glyphCount);
+
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await expect.poll(() => editor.locator('use').count()).toBe(typedCount);
+    expect(errors).toEqual([]);
+  });
 });
