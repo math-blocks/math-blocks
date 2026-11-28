@@ -7,12 +7,23 @@ class Parser {
   readonly input: string;
   readonly leftDelims: string[];
   readonly rightDelims: string[];
+  // The terminator that ended the last call to parseRow(), or 'right' if it
+  // was ended by `\right`.
+  // eslint-disable-next-line functional/prefer-readonly-type
+  lastTerminator: string | undefined;
+  // Indexes of bare `(` and `|` chars that we already know have no matching
+  // closing delimiter.  This avoids re-parsing the same text over and over
+  // when there are many unmatched delimiters.
+  // eslint-disable-next-line functional/prefer-readonly-type
+  readonly unmatched: Set<number>;
 
   constructor(input: string) {
     this.index = 0;
     this.input = input;
     this.leftDelims = [];
     this.rightDelims = [];
+    this.lastTerminator = undefined;
+    this.unmatched = new Set();
   }
 
   peek(): string {
@@ -29,6 +40,9 @@ class Parser {
   }
 
   parseNode(): types.CharNode {
+    if (this.index >= this.input.length) {
+      throw new Error('unexpected end of input');
+    }
     const char = this.peek();
 
     switch (char) {
@@ -39,24 +53,18 @@ class Parser {
       }
       case '_': {
         this.consume(); // '_'
-        const sub = this.parseNode();
+        const sub = this.parseScript();
         if (this.input[this.index] === '^') {
           this.index += 1;
-          const sup = this.parseNode();
-          return builders.subsup(
-            sub.type === 'row' ? sub.children : [sub],
-            sup.type === 'row' ? sup.children : [sup],
-          );
+          const sup = this.parseScript();
+          return builders.subsup(sub, sup);
         }
-        return builders.subsup(sub.type === 'row' ? sub.children : [sub]);
+        return builders.subsup(sub);
       }
       case '^': {
         this.consume(); // '^'
-        const sup = this.parseNode();
-        return builders.subsup(
-          undefined,
-          sup.type === 'row' ? sup.children : [sup],
-        );
+        const sup = this.parseScript();
+        return builders.subsup(undefined, sup);
       }
       case '\\': {
         this.consume(); // '\\'
@@ -90,6 +98,65 @@ class Parser {
         return builders.char(char);
       }
     }
+  }
+
+  /**
+   * Parses the subscript or superscript after a `_` or `^`.
+   *
+   * TeX reads `x^-2` as `x^{-}2`, but math input fields produce it for
+   * `x^{-2}`, so a leading `-` takes the node after it along with it.
+   */
+  parseScript(): types.CharNode[] {
+    while (this.peek() === ' ') {
+      this.consume();
+    }
+    if (this.index >= this.input.length) {
+      throw new Error('expected a subscript or superscript');
+    }
+    const nodes: types.CharNode[] = [];
+    if (this.peek() === '-') {
+      this.consume(); // '-'
+      nodes.push(builders.char('\u2212'));
+      while (this.peek() === ' ') {
+        this.consume();
+      }
+      if (this.index >= this.input.length) {
+        return nodes;
+      }
+    }
+    const node = this.parseNode();
+    nodes.push(...(node.type === 'row' ? node.children : [node]));
+    return nodes;
+  }
+
+  /**
+   * Parses a bare `(…)` or `|…|`, starting at the opening delimiter, into a
+   * delimited node, the same node `\left(…\right)` or `\left|…\right|`
+   * produces.  If there's no closing delimiter before the end of the enclosing
+   * group, it restores the index and returns null, and the caller treats the
+   * opening delimiter as a plain char, e.g. in the interval `[0, 1)`.
+   */
+  tryParseDelimited(
+    open: '(' | '|',
+    terminators: readonly Terminator[],
+  ): types.CharDelimited | null {
+    const start = this.index;
+    if (this.unmatched.has(start)) {
+      return null;
+    }
+    const close = open === '(' ? ')' : '|';
+    this.consume(); // open
+    const [inner] = this.parseRow([close, ...terminators]);
+    if (this.lastTerminator === close) {
+      return builders.delimited(
+        inner.children,
+        builders.char(open),
+        builders.char(close),
+      );
+    }
+    this.unmatched.add(start);
+    this.index = start;
+    return null;
   }
 
   parseIdentifier(): string {
@@ -245,9 +312,10 @@ class Parser {
   // TODO: ensure there are no unclosed braces
   // TODO: return the terminator that was used to end the row if there was one
   parseRow(
-    terminators: readonly ('&' | '\\' | '}' | ']' | 'right' | 'end')[] = [],
+    terminators: readonly Terminator[] = [],
   ): [types.CharRow, string | undefined] {
     const nodes: types.CharNode[] = [];
+    this.lastTerminator = undefined;
     while (this.index < this.input.length) {
       const char = this.input[this.index];
 
@@ -261,6 +329,7 @@ class Parser {
         }
 
         if (isTerminator(name) && terminators.includes(name)) {
+          this.lastTerminator = name;
           if (name === 'right') {
             // TODO: check if it's a valid delimiter
             const rightDelim = this.input[this.index];
@@ -278,23 +347,72 @@ class Parser {
         }
       }
 
-      if (isTerminator(char) && terminators.includes(char)) {
+      if (char === ' ') {
+        this.consume(); // ' '
+        continue;
+      }
+
+      // A `|` closes an absolute value only if it comes after an operand,
+      // otherwise it opens a new one, e.g. the second `|` in `||x|-1|`.
+      const isClosingBar =
+        char === '|' &&
+        nodes.length > 0 &&
+        !isOperator(nodes[nodes.length - 1]);
+
+      if (
+        isTerminator(char) &&
+        terminators.includes(char) &&
+        (char !== '|' || isClosingBar)
+      ) {
         this.consume(); // terminator
+        this.lastTerminator = char;
         return [builders.row(nodes), char];
+      }
+
+      if (char === '(' || char === '|') {
+        const delimited = this.tryParseDelimited(char, terminators);
+        if (delimited) {
+          nodes.push(delimited);
+          continue;
+        }
       }
 
       nodes.push(this.parseNode());
     }
+    this.lastTerminator = undefined;
     return [builders.row(nodes), undefined];
   }
 }
 
 const matrixTypes = ['bmatrix', 'pmatrix'];
 
-const isTerminator = (
-  name: string,
-): name is '&' | '\\' | '}' | ']' | 'right' | 'end' =>
-  ['&', '\\', '}', ']', 'right', 'end'].includes(name);
+type Terminator = '&' | '\\' | '}' | ']' | ')' | '|' | 'right' | 'end';
+
+const isTerminator = (name: string): name is Terminator =>
+  ['&', '\\', '}', ']', ')', '|', 'right', 'end'].includes(name);
+
+// Chars after which a `|` opens an absolute value rather than closing one.
+const OPERATORS = [
+  '+',
+  '\u2212',
+  '\u00b1',
+  '\u2213',
+  '*',
+  '\u00b7',
+  '\u00d7',
+  '\u22c5',
+  '\u00f7',
+  '=',
+  '\u2260',
+  '<',
+  '>',
+  '\u2264',
+  '\u2265',
+  ',',
+];
+
+const isOperator = (node: types.CharNode): boolean =>
+  node.type === 'char' && OPERATORS.includes(node.value);
 
 export const parse = (input: string): types.CharRow => {
   const parser = new Parser(input);

@@ -20,13 +20,16 @@ export enum TokenKind {
   Minus = 'Minus',
   PlusMinus = 'PlusMinus',
   Times = 'Times',
+  Divide = 'Divide',
   Equal = 'Equal',
+  NotEqual = 'NotEqual',
   LessThan = 'LessThan',
   LessThanOrEqual = 'LessThanOrEqual',
   GreaterThan = 'GreaterThan',
   GreaterThanOrEqual = 'GreaterThanOrEqual',
   LeftParens = 'LeftParens',
   RightParens = 'RightParens',
+  VerticalBar = 'VerticalBar',
   Ellipsis = 'Ellipsis',
   Comma = 'Comma',
   SummationOperator = 'SummationOperator',
@@ -57,6 +60,9 @@ type Plus = SimpleToken<TokenKind.Plus>;
 type Minus = SimpleToken<TokenKind.Minus>;
 type PlusMinus = SimpleToken<TokenKind.PlusMinus>;
 type Times = SimpleToken<TokenKind.Times>;
+type Divide = SimpleToken<TokenKind.Divide>;
+type NotEqual = SimpleToken<TokenKind.NotEqual>;
+type VerticalBar = SimpleToken<TokenKind.VerticalBar>;
 type Equal = SimpleToken<TokenKind.Equal>;
 type LessThan = SimpleToken<TokenKind.LessThan>;
 type LessThanOrEqual = SimpleToken<TokenKind.LessThanOrEqual>;
@@ -78,13 +84,16 @@ export type Token =
   | Minus
   | PlusMinus
   | Times
+  | Divide
   | Equal
+  | NotEqual
   | LessThan
   | LessThanOrEqual
   | GreaterThan
   | GreaterThanOrEqual
   | LeftParens
   | RightParens
+  | VerticalBar
   | Ellipsis
   | Comma
   | SummationOperator

@@ -48,8 +48,11 @@ export const macros: Record<string, string> = {
   mp: '\u2213',
   times: '\u00d7',
   cdot: '\u22c5',
+  div: '\u00f7',
 
   // relations
+  // `ne` comes before `neq` so that the printer prints '\u2260' as `\neq`.
+  ne: '\u2260',
   neq: '\u2260',
   le: '\u2264',
   leq: '\u2264',
