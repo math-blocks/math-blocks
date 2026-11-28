@@ -125,4 +125,75 @@ describe('print', () => {
 
     expect(output).toEqual('\\sin');
   });
+
+  describe('command names', () => {
+    test('a letter after a command name is separated by a space', () => {
+      const output = print(
+        builders.row([
+          builders.char('x'),
+          builders.char('>'),
+          builders.char('y'),
+          builders.char('≤'),
+          builders.char('π'),
+          builders.char('r'),
+        ]),
+      );
+
+      expect(output).toEqual('x\\gt y\\leq\\pi r');
+    });
+
+    test('a digit or symbol after a command name is not separated', () => {
+      const output = print(
+        builders.row([
+          builders.char('x'),
+          builders.char('<'),
+          builders.char('3'),
+          builders.char('⋅'),
+          builders.char('('),
+        ]),
+      );
+
+      expect(output).toEqual('x\\lt3\\cdot(');
+    });
+
+    test('a letter after a nested row ending in a command', () => {
+      const output = print(
+        builders.row([
+          builders.char('2'),
+          builders.row([builders.char('π')]),
+          builders.char('r'),
+        ]),
+      );
+
+      expect(output).toEqual('2\\pi r');
+    });
+  });
+
+  test('\\div and \\neq', () => {
+    const output = print(
+      builders.row([
+        builders.char('a'),
+        builders.char('÷'),
+        builders.char('b'),
+        builders.char('≠'),
+        builders.char('c'),
+      ]),
+    );
+
+    expect(output).toEqual('a\\div b\\neq c');
+  });
+
+  test('absolute value', () => {
+    const output = print(
+      builders.row([
+        builders.delimited(
+          [builders.char('x')],
+          builders.char('|'),
+          builders.char('|'),
+        ),
+      ]),
+    );
+
+    expect(output).toEqual('\\left|x\\right|');
+  });
 });
