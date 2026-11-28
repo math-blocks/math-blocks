@@ -378,6 +378,31 @@ describe('normalize node types', () => {
     expect(print(ast)).toEqual(`(${type} i :bvar i :lower 1 :upper n)`);
   });
 
+  describe('max and min', () => {
+    test.each([
+      ['max', 'Max'],
+      ['min', 'Min'],
+    ] as const)('%s sorts its args', (name, type) => {
+      const build = builders[name];
+      expect(print(build([c, a, b]))).toEqual(`(${type} a b c)`);
+      expect(print(build([c, a, b]))).toEqual(print(build([b, c, a])));
+      expect(print(build([a]))).toEqual(`(${type} a)`);
+    });
+
+    test.each([
+      ['max', 'Max'],
+      ['min', 'Min'],
+    ] as const)('%s with a condition', (name, type) => {
+      const build = builders[name];
+      const cond = builders.in(x, builders.reals());
+      expect(print(build([builders.pow(x, one)], cond))).toEqual(
+        `(${type} (Power :base x :exp 1) :condition (ElementOf x Reals))`,
+      );
+      // The condition matters.
+      expect(print(build([x], cond))).not.toEqual(print(build([x])));
+    });
+  });
+
   test('indefinite integral', () => {
     expect(print(builders.integral(builders.pow(x, one), x))).toEqual(
       '(Integral (Power :base x :exp 1) :bvar x)',

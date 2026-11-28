@@ -1078,8 +1078,8 @@ describe('EditorParser', () => {
     });
 
     test('an unsupported name typed one letter at a time throws', () => {
-      expect(() => parser.parse(util.row('maxx'))).toThrow(
-        "'max' isn't supported yet",
+      expect(() => parser.parse(util.row('gcdx'))).toThrow(
+        "'gcd' isn't supported yet",
       );
     });
 
@@ -1451,6 +1451,180 @@ describe('EditorParser', () => {
       });
     });
 
+    describe('max and min', () => {
+      const a = b.identifier('a');
+      const S = b.identifier('S');
+      // `(…)` holding the given chars.
+      const parens = (...chars: string[]): types.CharNode =>
+        builders.delimited(
+          chars.map((c) => char(c)),
+          char('('),
+          char(')'),
+        );
+      const sub = (...chars: string[]): types.CharNode =>
+        subsup(chars.map((c) => char(c)));
+
+      test.each([
+        // a list of arguments
+        [
+          'max(a, y, x)',
+          [char('max'), parens('a', ',', 'y', ',', 'x')],
+          b.max([a, y, x]),
+        ],
+        [
+          'min(1, x)',
+          [char('min'), parens('1', ',', 'x')],
+          b.min([num('1'), x]),
+        ],
+        [
+          'an arg that is an expression',
+          [char('max'), parens('2', 'x', ',', 'x', '+', '1')],
+          b.max([b.mul([num('2'), x], true), b.add([x, num('1')])]),
+        ],
+        [
+          'a list in a list',
+          [
+            char('max'),
+            builders.delimited(
+              [char('max'), parens('a', ',', 'x'), char(','), char('y')],
+              char('('),
+              char(')'),
+            ),
+          ],
+          b.max([b.max([a, x]), y]),
+        ],
+        // a single argument, e.g. a set
+        ['max(S)', [char('max'), parens('S')], b.max([S])],
+        ['max S', [char('max'), char('S')], b.max([S])],
+        [
+          'min 2x',
+          [char('min'), char('2'), char('x')],
+          b.min([b.mul([num('2'), x], true)]),
+        ],
+        [
+          'a single arg ends at the next +',
+          [char('max'), char('S'), char('+'), char('1')],
+          b.add([b.max([S]), num('1')]),
+        ],
+        // the parens bind tightly
+        [
+          'max(a, x)^2',
+          [char('max'), parens('a', ',', 'x'), subsup(undefined, [char('2')])],
+          b.pow(b.max([a, x]), num('2')),
+        ],
+        [
+          'max(a, x) + 1',
+          [char('max'), parens('a', ',', 'x'), char('+'), char('1')],
+          b.add([b.max([a, x]), num('1')]),
+        ],
+        [
+          'max(a, x) - min(a, x)',
+          [
+            char('max'),
+            parens('a', ',', 'x'),
+            char('\u2212'),
+            char('min'),
+            parens('a', ',', 'x'),
+          ],
+          b.add([b.max([a, x]), b.neg(b.min([a, x]), true)]),
+        ],
+        [
+          'implicit multiplication',
+          [char('2'), char('max'), parens('a', ',', 'x')],
+          b.mul([num('2'), b.max([a, x])], true),
+        ],
+        [
+          'max ends the argument of a function',
+          [char('sin'), char('x'), char('max'), parens('a', ',', 'x')],
+          b.mul([b.sin(x), b.max([a, x])], true),
+        ],
+        // a subscript holding a condition
+        [
+          'max_{x ∈ S} x^2',
+          [
+            char('max'),
+            sub('x', '\u2208', 'S'),
+            char('x'),
+            subsup(undefined, [char('2')]),
+          ],
+          b.max([b.pow(x, num('2'))], b.in(x, S)),
+        ],
+        [
+          'min_{x<1} x',
+          [char('min'), sub('x', '<', '1'), char('x')],
+          b.min([x], b.lt([x, num('1')])),
+        ],
+        [
+          'max_{n} a_n',
+          [char('max'), sub('n'), char('a'), sub('n')],
+          b.max([b.identifier('a', n)], n),
+        ],
+        [
+          'the expression ends at the next +',
+          [char('max'), sub('n'), ...util.row('2n+1').children],
+          b.add([b.max([b.mul([num('2'), n], true)], n), num('1')]),
+        ],
+        // typed one letter at a time
+        ['typed maxx', util.row('maxx').children, b.max([x])],
+        ['typed minx', util.row('minx').children, b.min([x])],
+        [
+          'typed max(a, x)',
+          [...util.row('max').children, parens('a', ',', 'x')],
+          b.max([a, x]),
+        ],
+        [
+          'typed max with a subscript',
+          [...util.row('max').children, sub('n'), char('n')],
+          b.max([n], n),
+        ],
+        [
+          'typed ymaxx',
+          util.row('ymaxx').children,
+          b.mul([y, b.max([x])], true),
+        ],
+      ])('%s', (_, children, expected) => {
+        expect(strip(parser.parse(row(children)))).toEqual(strip(expected));
+      });
+
+      test('the location covers the name and the parens', () => {
+        const ast = parser.parse(row([char('max'), parens('a', ',', 'x')]));
+        expect(ast.loc).toEqual({ path: [], start: 0, end: 2 });
+      });
+
+      test('requireBackslash keeps typed max as letters', () => {
+        expect(
+          strip(parser.parse(util.row('maxx'), { requireBackslash: true })),
+        ).toEqual(strip(b.mul([b.identifier('m'), a, x, x], true)));
+      });
+
+      test.each([
+        ['no argument', [char('max')], 'Missing argument for max'],
+        ['empty parens', [char('max'), parens()], 'Missing argument for max'],
+        [
+          'an operator instead of an argument',
+          [char('min'), char('+'), char('1')],
+          'Missing argument for min',
+        ],
+        [
+          'a subscript with no expression',
+          [char('max'), sub('x')],
+          'Missing argument for max',
+        ],
+        [
+          'an empty subscript',
+          [char('max'), sub(), char('x')],
+          "The subscript of 'max' can't be empty",
+        ],
+        [
+          'a superscript',
+          [char('max'), subsup(undefined, [char('2')]), char('x')],
+          "'max' can't have a superscript",
+        ],
+      ])('%s throws', (_, children, message) => {
+        expect(() => parser.parse(row(children))).toThrow(message);
+      });
+    });
+
     describe('mod and det', () => {
       test.each([
         ['x mod n', [char('x'), char('mod'), char('n')], b.mod(x, n)],
@@ -1490,8 +1664,8 @@ describe('EditorParser', () => {
         ],
         [
           'a named function',
-          [char('max'), char('x')],
-          "'max' isn't supported yet",
+          [char('gcd'), char('x')],
+          "'gcd' isn't supported yet",
         ],
         [
           'an accent',

@@ -110,6 +110,44 @@ describe('serializer', () => {
         `);
   });
 
+  describe('max and min', () => {
+    const { builders: b } = Semantic;
+    const x = b.identifier('x');
+    const S = b.identifier('S');
+
+    test.each([
+      ['a list', b.max([x, b.identifier('y'), b.number('1')]), '(Max x y 1)'],
+      ['a single arg', b.min([S]), '(Min S)'],
+      [
+        'an arg and a variable',
+        b.max([x], b.identifier('n')),
+        '(Max x :condition n)',
+      ],
+      [
+        'a list with grandchildren',
+        b.min([b.add([x, b.number('1')]), x]),
+        '(Min\n  (Add x 1)\n  x)',
+      ],
+      [
+        'an arg and a condition',
+        // max_{0 ≤ x ≤ 1} x^2
+        b.max(
+          [b.pow(x, b.number('2'))],
+          b.lte([b.number('0'), x, b.number('1')]),
+        ),
+        '(Max\n  (Power :base x :exp 2)\n  :condition (LessThanOrEquals 0 x 1))',
+      ],
+    ])('%s', (_, ast, expected) => {
+      expect(
+        serializer.print(
+          ast,
+          () => '',
+          (str) => `  ${str}`,
+        ),
+      ).toEqual(expected);
+    });
+  });
+
   test('infinity', () => {
     const ast: Semantic.types.Node = {
       type: NodeType.Infinity,

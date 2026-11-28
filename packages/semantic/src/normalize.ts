@@ -67,6 +67,16 @@ export const print = (ast: Node): string => {
       args.sort();
       return `(${ast.type} ${args.join(' ')})`;
     }
+    // The order of the args doesn't matter, but the condition, if there is
+    // one, is kept apart from them.
+    case 'Max':
+    case 'Min': {
+      const args = ast.args.map(print);
+      args.sort();
+      return ast.condition
+        ? `(${ast.type} ${args.join(' ')} :condition ${print(ast.condition)})`
+        : `(${ast.type} ${args.join(' ')})`;
+    }
     // These nodes are not commutative
     case 'Div': {
       const num = print(ast.args[0]);
