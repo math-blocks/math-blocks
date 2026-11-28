@@ -12,6 +12,13 @@ export type SelectionAction = Extract<
 
 type Point = { readonly x: number; readonly y: number };
 
+// The part of a mouse event the handlers read. React's and the DOM's mouse
+// events both have it.
+export type MousePosition = {
+  readonly clientX: number;
+  readonly clientY: number;
+};
+
 /**
  * Hit-tests a point in client coordinates (e.g. a mouse event's `clientX` and
  * `clientY`) against the hitboxes of the scene drawn in `svg`.
@@ -43,9 +50,9 @@ export type MouseSelectionHandlers = {
   // Moves the focus of the selection to the mouse. Extends the selection from
   // its anchor when `extend` is true, e.g. with the shift key held down,
   // otherwise collapses it there.
-  readonly onMouseDown: (e: React.MouseEvent, extend: boolean) => void;
+  readonly onMouseDown: (e: MousePosition, extend: boolean) => void;
   // Extends the selection to the mouse while the button is down.
-  readonly onMouseMove: (e: React.MouseEvent) => void;
+  readonly onMouseMove: (e: MousePosition) => void;
   readonly onMouseUp: () => void;
 };
 
@@ -62,7 +69,7 @@ export const useMouseSelection = ({
 }: Options): MouseSelectionHandlers => {
   const [mouseDown, setMouseDown] = React.useState<boolean>(false);
 
-  const positionFocus = (e: React.MouseEvent, selecting: boolean): void => {
+  const positionFocus = (e: MousePosition, selecting: boolean): void => {
     const svg = svgRef.current;
     if (!svg) {
       return;

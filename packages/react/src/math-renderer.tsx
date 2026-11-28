@@ -8,6 +8,7 @@ import { useFontData } from './font-data-context';
 import { useMissingGlyphs } from './use-missing-glyphs';
 import SceneRenderer from './scene-renderer';
 import { HiddenMathml } from './editor-mathml';
+import { useRendererSelection } from './use-renderer-selection';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -18,7 +19,12 @@ type Props = {
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
   readonly mathStyle?: Typesetter.MathStyle;
   readonly renderMode?: Typesetter.RenderMode;
+  // Draws this selection, in place of any the user makes.
   readonly selection?: Editor.Selection;
+
+  // Whether the user can select the math by dragging across it. Defaults to
+  // true. Turn it off for math that's decorative or part of a control.
+  readonly selectable?: boolean;
 
   // Style
   readonly style?: React.CSSProperties;
@@ -50,8 +56,29 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       showHitboxes,
       mathStyle = Typesetter.MathStyle.Display,
       renderMode = Typesetter.RenderMode.Static,
-      selection,
+      selectable = true,
     } = props;
+
+    const svgRef = React.useRef<SVGSVGElement | null>(null);
+    const setSvgRef = React.useCallback(
+      (svg: SVGSVGElement | null): void => {
+        svgRef.current = svg;
+        if (typeof ref === 'function') {
+          ref(svg);
+        } else if (ref) {
+          ref.current = svg;
+        }
+      },
+      [ref],
+    );
+
+    const userSelection = useRendererSelection({
+      row: props.row,
+      selectable,
+      svgRef,
+      getScene: () => scene,
+    });
+    const selection = props.selection ?? userSelection.selection;
 
     const context: Typesetter.Context = {
       fontData: fontData,
@@ -82,10 +109,11 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
     return (
       <>
         <SceneRenderer
-          ref={ref}
+          ref={setSvgRef}
           scene={scene}
           showHitboxes={showHitboxes}
           accessibilityHidden={true}
+          onMouseDown={userSelection.onMouseDown}
           style={{
             ...style,
             verticalAlign,
