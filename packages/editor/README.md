@@ -29,6 +29,10 @@ around and selecting, which keyboard shortcuts and on-screen keypads use:
 - `MoveToStart`, `MoveToEnd`: move to the start or end of the current row
   (`scope: 'row'`), such as a numerator or an exponent, or of the whole formula
   (`scope: 'formula'`). They take `extend: true` too.
+- `MoveByRow`: move by row, the way moving by word works in a text field: to
+  the start (`direction: 'backward'`) or end (`'forward'`) of the current row,
+  or, when already there, into the previous or next row and to its start or
+  end. It takes `extend: true` too.
 - `ExitRow`: move out of the current row, to just after
   (`direction: 'forward'`) or just before (`direction: 'backward'`) the node
   that contains it. In the top-level row it returns the same state.

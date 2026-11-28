@@ -49,6 +49,40 @@ export const moveToEnd = (
 };
 
 /**
+ * Moves by row, the way moving by word works in a text field. If the cursor
+ * isn't at the start (`'backward'`) or end (`'forward'`) of its row, it moves
+ * there. If it is, it takes one step with `step` (moveLeft or moveRight), which
+ * goes into the previous or next row or out to the parent row, and then moves
+ * to the start or end of the row it lands in.
+ */
+export const moveByRow = (
+  state: State,
+  direction: 'forward' | 'backward',
+  extend: boolean,
+  step: (state: State) => State,
+): State => {
+  const move = direction === 'backward' ? moveToStart : moveToEnd;
+  const { focus } = state.selection;
+  const atEdge =
+    direction === 'backward'
+      ? focus.offset === 0
+      : focus.offset === getRowLength(state, focus.path);
+  if (!atEdge) {
+    return move(state, 'row', extend);
+  }
+  const selecting = extend || state.selecting;
+  const stepped = step({ ...state, selecting });
+  if (stepped.selection === state.selection) {
+    // Already at the start or end of the formula.
+    return state;
+  }
+  return {
+    ...move(stepped, 'row', extend),
+    selecting: state.selecting,
+  };
+};
+
+/**
  * Moves the cursor out of the row it's in, to just after (`'forward'`) or just
  * before (`'backward'`) the node that contains that row. Returns `state`
  * itself when the cursor is already in the top-level row, so callers can tell
