@@ -4,8 +4,6 @@
     "module": "Node16",
     "moduleResolution": "Node16"
   },
-  // This only checks the ESM declarations (dist/index.d.mts). A CommonJS
-  // consumer can't check semantic's dist/index.d.ts yet: fraction.js 4's
-  // types are ESM-only, so importing it from CommonJS types fails with TS1479.
+  // The packages only ship ESM, so this checks them from an ES module.
   "files": ["consumer.mts"]
 }
