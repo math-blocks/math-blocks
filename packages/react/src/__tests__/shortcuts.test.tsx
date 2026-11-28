@@ -17,8 +17,8 @@ import type { FontData } from '@math-blocks/opentype';
 
 import MathEditor from '../math-editor';
 import { FontDataContext } from '../font-data-context';
-import { DEFAULT_SHORTCUTS, getShortcuts } from '../shortcuts';
-import type { ShortcutsConfig } from '../shortcuts';
+import { getDefaultShortcuts, getShortcuts } from '../shortcuts';
+import type { Shortcut, ShortcutsConfig } from '../shortcuts';
 
 const { row, char, frac } = Editor.builders;
 const { makeSelection, makeSelection2 } = Editor.SelectionUtils;
@@ -315,13 +315,13 @@ describe('MathEditor shortcuts', () => {
     });
   });
 
-  describe('Mod', () => {
-    test('is Ctrl on Windows and Linux', () => {
+  describe('on Windows and Linux', () => {
+    test('Ctrl is the modifier, and Cmd (the Windows key) does nothing', () => {
       mockPlatform('Win32');
       const { press, latest, onChange } = setup({ row: row([]) });
       press('x');
 
-      // Cmd+Z (the Windows key) neither undoes nor types a 'z'.
+      // Neither undoes nor types a 'z'.
       onChange.mockClear();
       press('z', { metaKey: true });
       expect(onChange).not.toHaveBeenCalled();
@@ -330,22 +330,122 @@ describe('MathEditor shortcuts', () => {
       expect(text(latest())).toBe('');
     });
 
-    test('is Cmd on macOS', () => {
-      mockPlatform('MacIntel');
+    test('Ctrl+Left and Ctrl+Right move to the ends of the sub-formula, like moving by a word', () => {
+      mockPlatform('Win32');
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      expect(press('ArrowRight', { ctrlKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([1, 0], 2));
+      expect(press('ArrowLeft', { ctrlKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([1, 0], 0));
+
+      press('ArrowRight', { ctrlKey: true, shiftKey: true });
+      expect(latest().selection).toEqual(makeSelection2([1, 0], 0, [1, 0], 2));
+    });
+  });
+
+  describe('on macOS', () => {
+    beforeEach(() => mockPlatform('MacIntel'));
+
+    test('Cmd is the modifier, and Ctrl+Z does nothing', () => {
       const { press, latest, onChange } = setup({ row: row([]) });
       press('x');
 
-      // Ctrl+Z neither undoes nor types a 'z'.
+      // Neither undoes nor types a 'z'.
       onChange.mockClear();
       press('z', { ctrlKey: true });
       expect(onChange).not.toHaveBeenCalled();
 
       press('z', { metaKey: true });
       expect(text(latest())).toBe('');
+      press('z', { metaKey: true, shiftKey: true });
+      expect(text(latest())).toBe('x');
+    });
 
-      press('End', { metaKey: true });
-      press('Home', { metaKey: true });
+    test('Cmd+Y does nothing, since it is not redo on macOS', () => {
+      const { press, onChange } = setup({ row: row([]) });
+      press('x');
+      press('z', { metaKey: true });
+      onChange.mockClear();
+      expect(press('y', { metaKey: true })).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    test('Cmd+Left and Cmd+Right move to the start and end of the formula', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      expect(press('ArrowRight', { metaKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([], 3));
+      expect(press('ArrowLeft', { metaKey: true })).toBe(false);
       expect(latest().selection).toEqual(makeSelection([], 0));
+    });
+
+    test('Cmd+Up and Cmd+Down move to the start and end of the formula', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      expect(press('ArrowDown', { metaKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([], 3));
+      expect(press('ArrowUp', { metaKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([], 0));
+    });
+
+    test('Ctrl+A and Ctrl+E move to the start and end of the formula', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      expect(press('e', { ctrlKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([], 3));
+      expect(press('a', { ctrlKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([], 0));
+    });
+
+    test('Cmd+A selects everything', () => {
+      const { press, latest } = setup();
+      expect(press('a', { metaKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection2([], 0, [], 3));
+    });
+
+    test('Option+Left and Option+Right move to the start and end of the sub-formula', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      expect(press('ArrowRight', { altKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([1, 0], 2));
+      expect(press('ArrowLeft', { altKey: true })).toBe(false);
+      expect(latest().selection).toEqual(makeSelection([1, 0], 0));
+    });
+
+    test('Shift extends the selection with Option and Cmd arrows', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      press('ArrowRight', { altKey: true, shiftKey: true });
+      expect(latest().selection).toEqual(makeSelection2([1, 0], 1, [1, 0], 2));
+
+      press('ArrowLeft', { altKey: true, shiftKey: true });
+      expect(latest().selection).toEqual(makeSelection2([1, 0], 1, [1, 0], 0));
+
+      press('ArrowRight', { metaKey: true, shiftKey: true });
+      expect(latest().selection).toEqual(makeSelection2([1, 0], 1, [], 3));
+
+      press('ArrowUp', { metaKey: true, shiftKey: true });
+      expect(latest().selection).toEqual(makeSelection2([1, 0], 1, [], 0));
+    });
+
+    test('Home, End and Ctrl+Home/End do nothing, as in a macOS text field', () => {
+      const { press, onChange } = setup();
+      moveIntoNumerator(press);
+      onChange.mockClear();
+
+      expect(press('Home')).toBe(true);
+      expect(press('End')).toBe(true);
+      expect(press('Home', { ctrlKey: true })).toBe(true);
+      expect(press('End', { ctrlKey: true })).toBe(true);
+      expect(press('Home', { shiftKey: true })).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 
@@ -402,23 +502,53 @@ describe('getShortcuts', () => {
   test('lists the default shortcuts with descriptions', () => {
     const shortcuts = getShortcuts(undefined, { platform: 'windows' });
     expect(shortcuts.map((s) => s.command)).toEqual(
-      Object.keys(DEFAULT_SHORTCUTS),
+      Object.keys(getDefaultShortcuts('windows')),
     );
     const undo = shortcuts.find((s) => s.command === 'undo');
     expect(undo).toEqual({
       command: 'undo',
       description: 'Undo',
-      hotkeys: ['Mod+Z'],
+      hotkeys: ['Control+Z'],
       labels: ['Ctrl+Z'],
     });
     const redo = shortcuts.find((s) => s.command === 'redo');
-    expect(redo?.hotkeys).toEqual(['Mod+Shift+Z', 'Mod+Y']);
+    expect(redo?.hotkeys).toEqual(['Control+Shift+Z', 'Control+Y']);
   });
 
-  test('formats Mod as Cmd on macOS', () => {
+  test('lists the macOS defaults with macOS labels', () => {
     const shortcuts = getShortcuts(undefined, { platform: 'mac' });
-    const undo = shortcuts.find((s) => s.command === 'undo');
-    expect(undo?.labels).toEqual(['⌘ Z']);
+    const find = (command: string): Shortcut | undefined =>
+      shortcuts.find((s) => s.command === command);
+    expect(find('undo')?.labels).toEqual(['⌘ Z']);
+    expect(find('redo')?.hotkeys).toEqual(['Meta+Shift+Z']);
+    expect(find('moveToRowStart')?.hotkeys).toEqual(['Alt+ArrowLeft']);
+    expect(find('moveToFormulaEnd')?.hotkeys).toEqual([
+      'Meta+ArrowRight',
+      'Meta+ArrowDown',
+      'Control+E',
+    ]);
+  });
+
+  test('getDefaultShortcuts differs by platform', () => {
+    expect(getDefaultShortcuts('linux')).toBe(getDefaultShortcuts('windows'));
+    expect(getDefaultShortcuts('mac').moveToRowStart).toEqual([
+      'Alt+ArrowLeft',
+    ]);
+    expect(getDefaultShortcuts('windows').moveToRowStart).toEqual([
+      'Home',
+      'Control+ArrowLeft',
+    ]);
+  });
+
+  test('Mod in a rebound shortcut is Cmd on macOS and Ctrl elsewhere', () => {
+    const config = { undo: 'Mod+U' };
+    const label = (
+      platform: 'mac' | 'windows',
+    ): readonly string[] | undefined =>
+      getShortcuts(config, { platform }).find((s) => s.command === 'undo')
+        ?.labels;
+    expect(label('mac')).toEqual(['⌘ U']);
+    expect(label('windows')).toEqual(['Ctrl+U']);
   });
 
   test('leaves out shortcuts that are turned off and shows rebound ones', () => {

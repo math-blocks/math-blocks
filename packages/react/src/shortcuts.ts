@@ -71,24 +71,66 @@ export type Shortcut = {
   readonly labels: readonly string[];
 };
 
-/** The shortcuts MathEditor uses unless its `shortcuts` prop changes them. */
-export const DEFAULT_SHORTCUTS: ShortcutBindings = {
-  moveToRowStart: ['Home'],
-  moveToRowEnd: ['End'],
-  moveToFormulaStart: ['Mod+Home'],
-  moveToFormulaEnd: ['Mod+End'],
+// The defaults follow the platform's own text fields. A part of the formula,
+// such as a numerator, plays the role of a word, and the whole formula plays
+// the role of the line (or document).
+//
+// Windows and Linux: Home and End move within the line, Ctrl+Home and
+// Ctrl+End to the ends of the document, and Ctrl+Left and Ctrl+Right by a word.
+const WINDOWS_AND_LINUX_SHORTCUTS: ShortcutBindings = {
+  moveToRowStart: ['Home', 'Control+ArrowLeft'],
+  moveToRowEnd: ['End', 'Control+ArrowRight'],
+  moveToFormulaStart: ['Control+Home'],
+  moveToFormulaEnd: ['Control+End'],
   exitRowForward: ['Tab'],
   exitRowBackward: ['Shift+Tab'],
   extendLeft: ['Shift+ArrowLeft'],
   extendRight: ['Shift+ArrowRight'],
-  extendToRowStart: ['Shift+Home'],
-  extendToRowEnd: ['Shift+End'],
-  extendToFormulaStart: ['Mod+Shift+Home'],
-  extendToFormulaEnd: ['Mod+Shift+End'],
-  selectAll: ['Mod+A'],
-  undo: ['Mod+Z'],
-  redo: ['Mod+Shift+Z', 'Mod+Y'],
+  extendToRowStart: ['Shift+Home', 'Control+Shift+ArrowLeft'],
+  extendToRowEnd: ['Shift+End', 'Control+Shift+ArrowRight'],
+  extendToFormulaStart: ['Control+Shift+Home'],
+  extendToFormulaEnd: ['Control+Shift+End'],
+  selectAll: ['Control+A'],
+  undo: ['Control+Z'],
+  redo: ['Control+Shift+Z', 'Control+Y'],
 };
+
+// macOS: Option+Left and Option+Right move by a word, Cmd+Left and Cmd+Right
+// to the ends of the line, Cmd+Up and Cmd+Down to the ends of the document,
+// and Ctrl+A and Ctrl+E (from Emacs) to the ends of the line. Home, End and
+// Ctrl+Home/End do nothing in a macOS text field, so they aren't bound, and
+// Cmd+Y isn't redo on macOS.
+const MAC_SHORTCUTS: ShortcutBindings = {
+  moveToRowStart: ['Alt+ArrowLeft'],
+  moveToRowEnd: ['Alt+ArrowRight'],
+  moveToFormulaStart: ['Meta+ArrowLeft', 'Meta+ArrowUp', 'Control+A'],
+  moveToFormulaEnd: ['Meta+ArrowRight', 'Meta+ArrowDown', 'Control+E'],
+  exitRowForward: ['Tab'],
+  exitRowBackward: ['Shift+Tab'],
+  extendLeft: ['Shift+ArrowLeft'],
+  extendRight: ['Shift+ArrowRight'],
+  extendToRowStart: ['Alt+Shift+ArrowLeft'],
+  extendToRowEnd: ['Alt+Shift+ArrowRight'],
+  extendToFormulaStart: ['Meta+Shift+ArrowLeft', 'Meta+Shift+ArrowUp'],
+  extendToFormulaEnd: ['Meta+Shift+ArrowRight', 'Meta+Shift+ArrowDown'],
+  selectAll: ['Meta+A'],
+  undo: ['Meta+Z'],
+  redo: ['Meta+Shift+Z'],
+};
+
+/** Detects the platform from the browser, or `'linux'` on a server. */
+export const detectShortcutPlatform = (): ShortcutPlatform => detectPlatform();
+
+/**
+ * The shortcuts MathEditor uses on `platform` unless its `shortcuts` prop
+ * changes them. They follow the platform's own text fields, so they differ
+ * between macOS and Windows or Linux. `platform` is detected from the browser
+ * when left out.
+ */
+export const getDefaultShortcuts = (
+  platform: ShortcutPlatform = detectShortcutPlatform(),
+): ShortcutBindings =>
+  platform === 'mac' ? MAC_SHORTCUTS : WINDOWS_AND_LINUX_SHORTCUTS;
 
 const DESCRIPTIONS: { readonly [Command in ShortcutCommand]: string } = {
   moveToRowStart: 'Move to the start of the current part',
@@ -108,8 +150,10 @@ const DESCRIPTIONS: { readonly [Command in ShortcutCommand]: string } = {
   redo: 'Redo',
 };
 
-// The commands in the order DEFAULT_SHORTCUTS lists them.
-const COMMANDS = Object.keys(DEFAULT_SHORTCUTS) as readonly ShortcutCommand[];
+// The commands in the order the defaults list them.
+const COMMANDS = Object.keys(
+  WINDOWS_AND_LINUX_SHORTCUTS,
+) as readonly ShortcutCommand[];
 
 const toList = (
   value: string | readonly string[] | null | undefined,
@@ -125,24 +169,26 @@ const toList = (
 };
 
 /**
- * Applies a `shortcuts` prop to the defaults: the hotkeys bound to each
- * command, with `[]` for a command that's turned off.
+ * Applies a `shortcuts` prop to the defaults for `platform`: the hotkeys bound
+ * to each command, with `[]` for a command that's turned off.
  */
 export const resolveShortcuts = (
   config: ShortcutsConfig | undefined,
+  platform: ShortcutPlatform,
 ): ShortcutBindings => {
+  const defaults = getDefaultShortcuts(platform);
   if (config === false) {
     return Object.fromEntries(
       COMMANDS.map((command) => [command, []]),
     ) as unknown as ShortcutBindings;
   }
   if (config === undefined) {
-    return DEFAULT_SHORTCUTS;
+    return defaults;
   }
   return Object.fromEntries(
     COMMANDS.map((command) => [
       command,
-      toList(config[command], DEFAULT_SHORTCUTS[command]),
+      toList(config[command], defaults[command]),
     ]),
   ) as unknown as ShortcutBindings;
 };
@@ -152,7 +198,8 @@ export const resolveShortcuts = (
  * it's left out), for a help screen or cheatsheet. Commands whose shortcut is
  * turned off are left out.
  *
- * `platform` sets what `Mod` shows as. It's detected from the browser when
+ * `platform` picks the defaults (see `getDefaultShortcuts`) and sets what
+ * `Mod` means and how hotkeys are shown. It's detected from the browser when
  * left out, which matches what MathEditor does.
  *
  * `Tab` and `Shift+Tab` only apply while the cursor is inside a part of the
@@ -163,8 +210,8 @@ export const getShortcuts = (
   config?: ShortcutsConfig,
   options: { readonly platform?: ShortcutPlatform } = {},
 ): readonly Shortcut[] => {
-  const bindings = resolveShortcuts(config);
-  const platform = options.platform ?? detectPlatform();
+  const platform = options.platform ?? detectShortcutPlatform();
+  const bindings = resolveShortcuts(config, platform);
   return COMMANDS.filter((command) => bindings[command].length > 0).map(
     (command) => ({
       command,
@@ -186,12 +233,17 @@ export const isShortcutEvent = (
   event: KeyboardEvent,
   bindings: ShortcutBindings,
   isEnabled: (command: ShortcutCommand) => boolean,
+  platform: ShortcutPlatform,
 ): boolean =>
   COMMANDS.some(
     (command) =>
       isEnabled(command) &&
       bindings[command].some((hotkey) =>
-        matchesKeyboardEvent(event, parseHotkey(hotkey as HotkeyChord)),
+        matchesKeyboardEvent(
+          event,
+          parseHotkey(hotkey as HotkeyChord, platform),
+          platform,
+        ),
       ),
   );
 
@@ -206,6 +258,7 @@ export const useShortcuts = (
   bindings: ShortcutBindings,
   isEnabled: (command: ShortcutCommand) => boolean,
   run: (command: ShortcutCommand) => void,
+  platform: ShortcutPlatform,
 ): void => {
   const definitions: UseHotkeyDefinition[] = [];
   for (const command of COMMANDS) {
@@ -220,6 +273,7 @@ export const useShortcuts = (
   }
   useHotkeys(definitions, {
     target,
+    platform,
     // The target is the input itself, which uses typing keys, so don't skip
     // them the way TanStack Hotkeys does for inputs inside a target.
     ignoreInputs: false,

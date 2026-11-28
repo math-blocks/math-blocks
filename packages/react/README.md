@@ -62,19 +62,23 @@ TODO:
 
 ### Keyboard shortcuts
 
-`MathEditor` has these keyboard shortcuts. `Mod` is Cmd on macOS and Ctrl
-elsewhere.
+`MathEditor` has keyboard shortcuts that follow the platform's own text
+fields. A part of the formula, such as a numerator, exponent or root, works
+like a word, and the whole formula works like the line.
 
-| Action | Shortcut |
-| --- | --- |
-| Start / end of the current part of the formula (numerator, exponent, root, …) | `Home` / `End` |
-| Start / end of the whole formula | `Mod+Home` / `Mod+End` |
-| Move out of the current part, forward / backward | `Tab` / `Shift+Tab` |
-| Extend the selection left / right | `Shift+ArrowLeft` / `Shift+ArrowRight` |
-| Select to the start / end of the current part | `Shift+Home` / `Shift+End` |
-| Select to the start / end of the whole formula | `Mod+Shift+Home` / `Mod+Shift+End` |
-| Select all | `Mod+A` |
-| Undo / redo | `Mod+Z` / `Mod+Shift+Z` or `Mod+Y` |
+| Action | macOS | Windows and Linux |
+| --- | --- | --- |
+| Start / end of the current part | `Option+←` / `Option+→` | `Home` / `End`, `Ctrl+←` / `Ctrl+→` |
+| Start / end of the whole formula | `Cmd+←` / `Cmd+→`, `Cmd+↑` / `Cmd+↓`, `Ctrl+A` / `Ctrl+E` | `Ctrl+Home` / `Ctrl+End` |
+| Move out of the current part, forward / backward | `Tab` / `Shift+Tab` | `Tab` / `Shift+Tab` |
+| Extend the selection left / right | `Shift+←` / `Shift+→` | `Shift+←` / `Shift+→` |
+| Select to the start / end of the current part | `Option+Shift+←` / `Option+Shift+→` | `Shift+Home` / `Shift+End`, `Ctrl+Shift+←` / `Ctrl+Shift+→` |
+| Select to the start / end of the whole formula | `Cmd+Shift+←` / `Cmd+Shift+→`, `Cmd+Shift+↑` / `Cmd+Shift+↓` | `Ctrl+Shift+Home` / `Ctrl+Shift+End` |
+| Select all | `Cmd+A` | `Ctrl+A` |
+| Undo / redo | `Cmd+Z` / `Cmd+Shift+Z` | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` |
+
+As in a macOS text field, `Home`, `End` and `Cmd+Y` do nothing on macOS. The
+platform is detected from the browser.
 
 They only fire while the editor has focus, so they don't clash with the page's
 own shortcuts. `Tab` and `Shift+Tab` only apply while the cursor is inside a
@@ -97,10 +101,9 @@ defaults.
   row={row}
   readonly={false}
   shortcuts={{
-    redo: ['Mod+Shift+Z'], // drop Mod+Y
+    redo: ['Mod+Shift+Z'], // only Cmd+Shift+Z or Ctrl+Shift+Z
     selectAll: null, // turn Select All off
-    // Add Emacs-style Ctrl+A. Only do this on macOS, where Mod+A is Cmd+A.
-    moveToRowStart: ['Home', 'Control+A'],
+    moveToRowStart: ['Home', 'Alt+ArrowLeft'], // the same on every platform
   }}
 />
 ```
@@ -108,12 +111,16 @@ defaults.
 The commands are `moveToRowStart`, `moveToRowEnd`, `moveToFormulaStart`,
 `moveToFormulaEnd`, `exitRowForward`, `exitRowBackward`, `extendLeft`,
 `extendRight`, `extendToRowStart`, `extendToRowEnd`, `extendToFormulaStart`,
-`extendToFormulaEnd`, `selectAll`, `undo` and `redo`. `DEFAULT_SHORTCUTS` has
-the default hotkeys for each.
+`extendToFormulaEnd`, `selectAll`, `undo` and `redo`.
+`getDefaultShortcuts(platform?)` returns the default hotkeys for each, for
+`'mac'`, `'windows'` or `'linux'`.
 
 A hotkey is modifiers and a key joined by `+`, such as `Mod+Shift+Z`. The
-modifiers are `Mod`, `Control`, `Alt`, `Shift` and `Meta`, and the key is a
-character or a `KeyboardEvent.key` name such as `Home` or `ArrowLeft`.
+modifiers are `Mod` (Cmd on macOS, Ctrl elsewhere), `Control`, `Alt` (Option
+on macOS), `Shift` and `Meta` (Cmd on macOS), and the key is a character or a
+`KeyboardEvent.key` name such as `Home` or `ArrowLeft`. A rebound command
+uses the same hotkeys on every platform, so use `Mod` for one that should be
+Cmd on macOS and Ctrl elsewhere.
 
 #### Listing them
 

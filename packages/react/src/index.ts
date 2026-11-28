@@ -6,7 +6,7 @@ import MathEditor from './math-editor';
 export { MathKeypad, MathRenderer, MathmlRenderer, MathEditor };
 export { FontDataContext } from './font-data-context';
 export { GlyphDefsProvider, getStandaloneSvg } from './glyph-defs';
-export { DEFAULT_SHORTCUTS, getShortcuts } from './shortcuts';
+export { getDefaultShortcuts, getShortcuts } from './shortcuts';
 export type {
   Shortcut,
   ShortcutBindings,

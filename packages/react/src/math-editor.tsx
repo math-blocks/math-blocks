@@ -10,7 +10,12 @@ import { useMissingGlyphs } from './use-missing-glyphs';
 import styles from './editor.module.css';
 import SceneRenderer from './scene-renderer';
 import useEventListener from './use-event-listener';
-import { isShortcutEvent, resolveShortcuts, useShortcuts } from './shortcuts';
+import {
+  detectShortcutPlatform,
+  isShortcutEvent,
+  resolveShortcuts,
+  useShortcuts,
+} from './shortcuts';
 import type { ShortcutCommand, ShortcutsConfig } from './shortcuts';
 
 import type { EditingEvent } from './math-keypad';
@@ -170,9 +175,11 @@ export const MathEditor = (props: Props): React.ReactNode => {
   const inputRef = useRef<HTMLInputElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // The platform picks the default shortcuts and what `Mod` means.
+  const platform = useMemo(detectShortcutPlatform, []);
   const shortcuts = useMemo(
-    () => resolveShortcuts(props.readonly ? false : props.shortcuts),
-    [props.readonly, props.shortcuts],
+    () => resolveShortcuts(props.readonly ? false : props.shortcuts, platform),
+    [props.readonly, props.shortcuts, platform],
   );
 
   // Tab and Shift+Tab only move out of a sub-formula when the cursor is in
@@ -203,7 +210,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
     props.onChange?.(newHistory.present);
   };
 
-  useShortcuts(inputRef, shortcuts, isShortcutEnabled, runShortcut);
+  useShortcuts(inputRef, shortcuts, isShortcutEnabled, runShortcut, platform);
 
   const handleKeydown = useCallback(
     (e: KeyboardEvent): void => {
@@ -211,7 +218,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
         // Leave shortcuts to the handlers useShortcuts registers on the
         // input. Stopping the event here, in the capture phase on window,
         // would keep it from reaching them.
-        if (isShortcutEvent(e, shortcuts, isShortcutEnabled)) {
+        if (isShortcutEvent(e, shortcuts, isShortcutEnabled, platform)) {
           return;
         }
 
@@ -242,7 +249,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
     },
     // isShortcutEnabled only depends on state, which is listed.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-    [state, props, active, shortcuts, setState],
+    [state, props, active, shortcuts, platform, setState],
   );
 
   const handleKeyUp = useCallback(
