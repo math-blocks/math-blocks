@@ -638,6 +638,17 @@ const IMPLICIT_MUL_TOKENS: readonly TokenKind[] = [
   TokenKind.ProductOperator,
 ];
 
+// Non-token nodes that can be the next operand of an implicit product.
+const IMPLICIT_MUL_NODES: readonly string[] = ['frac', 'root', 'delimited'];
+
+// Whether `node`, which follows an operand of an implicit product, is the
+// next operand of that product, e.g. the `c` in `ab(x)c`.  A function or
+// `mod` ends the product instead, as in `parseNaryArgs`'s token case, so
+// `\sin 2(x) \cos x` is `sin(2·x)·cos(x)`.
+const continuesImplicitMul = (node: TokenNode): boolean =>
+  (isIdentifier(node) && !isFunctionToken(node) && !isModToken(node)) ||
+  IMPLICIT_MUL_NODES.includes(node.type);
+
 /**
  * Returns an array or one or more nodes that are arguments for the given
  * operator.  All n-ary operators require at least two arguments, but the
@@ -667,7 +678,13 @@ const parseNaryArgs = (
     }
     const nextToken = parser.peek();
     if (nextToken.type !== 'token') {
-      throw new Error('atom expected');
+      // A fraction, root or delimited group right after an operand of an
+      // implicit product continues it, e.g. the `\frac{1}{2}` in
+      // `ab\frac{1}{2}` or the `(x+1)` in `2a(x+1)`.
+      if (op === 'mul.imp' && IMPLICIT_MUL_NODES.includes(nextToken.type)) {
+        return [expr, ...parseNaryArgs(parser, op, ops)];
+      }
+      return [expr];
     }
     const addOp = ADD_CHAIN_OPS[nextToken.name];
     if (
@@ -710,12 +727,9 @@ const parseNaryArgs = (
             false,
             node.loc,
           );
-    const nextToken = parser.peek();
-    if (nextToken.type === 'root' || isIdentifier(nextToken)) {
-      return [expr, ...parseNaryArgs(parser, 'mul.imp', ops)];
-    } else {
-      return [expr];
-    }
+    return continuesImplicitMul(parser.peek())
+      ? [expr, ...parseNaryArgs(parser, 'mul.imp', ops)]
+      : [expr];
   } else if (node.type === 'frac') {
     parser.consume();
     const [num, den] = node.children;
@@ -724,15 +738,17 @@ const parseNaryArgs = (
       editorParser.parse(den.children),
       node.loc,
     );
-    return [expr];
+    return continuesImplicitMul(parser.peek())
+      ? [expr, ...parseNaryArgs(parser, 'mul.imp', ops)]
+      : [expr];
   } else if (node.type === 'delimited') {
     parser.consume();
     // TODO: make 'eol' its own token type instead of a co-opting 'atom'
     const nextToken = parser.peek();
     const expr = parseDelimited(node);
 
-    return nextToken.type === 'delimited'
-      ? [expr, ...parseNaryArgs(parser, op, ops)]
+    return continuesImplicitMul(nextToken)
+      ? [expr, ...parseNaryArgs(parser, 'mul.imp', ops)]
       : [expr];
   } else if (node.type === NodeType.Limits) {
     // A sum, product or limit, whose prefix parselet consumes the node.
