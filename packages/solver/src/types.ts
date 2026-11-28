@@ -96,9 +96,8 @@ type StepType<
    */
   readonly kind: TKind;
   /**
-   * An English description of the step, kept only as a debug label.
-   *
-   * @deprecated use `kind` instead.  `message` will be removed in a future
+   * An English description of the step, kept only as a debug label.  Use
+   * `kind` to tell steps apart: `message` will be removed in a future
    * release, and its text is not stable or translatable.
    */
   readonly message: TMessage;

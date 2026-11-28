@@ -99,7 +99,7 @@ describe('StepKind', () => {
       'SimplifyExpression',
       {
         type: 'SimplifyExpression',
-        expression: parse('2(x + 3) - (x - 1) + 6 / 3'),
+        expression: parse('2(x + 3) - (x - 1) + 6 \\div 3'),
       },
     ],
     [
