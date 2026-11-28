@@ -170,4 +170,26 @@ test.describe('editor', () => {
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
+
+  test('dragging across the math highlights a selection', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/editor');
+    const svg = mathEditor(page).locator('svg');
+    await expect(svg.locator('use').first()).toBeAttached();
+    // The selection is drawn as rectangles behind the glyphs.
+    await expect(svg.locator('rect')).toHaveCount(0);
+
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width * 0.1, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    expect(errors).toEqual([]);
+  });
 });
