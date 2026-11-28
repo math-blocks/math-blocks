@@ -95,17 +95,130 @@ export const neq = (loc: SourceLocation): TokenAtom =>
 export const verticalbar = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.VerticalBar }, loc);
 
-// TODO: allow different decimal and list separators
-// Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as minus.
-// Identifiers are single latin or greek letters, or the names of
-// some functions spelled out one char at a time.
-const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\u2260|\*|\u00B7|\u00D7|\u22C5|\u00F7|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z]|[\u03B1-\u03C9])/gi;
+export const minusplus = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.MinusPlus }, loc);
+
+export const elementOf = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.ElementOf }, loc);
+
+export const notElementOf = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.NotElementOf }, loc);
+
+export const contains = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Contains }, loc);
+
+export const notContains = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.NotContains }, loc);
+
+export const subset = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Subset }, loc);
+
+export const properSubset = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.ProperSubset }, loc);
+
+export const superset = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Superset }, loc);
+
+export const properSuperset = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.ProperSuperset }, loc);
+
+export const union = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Union }, loc);
+
+export const intersection = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Intersection }, loc);
+
+export const rightArrow = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.RightArrow }, loc);
+
+export const summation = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.SummationOperator }, loc);
+
+export const product = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.ProductOperator }, loc);
+
+// Single chars that each become a token with no value.  `⊂` and `⊃` are
+// proper subsets and supersets, and `⊆` and `⊇` are subsets and supersets
+// that may be equal, as in OpenMath's set1 content dictionary.
+const SYMBOL_TOKENS: Record<string, (loc: SourceLocation) => TokenAtom> = {
+  '\u2213': minusplus, // ∓
+  '\u2208': elementOf, // ∈
+  '\u2209': notElementOf, // ∉
+  '\u220B': contains, // ∋
+  '\u220C': notContains, // ∌
+  '\u2286': subset, // ⊆
+  '\u2282': properSubset, // ⊂
+  '\u2287': superset, // ⊇
+  '\u2283': properSuperset, // ⊃
+  '\u222A': union, // ∪
+  '\u2229': intersection, // ∩
+  '\u2192': rightArrow, // →
+  // `Tex.parse` and the editor use the n-ary summation and product signs,
+  // but the Greek capitals Σ and Π are also accepted as the operator of a
+  // limits node, see `lex`.
+  '\u2211': summation, // ∑
+  '\u220F': product, // ∏
+  '\u2026': ellipsis, // … (\ldots)
+  '\u22EF': ellipsis, // ⋯ (\cdots)
+};
 
 /**
- * Throws an error naming `char`, a character the lexer doesn't recognize.
+ * Throws an error saying that `symbol` isn't supported yet, with an optional
+ * `hint` on what to use instead.  This is for symbols that are valid math,
+ * but that the parser can't turn into a semantic node.
+ */
+export const unsupported = (symbol: string, hint?: string): never => {
+  throw new Error(
+    hint
+      ? `'${symbol}' isn't supported yet, ${hint}`
+      : `'${symbol}' isn't supported yet`,
+  );
+};
+
+// Chars that are valid math but that the parser doesn't support yet, along
+// with a hint for some of them.
+const UNSUPPORTED_CHARS: Record<string, string | undefined> = {
+  '/': 'use a fraction (\\frac in TeX) instead',
+  '!': undefined,
+  "'": undefined,
+  '%': undefined,
+  ':': undefined,
+  ';': undefined,
+  '[': undefined,
+  ']': undefined,
+  '{': undefined,
+  '}': undefined,
+  '\u2190': undefined, // ← \leftarrow
+  '\u2191': undefined, // ↑ \uparrow
+  '\u2193': undefined, // ↓ \downarrow
+  '\u210D': undefined, // ℍ \H
+  '\u2119': undefined, // ℙ \P
+  '\u222B': undefined, // ∫ \int
+  '\u222C': undefined, // ∬ \iint
+  '\u222D': undefined, // ∭ \iiint
+  '\u2248': undefined, // ≈ \approx
+  '\u22A5': undefined, // ⊥ \perp
+  '\u2225': undefined, // ∥ \parallel
+  '\u2218': undefined, // ∘ \circ
+};
+
+// TODO: allow different decimal and list separators
+// Both the minus sign (U+2212) and the ASCII hyphen-minus are lexed as minus.
+// Identifiers are single latin or greek letters, the names of some functions
+// spelled out one char at a time, or symbols for constants: ∞, ∅, and the
+// number sets ℕ, ℤ, ℚ, ℝ and ℂ.  The parser decides what each identifier
+// means.
+const TOKEN_REGEX =
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\u2260|\*|\u00B7|\u00D7|\u22C5|\u00F7|\u00B1|\+|\u2212|-|=|\(|\)|\.\.\.|[\u2213\u2208\u2209\u220B\u220C\u2286\u2282\u2287\u2283\u222A\u2229\u2192\u2211\u220F\u2026\u22EF])|(sin|cos|tan|[a-z]|[\u03B1-\u03C9]|[\u221E\u2205\u2115\u2124\u211A\u211D\u2102])/gi;
+
+/**
+ * Throws an error naming `char`, a character the lexer doesn't recognize, or
+ * saying that it isn't supported yet if it's valid math.
  */
 const unexpectedChar = (char: string): never => {
+  if (char in UNSUPPORTED_CHARS) {
+    unsupported(char, UNSUPPORTED_CHARS[char]);
+  }
   const codePoint = char.codePointAt(0) ?? 0;
   const hex = codePoint.toString(16).toUpperCase().padStart(4, '0');
   throw new Error(`Unexpected character '${char}' (U+${hex})`);
@@ -131,6 +244,12 @@ const assertOnlyWhitespace = (
     }
   }
 };
+
+// The operators of a limits node that are lexed as summation and product
+// operators: the n-ary signs that `Tex.parse` and the editor create, and the
+// Greek capitals.
+const SUMMATION_CHARS = ['\u2211', '\u03a3'];
+const PRODUCT_CHARS = ['\u220f', '\u03a0'];
 
 // TODO: include ids of source chars in parsed tokens
 
@@ -251,6 +370,10 @@ const tokenizeRun = (
             tokens.push(rparens(loc));
             break;
           default:
+            if (sym in SYMBOL_TOKENS) {
+              tokens.push(SYMBOL_TOKENS[sym](loc));
+              break;
+            }
             throw new Error(`Unexpected symbol token: ${sym}`);
         }
       } else if (name) {
@@ -349,13 +472,25 @@ const lex = (
       const loc = location(path, offset, offset + 1);
 
       let inner: TokenNode;
-      if (node.inner.type === 'char' && node.inner.value === '\u03a3') {
-        inner = atom({ type: 'token', name: TokenKind.SummationOperator }, loc);
-      } else if (node.inner.type === 'char' && node.inner.value === '\u03a0') {
-        inner = atom({ type: 'token', name: TokenKind.ProductOperator }, loc);
+      if (
+        node.inner.type === 'char' &&
+        SUMMATION_CHARS.includes(node.inner.value)
+      ) {
+        inner = summation(loc);
+      } else if (
+        node.inner.type === 'char' &&
+        PRODUCT_CHARS.includes(node.inner.value)
+      ) {
+        inner = product(loc);
       } else if (node.inner.type === 'row') {
         // TODO: check that the row corresponds to "lim"
         inner = atom({ type: 'token', name: TokenKind.Lim }, loc);
+      } else if (
+        node.inner.type === 'char' &&
+        node.inner.value in UNSUPPORTED_CHARS
+      ) {
+        // e.g. an integral
+        return unsupported(node.inner.value);
       } else {
         throw new Error('Invalid inner for limits');
       }
@@ -393,6 +528,12 @@ const lex = (
       };
     }
     case NodeType.Delimited: {
+      // Brackets and braces would otherwise be parsed as parentheses.
+      for (const delim of [node.leftDelim, node.rightDelim]) {
+        if (!['(', ')', '|'].includes(delim.value)) {
+          unsupported(delim.value);
+        }
+      }
       const delimLoc = location(path, offset, offset);
       const leftDelim =
         node.leftDelim.value === '|'

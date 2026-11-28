@@ -234,7 +234,7 @@ describe('Editor.parse(Tex.parse(...))', () => {
       });
 
       test('an unsupported function throws', () => {
-        expect(() => parse('\\max x')).toThrow("Unsupported function 'max'");
+        expect(() => parse('\\max x')).toThrow("'max' isn't supported yet");
       });
 
       test('a subscript on a function other than log throws', () => {
@@ -393,6 +393,201 @@ describe('Editor.parse(Tex.parse(...))', () => {
       const printed = print(node);
       expect(printed).toEqual(expected);
       expect(strip(parse(printed))).toEqual(strip(node));
+    });
+  });
+
+  describe('symbols', () => {
+    const A = b.identifier('A');
+    const B = b.identifier('B');
+    const i = b.identifier('i');
+    const n = b.identifier('n');
+
+    test('\\sum_{i=0}^{\\infty} i parses with its limits', () => {
+      expectParse(
+        '\\sum_{i=0}^{\\infty} i',
+        b.sum(i, i, num('0'), b.infinity()),
+      );
+    });
+
+    test.each([
+      // constants
+      ['\\infty', b.infinity()],
+      ['-\\infty', b.neg(b.infinity())],
+      ['2\\infty', b.mul([num('2'), b.infinity()], true)],
+      ['x^\\infty', b.pow(x, b.infinity())],
+      ['x<\\infty', b.lt([x, b.infinity()])],
+      ['\\emptyset', b.emptyset()],
+      ['\\N', b.naturals()],
+      ['\\naturals', b.naturals()],
+      ['\\Z', b.integers()],
+      ['\\integers', b.integers()],
+      ['\\Q', b.rationals()],
+      ['\\rationals', b.rationals()],
+      ['\\R', b.reals()],
+      ['\\reals', b.reals()],
+      ['\\C', b.complexes()],
+      ['\\complex', b.complexes()],
+
+      // \pm and \mp
+      ['x\\pm y', b.plusminus([x, y])],
+      ['x\\mp y', b.minusplus([x, y])],
+      ['\\pm x', b.unaryplusminus(x)],
+      ['\\mp x', b.unaryminusplus(x)],
+      ['x+y\\mp z', b.add([x, y, b.unaryminusplus(z)])],
+
+      // set membership
+      ['x\\in A', b.in(x, A)],
+      ['x\\isin A', b.in(x, A)],
+      ['x\\notin A', b.notin(x, A)],
+      ['A\\ni x', b.in(x, A)],
+      ['A\\contains x', b.in(x, A)],
+      ['A\\notni x', b.notin(x, A)],
+      ['A\\notcontains x', b.notin(x, A)],
+      ['x\\in\\R', b.in(x, b.reals())],
+
+      // subsets: \subseteq allows equal sets and \subset doesn't
+      ['A\\subseteq B', b.subset([A, B])],
+      ['A\\subeq B', b.subset([A, B])],
+      ['A\\subset B', b.propersubset([A, B])],
+      ['A\\sub B', b.propersubset([A, B])],
+      ['A\\supseteq B', b.superset([A, B])],
+      ['A\\supeq B', b.superset([A, B])],
+      ['A\\supset B', b.propersuperset([A, B])],
+      ['A\\sup B', b.propersuperset([A, B])],
+      ['A\\superset B', b.propersuperset([A, B])],
+      [
+        '\\N\\subset\\Z\\subset\\Q',
+        b.propersubset([b.naturals(), b.integers(), b.rationals()]),
+      ],
+
+      // union and intersection
+      ['A\\cup B', b.union([A, B])],
+      ['A\\cap B', b.intersection([A, B])],
+      ['A\\cup B\\cap C', b.union([A, b.intersection([B, b.identifier('C')])])],
+      ['x\\notin A\\cup B', b.notin(x, b.union([A, B]))],
+      ['A\\cap B=\\emptyset', b.eq([b.intersection([A, B]), b.emptyset()])],
+
+      // ellipses
+      ['1+\\cdots+n', b.add([num('1'), b.ellipsis(), n])],
+      ['1,2,\\ldots,n', b.sequence([num('1'), num('2'), b.ellipsis(), n])],
+
+      // sums and products
+      ['\\sum_{i=1}^{n} i', b.sum(i, i, num('1'), n)],
+      ['\\sum_{i=1}^n i^2', b.sum(b.pow(i, num('2')), i, num('1'), n)],
+      ['\\prod_{i=1}^{n} i', b.product(i, i, num('1'), n)],
+      ['\\prod_{i=1}^{\\infty} i', b.product(i, i, num('1'), b.infinity())],
+      [
+        '\\sum_{i=1}^n 2i+1',
+        b.add([b.sum(b.mul([num('2'), i], true), i, num('1'), n), num('1')]),
+      ],
+      ['2\\sum_{i=1}^n i', b.mul([num('2'), b.sum(i, i, num('1'), n)], true)],
+      ['\\sum_{i=1}^n \\frac{1}{i}', b.sum(b.div(num('1'), i), i, num('1'), n)],
+
+      // limits
+      [
+        '\\lim_{x\\to 0} \\frac{1}{x}',
+        b.limit(b.div(num('1'), x), x, b.number('0'), 'both'),
+      ],
+      ['\\lim_{x\\rightarrow 0} x', b.limit(x, x, b.number('0'), 'both')],
+      ['\\lim_{x\\to -1} x', b.limit(x, x, b.neg(b.number('1')), 'both')],
+      ['\\lim_{x\\to 0^{+}} x', b.limit(x, x, b.number('0'), 'right')],
+      ['\\lim_{x\\to 0^{-}} x', b.limit(x, x, b.number('0'), 'left')],
+
+      // mod and det
+      ['a\\mod n', b.mod(a, n)],
+      ['7\\mod 3=1', b.eq([b.mod(num('7'), num('3')), num('1')])],
+      ['\\det A', b.determinant(A)],
+      ['\\det(A)', b.determinant(A)],
+    ])('%s', (tex, expected) => {
+      expectParse(tex, expected);
+    });
+
+    test.each([
+      // arrows
+      ['x\\to y', "'→' isn't supported yet"],
+      ['x\\rightarrow y', "'→' isn't supported yet"],
+      ['x\\leftarrow y', "'←' isn't supported yet"],
+      ['x\\uparrow', "'↑' isn't supported yet"],
+      ['x\\downarrow', "'↓' isn't supported yet"],
+
+      // number sets without a semantic node
+      ['\\H', "'ℍ' isn't supported yet"],
+      ['\\P', "'ℙ' isn't supported yet"],
+
+      // integrals
+      ['\\int x', "'∫' isn't supported yet"],
+      ['\\int_0^1 x dx', "'∫' isn't supported yet"],
+      ['\\iint x', "'∬' isn't supported yet"],
+      ['\\iiint x', "'∭' isn't supported yet"],
+
+      // named functions
+      ['\\arg z', "'arg' isn't supported yet"],
+      ['\\min x', "'min' isn't supported yet"],
+      ['\\max x', "'max' isn't supported yet"],
+      ['\\lcm x', "'lcm' isn't supported yet"],
+      ['\\gcd x', "'gcd' isn't supported yet"],
+      ['\\limsup x', "'limsup' isn't supported yet"],
+      ['\\liminf x', "'liminf' isn't supported yet"],
+      ['\\span x', "'span' isn't supported yet"],
+      ['\\rank A', "'rank' isn't supported yet"],
+      ['\\null A', "'null' isn't supported yet"],
+      ['\\adj A', "'adj' isn't supported yet"],
+      ['\\proj x', "'proj' isn't supported yet"],
+      ['\\ker A', "'ker' isn't supported yet"],
+      ['\\dim A', "'dim' isn't supported yet"],
+
+      // accents
+      ['\\vec{v}', "'\\vec' isn't supported yet"],
+      ['a\\vec{v}', "'\\vec' isn't supported yet"],
+      ['\\hat{x}', "'\\hat' isn't supported yet"],
+      ['\\bar{x}', "'\\bar' isn't supported yet"],
+      ['\\acute{x}', "'\\acute' isn't supported yet"],
+      ['\\grave{x}', "'\\grave' isn't supported yet"],
+      ['\\tilde{x}', "'\\tilde' isn't supported yet"],
+      ['\\dot{x}', "'\\dot' isn't supported yet"],
+      ['\\ddot{x}', "'\\ddot' isn't supported yet"],
+
+      // plain ASCII
+      [
+        'a/b',
+        "'/' isn't supported yet, use a fraction (\\frac in TeX) instead",
+      ],
+      ['n!', "'!' isn't supported yet"],
+      ["f'", "''' isn't supported yet"],
+      ['50%', "'%' isn't supported yet"],
+      ['a:b', "':' isn't supported yet"],
+      ['a;b', "';' isn't supported yet"],
+      ['[a]', "'[' isn't supported yet"],
+      ['\\left[a\\right]', "'[' isn't supported yet"],
+      ['\\{a\\}', "'{' isn't supported yet"],
+
+      // other commands
+      ['a\\approx b', "'≈' isn't supported yet"],
+      ['a\\perp b', "'⊥' isn't supported yet"],
+      ['a\\parallel b', "'∥' isn't supported yet"],
+      ['90^\\circ', "'∘' isn't supported yet"],
+
+      // incomplete sums, products and limits
+      ['\\sum i', "'∑' needs a lower and an upper limit"],
+      ['\\prod_{i=1} i', "'∏' needs a lower and an upper limit"],
+      ['\\sum_{i=1}^{n}', 'Missing argument for ∑'],
+      [
+        '\\sum_{1}^{n} i',
+        "The lower limit of '∑' must be of the form 'i=…', where 'i' is a variable",
+      ],
+      ['\\lim x', "'lim' needs a subscript of the form 'x→a'"],
+      ['\\lim_{x=0} x', "The subscript of 'lim' must be of the form 'x→a'"],
+      [
+        '\\lim_{x\\to\\infty} x',
+        "A limit to something other than a number isn't supported yet",
+      ],
+      ['\\mod n', 'Missing left operand for mod'],
+    ])('%s throws', (tex, message) => {
+      expect(() => parse(tex)).toThrow(message);
+    });
+
+    test('an unknown char still throws "Unexpected character"', () => {
+      expect(() => parse('a.b')).toThrow("Unexpected character '.' (U+002E)");
     });
   });
 });

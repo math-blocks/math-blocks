@@ -136,3 +136,13 @@ describe('isEqual', () => {
     });
   });
 });
+
+describe('row', () => {
+  it('makes one char per code point', () => {
+    // U+1D465 MATHEMATICAL ITALIC SMALL X is a surrogate pair in UTF-16.
+    const values = util
+      .row('a\u{1D465}-1')
+      .children.map((node) => (node.type === 'char' ? node.value : null));
+    expect(values).toEqual(['a', '\u{1D465}', '−', '1']);
+  });
+});

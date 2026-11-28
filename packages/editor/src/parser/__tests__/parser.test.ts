@@ -1,11 +1,14 @@
+import * as Semantic from '@math-blocks/semantic';
 import { NodeType, serializer } from '@math-blocks/semantic';
 
 import * as builders from '../../char/builders';
 import * as util from '../../char/util';
+import type * as types from '../../char/types';
+import { AccentType } from '../../shared-types';
 
 import * as parser from '../parser';
 
-const { row, char, subsup } = builders;
+const { row, char, subsup, limits } = builders;
 
 expect.addSnapshotSerializer(serializer);
 
@@ -1053,7 +1056,7 @@ describe('EditorParser', () => {
     test('an unknown multi-letter char throws', () => {
       const input = row([char('gcd'), char('x')]);
       expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-        `[Error: Unsupported function 'gcd']`,
+        `[Error: 'gcd' isn't supported yet]`,
       );
     });
   });
@@ -1092,6 +1095,336 @@ describe('EditorParser', () => {
       expect(() =>
         parser.parse(util.row('  ')),
       ).toThrowErrorMatchingInlineSnapshot(`[Error: Empty input]`);
+    });
+  });
+
+  describe('symbols', () => {
+    const b = Semantic.builders;
+    const x = b.identifier('x');
+    const y = b.identifier('y');
+    const i = b.identifier('i');
+    const n = b.identifier('n');
+    const A = b.identifier('A');
+    const B = b.identifier('B');
+    const C = b.identifier('C');
+    const num = (value: string): Semantic.types.Node => b.number(value);
+
+    // Removes `id` and `loc` so that trees can be compared with `toEqual`.
+    const strip = (node: Semantic.types.Node): unknown =>
+      JSON.parse(
+        JSON.stringify(node, (key, value) =>
+          key === 'id' || key === 'loc' ? undefined : value,
+        ),
+      );
+
+    describe('constants', () => {
+      test.each([
+        ['∞', b.infinity()],
+        ['∅', b.emptyset()],
+        ['ℕ', b.naturals()],
+        ['ℤ', b.integers()],
+        ['ℚ', b.rationals()],
+        ['ℝ', b.reals()],
+        ['ℂ', b.complexes()],
+        ['2∞', b.mul([num('2'), b.infinity()], true)],
+        ['-∞', b.neg(b.infinity())],
+        ['x<∞', b.lt([x, b.infinity()])],
+      ])('%s', (input, expected) => {
+        expect(strip(parser.parse(util.row(input)))).toEqual(strip(expected));
+      });
+    });
+
+    describe('± and ∓', () => {
+      test.each([
+        ['x±y', b.plusminus([x, y])],
+        ['x∓y', b.minusplus([x, y])],
+        ['x±y±n', b.plusminus([x, y, n])],
+        ['±x', b.unaryplusminus(x)],
+        ['∓x', b.unaryminusplus(x)],
+        // In a chain with other operators, each operand after a `±` or
+        // `∓` is wrapped, like each subtracted operand is wrapped in Neg.
+        ['x+y±n', b.add([x, y, b.unaryplusminus(n)])],
+        ['x∓y-n', b.add([x, b.unaryminusplus(y), b.neg(n, true)])],
+      ])('%s', (input, expected) => {
+        expect(strip(parser.parse(util.row(input)))).toEqual(strip(expected));
+      });
+    });
+
+    describe('sets', () => {
+      test.each([
+        ['x∈A', b.in(x, A)],
+        ['x∉A', b.notin(x, A)],
+        // `∋` and `∌` are `∈` and `∉` with the arguments swapped.
+        ['A∋x', b.in(x, A)],
+        ['A∌x', b.notin(x, A)],
+        ['x∈ℝ', b.in(x, b.reals())],
+        // `⊆` allows equal sets and `⊂` doesn't, as in OpenMath's set1
+        // content dictionary: `subset` and `prsubset`.
+        ['A⊆B', b.subset([A, B])],
+        ['A⊂B', b.propersubset([A, B])],
+        ['A⊇B', b.superset([A, B])],
+        ['A⊃B', b.propersuperset([A, B])],
+        ['A⊆B⊆C', b.subset([A, B, C])],
+        ['A∪B', b.union([A, B])],
+        ['A∩B', b.intersection([A, B])],
+        ['A∪B∪C', b.union([A, B, C])],
+        // Intersection binds more tightly than union.
+        ['A∪B∩C', b.union([A, b.intersection([B, C])])],
+        ['A∩B∪C', b.union([b.intersection([A, B]), C])],
+        ['x∈A∪B', b.in(x, b.union([A, B]))],
+        ['A∩B=∅', b.eq([b.intersection([A, B]), b.emptyset()])],
+        ['x∈A,y∈B', b.sequence([b.in(x, A), b.in(y, B)])],
+      ])('%s', (input, expected) => {
+        expect(strip(parser.parse(util.row(input)))).toEqual(strip(expected));
+      });
+    });
+
+    describe('ellipses', () => {
+      test.each([
+        ['1+…+n', b.add([num('1'), b.ellipsis(), n])],
+        ['1+⋯+n', b.add([num('1'), b.ellipsis(), n])],
+        ['1,2,…,n', b.sequence([num('1'), num('2'), b.ellipsis(), n])],
+      ])('%s', (input, expected) => {
+        expect(strip(parser.parse(util.row(input)))).toEqual(strip(expected));
+      });
+    });
+
+    describe('sums and products', () => {
+      const lower = [char('i'), char('='), char('1')];
+      const upper = [char('n')];
+      test.each([
+        [
+          'a limits node around ∑',
+          [limits(char('∑'), lower, upper), char('i')],
+          b.sum(i, i, num('1'), n),
+        ],
+        [
+          'a limits node around Σ',
+          [limits(char('Σ'), lower, upper), char('i')],
+          b.sum(i, i, num('1'), n),
+        ],
+        [
+          'a limits node around ∏',
+          [limits(char('∏'), lower, upper), char('i')],
+          b.product(i, i, num('1'), n),
+        ],
+        [
+          'a limits node around Π',
+          [limits(char('Π'), lower, upper), char('i')],
+          b.product(i, i, num('1'), n),
+        ],
+        [
+          '∑ followed by a subsup',
+          [char('∑'), subsup(lower, [char('∞')]), char('i')],
+          b.sum(i, i, num('1'), b.infinity()),
+        ],
+        [
+          '∏ followed by a subsup',
+          [char('∏'), subsup(lower, upper), char('i')],
+          b.product(i, i, num('1'), n),
+        ],
+        [
+          'the argument ends at the next +',
+          [limits(char('∑'), lower, upper), ...util.row('2i+1').children],
+          b.add([b.sum(b.mul([num('2'), i], true), i, num('1'), n), num('1')]),
+        ],
+        [
+          'a sum after an operand is implicitly multiplied',
+          [char('2'), limits(char('∑'), lower, upper), char('i')],
+          b.mul([num('2'), b.sum(i, i, num('1'), n)], true),
+        ],
+        [
+          'a sum after a ∑ char and an operand is implicitly multiplied',
+          [char('2'), char('∑'), subsup(lower, upper), char('i')],
+          b.mul([num('2'), b.sum(i, i, num('1'), n)], true),
+        ],
+      ])('%s', (_, children, expected) => {
+        expect(strip(parser.parse(row(children)))).toEqual(strip(expected));
+      });
+
+      test.each([
+        [
+          'no limits',
+          [char('∑'), char('i')],
+          "'∑' needs a lower and an upper limit",
+        ],
+        [
+          'empty limits, as the editor creates them',
+          [limits(char('∑'), [], []), char('i')],
+          "'∑' needs a lower and an upper limit",
+        ],
+        [
+          'no upper limit',
+          [char('∏'), subsup(lower), char('i')],
+          "'∏' needs a lower and an upper limit",
+        ],
+        [
+          'a lower limit without a variable',
+          [limits(char('∑'), [char('1')], upper), char('i')],
+          "The lower limit of '∑' must be of the form 'i=…', where 'i' is a variable",
+        ],
+        [
+          'no argument',
+          [limits(char('∑'), lower, upper)],
+          'Missing argument for ∑',
+        ],
+      ])('%s throws', (_, children, message) => {
+        expect(() => parser.parse(row(children))).toThrow(message);
+      });
+    });
+
+    describe('limits', () => {
+      const lim = (...sub: string[]): types.CharNode[] => [
+        char('lim'),
+        subsup(sub.map((c) => char(c))),
+      ];
+      test.each([
+        [
+          'lim_{x→0} x',
+          [...lim('x', '→', '0'), char('x')],
+          b.limit(x, x, b.number('0'), 'both'),
+        ],
+        [
+          'lim_{x→-1} x',
+          [...lim('x', '→', '−', '1'), char('x')],
+          b.limit(x, x, b.neg(b.number('1')), 'both'),
+        ],
+        [
+          'lim_{x→0^+} x',
+          [
+            char('lim'),
+            subsup([
+              char('x'),
+              char('→'),
+              char('0'),
+              subsup(undefined, [char('+')]),
+            ]),
+            char('x'),
+          ],
+          b.limit(x, x, b.number('0'), 'right'),
+        ],
+        [
+          'lim_{x→0^-} x',
+          [
+            char('lim'),
+            subsup([
+              char('x'),
+              char('→'),
+              char('0'),
+              subsup(undefined, [char('−')]),
+            ]),
+            char('x'),
+          ],
+          b.limit(x, x, b.number('0'), 'left'),
+        ],
+        [
+          'a limits node around lim',
+          [
+            limits(util.row('lim'), [char('x'), char('→'), char('0')]),
+            char('x'),
+          ],
+          b.limit(x, x, b.number('0'), 'both'),
+        ],
+        [
+          'the argument ends at the next +',
+          [...lim('x', '→', '0'), ...util.row('2x+1').children],
+          b.add([
+            b.limit(b.mul([num('2'), x], true), x, b.number('0'), 'both'),
+            num('1'),
+          ]),
+        ],
+      ])('%s', (_, children, expected) => {
+        expect(strip(parser.parse(row(children)))).toEqual(strip(expected));
+      });
+
+      test.each([
+        [
+          'no subscript',
+          [char('lim'), char('x')],
+          "'lim' needs a subscript of the form 'x→a'",
+        ],
+        [
+          'no arrow',
+          [...lim('x', '=', '0'), char('x')],
+          "The subscript of 'lim' must be of the form 'x→a'",
+        ],
+        [
+          'no target',
+          [...lim('x', '→'), char('x')],
+          "The subscript of 'lim' must be of the form 'x→a'",
+        ],
+        [
+          "a target that isn't a number",
+          [...lim('x', '→', '∞'), char('x')],
+          "A limit to something other than a number isn't supported yet",
+        ],
+        ['no argument', lim('x', '→', '0'), 'Missing argument for lim'],
+      ])('%s throws', (_, children, message) => {
+        expect(() => parser.parse(row(children))).toThrow(message);
+      });
+    });
+
+    describe('mod and det', () => {
+      test.each([
+        ['x mod n', [char('x'), char('mod'), char('n')], b.mod(x, n)],
+        [
+          'mod binds like ÷',
+          [
+            ...util.row('2x').children,
+            char('mod'),
+            ...util.row('n+1').children,
+          ],
+          b.add([b.mod(b.mul([num('2'), x], true), n), num('1')]),
+        ],
+        [
+          'mod is left associative',
+          [char('x'), char('mod'), char('y'), char('mod'), char('n')],
+          b.mod(b.mod(x, y), n),
+        ],
+        ['det A', [char('det'), char('A')], b.determinant(A)],
+      ])('%s', (_, children, expected) => {
+        expect(strip(parser.parse(row(children)))).toEqual(strip(expected));
+      });
+
+      test('mod without a left operand throws', () => {
+        expect(() => parser.parse(row([char('mod'), char('n')]))).toThrow(
+          'Missing left operand for mod',
+        );
+      });
+    });
+
+    describe('unsupported symbols', () => {
+      test.each([
+        ['an arrow', util.row('x→y').children, "'→' isn't supported yet"],
+        [
+          'an arrow at the start',
+          util.row('→y').children,
+          "'→' isn't supported yet",
+        ],
+        [
+          'a named function',
+          [char('max'), char('x')],
+          "'max' isn't supported yet",
+        ],
+        [
+          'an accent',
+          [builders.accent([char('v')], AccentType.Vec)],
+          "'\\vec' isn't supported yet",
+        ],
+        [
+          'an accent after an operand',
+          [char('a'), builders.accent([char('v')], AccentType.Vec)],
+          "'\\vec' isn't supported yet",
+        ],
+        ['an integral', util.row('∫x').children, "'∫' isn't supported yet"],
+        [
+          '/',
+          util.row('x/y').children,
+          "'/' isn't supported yet, use a fraction (\\frac in TeX) instead",
+        ],
+      ])('%s throws', (_, children, message) => {
+        expect(() => parser.parse(row(children))).toThrow(message);
+      });
     });
   });
 });

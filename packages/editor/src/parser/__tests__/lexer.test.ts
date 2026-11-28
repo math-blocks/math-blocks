@@ -1,4 +1,11 @@
-import { row, char, frac, subsup, limits } from '../../char/builders';
+import {
+  row,
+  char,
+  frac,
+  subsup,
+  limits,
+  delimited,
+} from '../../char/builders';
 import * as util from '../../char/util';
 
 import * as Lexer from '../lexer';
@@ -261,34 +268,166 @@ describe('Lexer', () => {
 
     it('should lex summation with limits', () => {
       const glyphTree = row([
-        limits(char('\u03a3'), [char('i'), char('='), char('0')], [char('n')]),
+        limits(
+          char('\u03a3'),
+          [char('i'), char('='), char('0')],
+          [char('\u221e')],
+        ),
       ]);
       const tokenTree = Lexer.lexRow(glyphTree);
 
       expect(tokenTree).toMatchInlineSnapshot(`
-                (row 
-                  (limits{SummationOperator@[]:0:1}@[]:0:1 (row 
-                    (Identifier@[0,0]:0:1 i) 
-                    Equal@[0,0]:1:2 
-                    (Number@[0,0]:2:3 0)) (row 
-                    (Identifier@[0,1]:0:1 n))))
-                `);
+        (row 
+          (limits{SummationOperator@[]:0:1}@[]:0:1 (row 
+            (Identifier@[0,0]:0:1 i) 
+            Equal@[0,0]:1:2 
+            (Number@[0,0]:2:3 0)) (row 
+            (Identifier@[0,1]:0:1 ∞))))
+      `);
     });
 
     it('should lex products with limits', () => {
       const glyphTree = row([
-        limits(char('\u03a0'), [char('i'), char('='), char('0')], [char('n')]),
+        limits(
+          char('\u03a0'),
+          [char('i'), char('='), char('0')],
+          [char('\u221e')],
+        ),
       ]);
       const tokenTree = Lexer.lexRow(glyphTree);
 
       expect(tokenTree).toMatchInlineSnapshot(`
-                (row 
-                  (limits{ProductOperator@[]:0:1}@[]:0:1 (row 
-                    (Identifier@[0,0]:0:1 i) 
-                    Equal@[0,0]:1:2 
-                    (Number@[0,0]:2:3 0)) (row 
-                    (Identifier@[0,1]:0:1 n))))
-                `);
+        (row 
+          (limits{ProductOperator@[]:0:1}@[]:0:1 (row 
+            (Identifier@[0,0]:0:1 i) 
+            Equal@[0,0]:1:2 
+            (Number@[0,0]:2:3 0)) (row 
+            (Identifier@[0,1]:0:1 ∞))))
+      `);
+    });
+
+    // The editor and `Tex.parse` use the n-ary summation and product signs,
+    // and the Greek capitals are also accepted.
+    it.each([
+      ['\u2211 (n-ary summation)', '\u2211', 'SummationOperator'],
+      ['\u03a3 (Greek capital sigma)', '\u03a3', 'SummationOperator'],
+      ['\u220f (n-ary product)', '\u220f', 'ProductOperator'],
+      ['\u03a0 (Greek capital pi)', '\u03a0', 'ProductOperator'],
+    ])('should lex limits around %s as a %s', (_, op, expected) => {
+      const glyphTree = row([limits(char(op), [char('i')], [char('n')])]);
+      const [node] = Lexer.lexRow(glyphTree).children;
+      expect(node.type === 'limits' && node.inner).toMatchObject({
+        type: 'token',
+        name: expected,
+      });
+    });
+
+    it('should lex \u2211 and \u220f outside of a limits node', () => {
+      const glyphTree = row([
+        char('\u2211'),
+        subsup([char('i'), char('='), char('0')], [char('\u221e')]),
+        char('\u220f'),
+      ]);
+      const tokenTree = Lexer.lexRow(glyphTree);
+
+      expect(tokenTree).toMatchInlineSnapshot(`
+        (row 
+          SummationOperator@[]:0:1 
+          (subsup@[]:1:2 (row 
+            (Identifier@[1,0]:0:1 i) 
+            Equal@[1,0]:1:2 
+            (Number@[1,0]:2:3 0)) (row 
+            (Identifier@[1,1]:0:1 ∞))) 
+          ProductOperator@[]:2:3)
+      `);
+    });
+
+    it.each([
+      ['\u2213', 'MinusPlus'], // ∓ minus-plus sign (\mp)
+      ['\u2208', 'ElementOf'], // ∈ element of (\in)
+      ['\u2209', 'NotElementOf'], // ∉ not an element of (\notin)
+      ['\u220b', 'Contains'], // ∋ contains as member (\ni)
+      ['\u220c', 'NotContains'], // ∌ does not contain as member (\notni)
+      ['\u2286', 'Subset'], // ⊆ subset of or equal to (\subseteq)
+      ['\u2282', 'ProperSubset'], // ⊂ subset of (\subset)
+      ['\u2287', 'Superset'], // ⊇ superset of or equal to (\supseteq)
+      ['\u2283', 'ProperSuperset'], // ⊃ superset of (\supset)
+      ['\u222a', 'Union'], // ∪ union (\cup)
+      ['\u2229', 'Intersection'], // ∩ intersection (\cap)
+      ['\u2192', 'RightArrow'], // → rightwards arrow (\to)
+      ['\u2026', 'Ellipsis'], // … horizontal ellipsis (\ldots)
+      ['\u22ef', 'Ellipsis'], // ⋯ midline horizontal ellipsis (\cdots)
+    ])('should lex %s as %s', (symbol, expected) => {
+      const glyphTree = row([char('a'), char(symbol), char('b')]);
+      const [, token] = Lexer.lexRow(glyphTree).children;
+      expect(token).toMatchObject({ type: 'token', name: expected });
+    });
+
+    // The parser decides which constant each of these stands for.
+    it.each([
+      '\u221e', // ∞ infinity (\infty)
+      '\u2205', // ∅ empty set (\emptyset)
+      '\u2115', // ℕ natural numbers (\N)
+      '\u2124', // ℤ integers (\Z)
+      '\u211a', // ℚ rational numbers (\Q)
+      '\u211d', // ℝ real numbers (\R)
+      '\u2102', // ℂ complex numbers (\C)
+    ])('should lex %s as an identifier', (symbol) => {
+      const [token] = Lexer.lexRow(row([char(symbol)])).children;
+      expect(token).toMatchObject({
+        type: 'token',
+        name: 'Identifier',
+        value: symbol,
+      });
+    });
+
+    it.each([
+      ['/', "'/' isn't supported yet, use a fraction (\\frac in TeX) instead"],
+      ['!', "'!' isn't supported yet"],
+      ["'", "''' isn't supported yet"],
+      ['%', "'%' isn't supported yet"],
+      [':', "':' isn't supported yet"],
+      [';', "';' isn't supported yet"],
+      ['[', "'[' isn't supported yet"],
+      [']', "']' isn't supported yet"],
+      ['{', "'{' isn't supported yet"],
+      ['}', "'}' isn't supported yet"],
+      ['\u2190', "'\u2190' isn't supported yet"], // ← leftwards arrow (\leftarrow)
+      ['\u2191', "'\u2191' isn't supported yet"], // ↑ upwards arrow (\uparrow)
+      ['\u2193', "'\u2193' isn't supported yet"], // ↓ downwards arrow (\downarrow)
+      ['\u210d', "'\u210d' isn't supported yet"], // ℍ quaternions (\H)
+      ['\u2119', "'\u2119' isn't supported yet"], // ℙ primes (\P)
+      ['\u222b', "'\u222b' isn't supported yet"], // ∫ integral (\int)
+      ['\u222c', "'\u222c' isn't supported yet"], // ∬ double integral (\iint)
+      ['\u222d', "'\u222d' isn't supported yet"], // ∭ triple integral (\iiint)
+      ['\u2248', "'\u2248' isn't supported yet"], // ≈ almost equal to (\approx)
+      ['\u22a5', "'\u22a5' isn't supported yet"], // ⊥ perpendicular (\perp)
+      ['\u2225', "'\u2225' isn't supported yet"], // ∥ parallel to (\parallel)
+      ['\u2218', "'\u2218' isn't supported yet"], // ∘ ring operator (\circ)
+      ['?', "Unexpected character '?' (U+003F)"],
+    ])('should throw on %s', (symbol, message) => {
+      const glyphTree = row([char('a'), char(symbol), char('b')]);
+      expect(() => Lexer.lexRow(glyphTree)).toThrow(message);
+    });
+
+    it.each([
+      [
+        'an integral with limits',
+        limits(char('\u222b'), [char('0')], [char('1')]),
+        "'\u222b' isn't supported yet",
+      ],
+      [
+        'brackets',
+        delimited([char('a')], char('['), char(']')),
+        "'[' isn't supported yet",
+      ],
+      [
+        'braces',
+        delimited([char('a')], char('{'), char('}')),
+        "'{' isn't supported yet",
+      ],
+    ])('should throw on %s', (_, node, message) => {
+      expect(() => Lexer.lexRow(row([node]))).toThrow(message);
     });
 
     // TODO(kevinb): Update lexer to handle operators with multiple characters

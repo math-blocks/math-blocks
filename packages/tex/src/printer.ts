@@ -24,6 +24,9 @@ export const print = (node: types.CharNode, options: Options = {}): string => {
         if (node.value === '\u00b7') {
           return '*';
         }
+        if (node.value === '{' || node.value === '}') {
+          return `\\${node.value}`;
+        }
         if (node.value in invertedMacros) {
           return `\\${invertedMacros[node.value]}`;
         }

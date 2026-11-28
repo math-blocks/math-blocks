@@ -1,5 +1,7 @@
 export const macros: Record<string, string> = {
   infty: '\u221e',
+  ldots: '\u2026',
+  cdots: '\u22ef',
 
   // named functions
   log: 'log',
@@ -49,6 +51,7 @@ export const macros: Record<string, string> = {
   times: '\u00d7',
   cdot: '\u22c5',
   div: '\u00f7',
+  circ: '\u2218',
 
   // relations
   // `ne` comes before `neq` so that the printer prints '\u2260' as `\neq`.
@@ -76,8 +79,19 @@ export const macros: Record<string, string> = {
   subseteq: '\u2286',
   supeq: '\u2287',
   supseteq: '\u2287',
+  approx: '\u2248',
+  perp: '\u22a5',
+  parallel: '\u2225',
+
+  // sets
+  cup: '\u222a',
+  cap: '\u2229',
+  emptyset: '\u2205',
 
   // arrows
+  // `to` comes before `rightarrow` so that the printer prints '\u2192' as
+  // `\rightarrow`.
+  to: '\u2192',
   rightarrow: '\u2192',
   leftarrow: '\u2190',
   uparrow: '\u2191',
