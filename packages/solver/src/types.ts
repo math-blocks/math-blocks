@@ -60,11 +60,13 @@ export enum StepKind {
   SolveForVariable = 'solve-for-variable',
   DoSameOperationToBothSides = 'do-same-operation-to-both-sides',
   MoveTermsToOneSide = 'move-terms-to-one-side',
+  // Not currently produced by the solver.
   MoveMatchingVariableTermsToOneSide = 'move-matching-variable-terms-to-one-side',
   MoveOtherTermsToOtherSide = 'move-other-terms-to-other-side',
   SimplifyBothSides = 'simplify-both-sides',
   SimplifyLeftHandSide = 'simplify-left-hand-side',
   SimplifyRightHandSide = 'simplify-right-hand-side',
+  IsolateVariable = 'isolate-variable',
 
   // quadratics and factoring
   FactorQuadratic = 'factor-quadratic',
@@ -111,6 +113,26 @@ export type Side = 'left' | 'right';
 
 /**
  * A single step in a solution, discriminated by `kind` (see `StepKind`).
+ *
+ * Steps form a tree: `before` and `after` describe the whole step, and
+ * `substeps` break it down into smaller steps that go from `before` to
+ * `after`.
+ *
+ * Linear relations (`StepKind.SolveForVariable`) have a strategy layer: each
+ * substep of the 'solve for variable' step is a strategy step that names a
+ * goal, and its substeps are the concrete operations that achieve that goal.
+ * The strategy kinds are:
+ * - `StepKind.SimplifyBothSides`, `StepKind.SimplifyLeftHandSide` and
+ *   `StepKind.SimplifyRightHandSide`: simplify one or both sides.
+ * - `StepKind.MoveTermsToOneSide`: move the variable terms to one side and
+ *   all other terms to the other side by adding or subtracting terms on both
+ *   sides (`StepKind.DoSameOperationToBothSides` with `operation` 'add' or
+ *   'sub').
+ * - `StepKind.IsolateVariable`: remove the variable's coefficient by
+ *   multiplying or dividing both sides (`StepKind.DoSameOperationToBothSides`
+ *   with `operation` 'mul' or 'div').
+ *
+ * This layering is part of the public API and is kept stable across releases.
  */
 export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<StepKind.SimplifyExpression, 'simplify expression', TNode>
@@ -227,6 +249,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       'simplify the right hand side',
       TNode
     >
+  | StepType<StepKind.IsolateVariable, 'isolate the variable', TNode>
   | StepType<StepKind.FactorQuadratic, 'factor quadratic', TNode>
   | StepType<StepKind.SolveQuadratic, 'solve quadratic', TNode>
   | StepType<
