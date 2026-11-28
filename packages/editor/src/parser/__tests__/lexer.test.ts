@@ -539,6 +539,8 @@ describe('Lexer', () => {
           'Identifier n@2:3',
           'Identifier x@3:4',
         ]);
+        // A char that holds a whole name, as created by completing the `\sin`
+        // macro in the editor or by `Tex.parse('\\sin')`.  See #911.
         const glyphTree = row([char('sin'), char('x')]);
         expect(Lexer.lexRow(glyphTree, [], { requireBackslash: true }))
           .toMatchInlineSnapshot(`

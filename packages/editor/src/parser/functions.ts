@@ -55,13 +55,16 @@ export const SPECIAL_NAMES: readonly string[] = ['log', 'mod', 'lim'];
 // have no semantic node yet.  The parser throws `'max' isn't supported yet`
 // for these.
 export const UNSUPPORTED_NAMES: readonly string[] = [
-  'arg',
+  // TODO(#888): min, max, limsup and liminf.
   'min',
   'max',
-  'lcm',
-  'gcd',
   'limsup',
   'liminf',
+  // TODO(#883): gcd and lcm.
+  'gcd',
+  'lcm',
+  // TODO(#912): arg and the linear-algebra operators.
+  'arg',
   'span',
   'rank',
   'null',
