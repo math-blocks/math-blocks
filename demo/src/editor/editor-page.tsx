@@ -1,6 +1,11 @@
 import * as React from 'react';
 
-import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
+import {
+  MathEditor,
+  MathKeypad,
+  FontDataContext,
+  getShortcuts,
+} from '@math-blocks/react';
 import * as Editor from '@math-blocks/editor';
 import { RadicalDegreeAlgorithm } from '@math-blocks/typesetter';
 
@@ -11,6 +16,30 @@ import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
 const initialExample = 1;
+
+// Lists the editor's keyboard shortcuts, as an app's help screen could.
+const ShortcutList: React.FunctionComponent = () => (
+  <details style={{ fontFamily: 'sans-serif' }}>
+    <summary>Keyboard shortcuts</summary>
+    <table>
+      <tbody>
+        {getShortcuts().map((shortcut) => (
+          <tr key={shortcut.command}>
+            <td style={{ paddingRight: 16 }}>{shortcut.description}</td>
+            <td>
+              {shortcut.labels.map((label, index) => (
+                <React.Fragment key={label}>
+                  {index > 0 && ' or '}
+                  <kbd>{label}</kbd>
+                </React.Fragment>
+              ))}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </details>
+);
 
 const EditorPage: React.FunctionComponent = () => {
   const [fontIndex, setFontIndex] = React.useState<number>(0);
@@ -154,6 +183,7 @@ const EditorPage: React.FunctionComponent = () => {
                 onChange={(e) => setInline(e.target.checked)}
               ></input>
             </HStack>
+            <ShortcutList />
           </VStack>
         </VStack>
       </HStack>

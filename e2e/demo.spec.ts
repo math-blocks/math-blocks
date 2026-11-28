@@ -170,4 +170,38 @@ test.describe('editor', () => {
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
+
+  test('Mod+Z undoes typing and Mod+Shift+Z redoes it', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/editor');
+    const editor = mathEditor(page);
+    await expect(editor.locator('use').first()).toBeAttached();
+    const glyphCount = await editor.locator('use').count();
+
+    await editor.click();
+    await page.keyboard.type('+1');
+    await expect
+      .poll(() => editor.locator('use').count())
+      .toBeGreaterThan(glyphCount);
+    const typedCount = await editor.locator('use').count();
+
+    // The editor's Mod is Cmd when the browser says it's on a Mac, and Ctrl
+    // otherwise. Playwright's ControlOrMeta goes by the OS running the test
+    // instead, which differs for the WebKit project: it reports Desktop
+    // Safari's Mac user agent on Linux. So check what the page reports.
+    const mod = (await page.evaluate(() =>
+      /mac/i.test(navigator.platform + navigator.userAgent),
+    ))
+      ? 'Meta'
+      : 'Control';
+
+    await page.keyboard.press(`${mod}+z`);
+    await page.keyboard.press(`${mod}+z`);
+    await expect.poll(() => editor.locator('use').count()).toBe(glyphCount);
+
+    await page.keyboard.press(`${mod}+Shift+z`);
+    await page.keyboard.press(`${mod}+Shift+z`);
+    await expect.poll(() => editor.locator('use').count()).toBe(typedCount);
+    expect(errors).toEqual([]);
+  });
 });

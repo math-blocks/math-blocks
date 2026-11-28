@@ -10,6 +10,13 @@ import { useMissingGlyphs } from './use-missing-glyphs';
 import styles from './editor.module.css';
 import SceneRenderer from './scene-renderer';
 import useEventListener from './use-event-listener';
+import {
+  detectShortcutPlatform,
+  isShortcutEvent,
+  resolveShortcuts,
+  useShortcuts,
+} from './shortcuts';
+import type { ShortcutCommand, ShortcutsConfig } from './shortcuts';
 
 import type { EditingEvent } from './math-keypad';
 
@@ -42,13 +49,61 @@ type Props = {
   // placeholder instead. `group` is set when the character's glyph group isn't
   // loaded. It's called again only when the set of missing characters changes.
   readonly onMissingGlyph?: (char: string, group: string | undefined) => void;
+
+  // Keyboard shortcuts, such as Mod+Z to undo. They only fire while the editor
+  // has focus. Pass `false` to turn them all off, or an object to rebind or
+  // turn off (with `null`) some of them, e.g. `{redo: 'Mod+Y', selectAll:
+  // null}`. Use `getShortcuts` with the same value to list the active ones.
+  readonly shortcuts?: ShortcutsConfig;
 };
 
 const reducer = Editor.getReducer(macros);
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
-const keydownToAction = (key: string): Editor.Action | null => {
-  console.log(key);
+// The action for each command in shortcuts.ts. Undo and redo aren't reducer
+// actions: MathEditor handles them with its history.
+const SHORTCUT_ACTIONS: {
+  readonly [
+    Command in Exclude<ShortcutCommand, 'undo' | 'redo'>
+  ]: Editor.Action;
+} = {
+  moveToRowStart: { type: 'MoveToStart', scope: 'row' },
+  moveToRowEnd: { type: 'MoveToEnd', scope: 'row' },
+  moveByRowBackward: { type: 'MoveByRow', direction: 'backward' },
+  moveByRowForward: { type: 'MoveByRow', direction: 'forward' },
+  moveToFormulaStart: { type: 'MoveToStart', scope: 'formula' },
+  moveToFormulaEnd: { type: 'MoveToEnd', scope: 'formula' },
+  exitRowForward: { type: 'ExitRow', direction: 'forward' },
+  exitRowBackward: { type: 'ExitRow', direction: 'backward' },
+  extendLeft: { type: 'ArrowLeft', extend: true },
+  extendRight: { type: 'ArrowRight', extend: true },
+  extendToRowStart: { type: 'MoveToStart', scope: 'row', extend: true },
+  extendToRowEnd: { type: 'MoveToEnd', scope: 'row', extend: true },
+  extendByRowBackward: {
+    type: 'MoveByRow',
+    direction: 'backward',
+    extend: true,
+  },
+  extendByRowForward: { type: 'MoveByRow', direction: 'forward', extend: true },
+  extendToFormulaStart: { type: 'MoveToStart', scope: 'formula', extend: true },
+  extendToFormulaEnd: { type: 'MoveToEnd', scope: 'formula', extend: true },
+  selectAll: { type: 'SelectAll' },
+};
+
+const keydownToAction = (e: KeyboardEvent): Editor.Action | null => {
+  const { key } = e;
+  // Don't type the letter of a shortcut such as Ctrl+C or Cmd+R. AltGr, which
+  // types characters such as '{' on some layouts, sets both ctrlKey and altKey
+  // on Windows, so those keys still type.
+  if (key.length === 1 && (e.metaKey || (e.ctrlKey && !e.altKey))) {
+    return null;
+  }
+  // An arrow key with Alt, Ctrl or Cmd held is either a shortcut, which
+  // useShortcuts handles, or not one of the editor's, such as Alt+Left (the
+  // browser's Back) on Windows. Don't move the cursor one step for it.
+  if (key.startsWith('Arrow') && (e.altKey || e.ctrlKey || e.metaKey)) {
+    return null;
+  }
   switch (key) {
     case '(':
     case ')':
@@ -115,7 +170,15 @@ export const MathEditor = (props: Props): React.ReactNode => {
     };
   }, [props.row]);
 
-  const [state, setState] = useState<Editor.State>(memoizedState);
+  const [history, setHistory] = useState<Editor.History>(() =>
+    Editor.HistoryUtils.create(memoizedState),
+  );
+  const state = history.present;
+  // Records a new state. Content changes become undo steps, cursor and
+  // selection changes don't (see HistoryUtils.push).
+  const setState = useCallback((newState: Editor.State): void => {
+    setHistory((history) => Editor.HistoryUtils.push(history, newState));
+  }, []);
   const [active, setActive] = useState<boolean>(false);
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
@@ -126,10 +189,54 @@ export const MathEditor = (props: Props): React.ReactNode => {
   const inputRef = useRef<HTMLInputElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // The platform picks the default shortcuts and what `Mod` means.
+  const platform = useMemo(detectShortcutPlatform, []);
+  const shortcuts = useMemo(
+    () => resolveShortcuts(props.readonly ? false : props.shortcuts, platform),
+    [props.readonly, props.shortcuts, platform],
+  );
+
+  // Tab and Shift+Tab only move out of a sub-formula when the cursor is in
+  // one. Otherwise they're left alone, so they move focus out of the editor.
+  const insideSubformula = state.selection.focus.path.length > 0;
+  const isShortcutEnabled = (command: ShortcutCommand): boolean =>
+    (command !== 'exitRowForward' && command !== 'exitRowBackward') ||
+    insideSubformula;
+
+  const runShortcut = (command: ShortcutCommand): void => {
+    let newHistory: Editor.History;
+    if (command === 'undo') {
+      newHistory = Editor.HistoryUtils.undo(history);
+    } else if (command === 'redo') {
+      newHistory = Editor.HistoryUtils.redo(history);
+    } else {
+      newHistory = Editor.HistoryUtils.push(
+        history,
+        reducer(state, SHORTCUT_ACTIONS[command]),
+      );
+    }
+    if (newHistory === history) {
+      return;
+    }
+    setHistory(newHistory);
+    // Like typing, every shortcut calls onChange, even when only the cursor
+    // moves.
+    props.onChange?.(newHistory.present);
+  };
+
+  useShortcuts(inputRef, shortcuts, isShortcutEnabled, runShortcut, platform);
+
   const handleKeydown = useCallback(
     (e: KeyboardEvent): void => {
       if (active && !props.readonly) {
-        const action = keydownToAction(e.key);
+        // Leave shortcuts to the handlers useShortcuts registers on the
+        // input. Stopping the event here, in the capture phase on window,
+        // would keep it from reaching them.
+        if (isShortcutEvent(e, shortcuts, isShortcutEnabled, platform)) {
+          return;
+        }
+
+        const action = keydownToAction(e);
 
         if (e.key === 'Enter' && props.onSubmit) {
           props.onSubmit(state);
@@ -154,7 +261,9 @@ export const MathEditor = (props: Props): React.ReactNode => {
         e.stopPropagation();
       }
     },
-    [state, props, active],
+    // isShortcutEnabled only depends on state, which is listed.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [state, props, active, shortcuts, platform, setState],
   );
 
   const handleKeyUp = useCallback(
@@ -166,7 +275,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
         }
       }
     },
-    [props, state, active],
+    [props, state, active, setState],
   );
 
   useEventListener('keydown', handleKeydown);
@@ -204,7 +313,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
         setState(newState);
       }
     },
-    [state, active, props.readonly],
+    [state, active, props.readonly, setState],
   ) as EventListener;
 
   // TODO: don't add event listener to window otherwise this event will
@@ -230,7 +339,7 @@ export const MathEditor = (props: Props): React.ReactNode => {
       const newState = reducer(state, detail);
       setState(newState);
     },
-    [state, active, props.readonly],
+    [state, active, props.readonly, setState],
   ) as EventListener;
 
   // TODO: don't add event listener to window otherwise this event will
@@ -271,13 +380,14 @@ export const MathEditor = (props: Props): React.ReactNode => {
 
   // We need to update the state.zipper when props.zipper changes otherwise
   // it looks like fast-refresh is broken.
+  // A new row starts a new undo history.
   React.useEffect(() => {
     const newState = {
       selecting: false,
       selection: Editor.SelectionUtils.makeSelection([], 0),
       row: props.row,
     };
-    setState(newState);
+    setHistory(Editor.HistoryUtils.create(newState));
   }, [props.row]);
 
   const { className, style = {}, fontSize = 64, showHitboxes, inline } = props;

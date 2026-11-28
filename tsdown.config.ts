@@ -24,6 +24,8 @@ export default defineConfig({
       'classnames',
       'fraction.js',
       /^react(-dom)?(\/|$)/,
+      // packages/react's keyboard shortcuts.
+      /^@tanstack\/(react-)?hotkeys$/,
     ],
     // Fail the build if anything from node_modules would be inlined.
     onlyBundle: [],
