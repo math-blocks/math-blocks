@@ -1098,7 +1098,6 @@ describe('EditorParser', () => {
     });
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/869
   describe('symbols', () => {
     const b = Semantic.builders;
     const x = b.identifier('x');

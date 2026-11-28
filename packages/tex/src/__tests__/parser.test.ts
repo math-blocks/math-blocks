@@ -499,7 +499,6 @@ describe('Parser', () => {
     );
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/869
   test.each([
     ['\\cup', '\u222a'],
     ['\\cap', '\u2229'],

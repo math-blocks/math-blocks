@@ -197,7 +197,6 @@ describe('print', () => {
     expect(output).toEqual('\\left|x\\right|');
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/869
   test.each([
     ['\u222a', '\\cup'],
     ['\u2229', '\\cap'],

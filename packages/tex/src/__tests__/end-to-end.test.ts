@@ -396,7 +396,6 @@ describe('Editor.parse(Tex.parse(...))', () => {
     });
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/869
   describe('symbols', () => {
     const A = b.identifier('A');
     const B = b.identifier('B');
