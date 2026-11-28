@@ -15,9 +15,24 @@ import { root } from './reducers/root';
 import { insertChar } from './reducers/insert-char';
 import { color } from './reducers/color';
 import { setSelection } from './reducers/set-selection';
+import { moveToStart, moveToEnd, exitRow, selectAll } from './reducers/move-to';
 import { startMacro, completeMacro } from './reducers/macro';
 
 import type { Action, State } from './types';
+
+// Runs a reducer as if `selecting` were set, so the selection's focus moves
+// and its anchor stays, then restores the `selecting` flag.
+const extending = (
+  state: State,
+  extend: boolean | undefined,
+  reduce: (state: State) => State,
+): State => {
+  if (!extend || state.selecting) {
+    return reduce(state);
+  }
+  const newState = reduce({ ...state, selecting: true });
+  return { ...newState, selecting: state.selecting };
+};
 
 const initialState: State = {
   row: builders.row([]),
@@ -39,9 +54,17 @@ export const getReducer =
   (state: State = initialState, action: Action): State => {
     switch (action.type) {
       case 'ArrowLeft':
-        return moveLeft(state);
+        return extending(state, action.extend, moveLeft);
       case 'ArrowRight':
-        return moveRight(state);
+        return extending(state, action.extend, moveRight);
+      case 'MoveToStart':
+        return moveToStart(state, action.scope, action.extend ?? false);
+      case 'MoveToEnd':
+        return moveToEnd(state, action.scope, action.extend ?? false);
+      case 'ExitRow':
+        return exitRow(state, action.direction);
+      case 'SelectAll':
+        return selectAll(state);
       case 'ArrowUp':
       case 'ArrowDown':
         return moveVertically(state, action);

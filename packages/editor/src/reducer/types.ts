@@ -39,9 +39,37 @@ export type MatrixActions =
       readonly type: 'DeleteColumn';
     };
 
+/**
+ * Which row `MoveToStart` and `MoveToEnd` move within: the row the cursor is
+ * in (`'row'`), such as a numerator or an exponent, or the whole formula
+ * (`'formula'`).
+ */
+export type MoveScope = 'row' | 'formula';
+
 export type Action =
-  | { readonly type: 'ArrowLeft' }
-  | { readonly type: 'ArrowRight' }
+  // `extend: true` moves the selection's focus and keeps its anchor, as when
+  // `selecting` is set. Otherwise the selection collapses, as for a plain
+  // arrow key.
+  | { readonly type: 'ArrowLeft'; readonly extend?: boolean }
+  | { readonly type: 'ArrowRight'; readonly extend?: boolean }
+  // Move to the start or end of the current row or of the whole formula.
+  | {
+      readonly type: 'MoveToStart';
+      readonly scope: MoveScope;
+      readonly extend?: boolean;
+    }
+  | {
+      readonly type: 'MoveToEnd';
+      readonly scope: MoveScope;
+      readonly extend?: boolean;
+    }
+  // Move out of the row the cursor is in, to just after (`'forward'`) or just
+  // before (`'backward'`) the node that contains it, such as a fraction. Does
+  // nothing, and returns the same state, when the cursor is in the top-level
+  // row.
+  | { readonly type: 'ExitRow'; readonly direction: 'forward' | 'backward' }
+  // Select the whole formula.
+  | { readonly type: 'SelectAll' }
   | { readonly type: 'ArrowUp' }
   | { readonly type: 'ArrowDown' }
   | { readonly type: 'Backspace' }
