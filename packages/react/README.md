@@ -68,17 +68,25 @@ like a word, and the whole formula works like the line.
 
 | Action | macOS | Windows and Linux |
 | --- | --- | --- |
-| Start / end of the current part | `Option+←` / `Option+→` | `Home` / `End`, `Ctrl+←` / `Ctrl+→` |
+| Start / end of the current part | | `Home` / `End` |
+| Start / end of the current part, then the previous / next part | `Option+←` / `Option+→` | `Ctrl+←` / `Ctrl+→` |
 | Start / end of the whole formula | `Cmd+←` / `Cmd+→`, `Cmd+↑` / `Cmd+↓`, `Ctrl+A` / `Ctrl+E` | `Ctrl+Home` / `Ctrl+End` |
 | Move out of the current part, forward / backward | `Tab` / `Shift+Tab` | `Tab` / `Shift+Tab` |
 | Extend the selection left / right | `Shift+←` / `Shift+→` | `Shift+←` / `Shift+→` |
-| Select to the start / end of the current part | `Option+Shift+←` / `Option+Shift+→` | `Shift+Home` / `Shift+End`, `Ctrl+Shift+←` / `Ctrl+Shift+→` |
+| Select to the start / end of the current part | | `Shift+Home` / `Shift+End` |
+| Select by part, like selecting by word | `Option+Shift+←` / `Option+Shift+→` | `Ctrl+Shift+←` / `Ctrl+Shift+→` |
 | Select to the start / end of the whole formula | `Cmd+Shift+←` / `Cmd+Shift+→`, `Cmd+Shift+↑` / `Cmd+Shift+↓` | `Ctrl+Shift+Home` / `Ctrl+Shift+End` |
 | Select all | `Cmd+A` | `Ctrl+A` |
 | Undo / redo | `Cmd+Z` / `Cmd+Shift+Z` | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` |
 
-As in a macOS text field, `Home`, `End` and `Cmd+Y` do nothing on macOS. The
-platform is detected from the browser.
+`Option+←/→` and `Ctrl+←/→` move like moving by word: pressed at the start
+(or end) of a part, they keep going into the previous (or next) part, so
+pressing one repeatedly visits each part in turn. `Home` and `End` stop at the
+edge of the current part.
+
+As in a macOS text field, `Home`, `End` and `Cmd+Y` do nothing on macOS, and
+`Alt+←/→` do nothing on Windows and Linux, where the browser uses them for
+Back and Forward. The platform is detected from the browser.
 
 They only fire while the editor has focus, so they don't clash with the page's
 own shortcuts. `Tab` and `Shift+Tab` only apply while the cursor is inside a
@@ -103,15 +111,17 @@ defaults.
   shortcuts={{
     redo: ['Mod+Shift+Z'], // only Cmd+Shift+Z or Ctrl+Shift+Z
     selectAll: null, // turn Select All off
-    moveToRowStart: ['Home', 'Alt+ArrowLeft'], // the same on every platform
+    undo: ['Mod+Z', 'Mod+U'], // add a second binding
   }}
 />
 ```
 
-The commands are `moveToRowStart`, `moveToRowEnd`, `moveToFormulaStart`,
-`moveToFormulaEnd`, `exitRowForward`, `exitRowBackward`, `extendLeft`,
-`extendRight`, `extendToRowStart`, `extendToRowEnd`, `extendToFormulaStart`,
-`extendToFormulaEnd`, `selectAll`, `undo` and `redo`.
+The commands are `moveToRowStart`, `moveToRowEnd`, `moveByRowBackward`,
+`moveByRowForward`, `moveToFormulaStart`, `moveToFormulaEnd`,
+`exitRowForward`, `exitRowBackward`, `extendLeft`, `extendRight`,
+`extendToRowStart`, `extendToRowEnd`, `extendByRowBackward`,
+`extendByRowForward`, `extendToFormulaStart`, `extendToFormulaEnd`,
+`selectAll`, `undo` and `redo`.
 `getDefaultShortcuts(platform?)` returns the default hotkeys for each, for
 `'mac'`, `'windows'` or `'linux'`.
 

@@ -69,6 +69,8 @@ const SHORTCUT_ACTIONS: {
 } = {
   moveToRowStart: { type: 'MoveToStart', scope: 'row' },
   moveToRowEnd: { type: 'MoveToEnd', scope: 'row' },
+  moveByRowBackward: { type: 'MoveByRow', direction: 'backward' },
+  moveByRowForward: { type: 'MoveByRow', direction: 'forward' },
   moveToFormulaStart: { type: 'MoveToStart', scope: 'formula' },
   moveToFormulaEnd: { type: 'MoveToEnd', scope: 'formula' },
   exitRowForward: { type: 'ExitRow', direction: 'forward' },
@@ -77,6 +79,12 @@ const SHORTCUT_ACTIONS: {
   extendRight: { type: 'ArrowRight', extend: true },
   extendToRowStart: { type: 'MoveToStart', scope: 'row', extend: true },
   extendToRowEnd: { type: 'MoveToEnd', scope: 'row', extend: true },
+  extendByRowBackward: {
+    type: 'MoveByRow',
+    direction: 'backward',
+    extend: true,
+  },
+  extendByRowForward: { type: 'MoveByRow', direction: 'forward', extend: true },
   extendToFormulaStart: { type: 'MoveToStart', scope: 'formula', extend: true },
   extendToFormulaEnd: { type: 'MoveToEnd', scope: 'formula', extend: true },
   selectAll: { type: 'SelectAll' },
@@ -88,6 +96,12 @@ const keydownToAction = (e: KeyboardEvent): Editor.Action | null => {
   // types characters such as '{' on some layouts, sets both ctrlKey and altKey
   // on Windows, so those keys still type.
   if (key.length === 1 && (e.metaKey || (e.ctrlKey && !e.altKey))) {
+    return null;
+  }
+  // An arrow key with Alt, Ctrl or Cmd held is either a shortcut, which
+  // useShortcuts handles, or not one of the editor's, such as Alt+Left (the
+  // browser's Back) on Windows. Don't move the cursor one step for it.
+  if (key.startsWith('Arrow') && (e.altKey || e.ctrlKey || e.metaKey)) {
     return null;
   }
   switch (key) {

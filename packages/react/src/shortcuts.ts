@@ -19,6 +19,8 @@ import type { RefObject } from 'react';
 export type ShortcutCommand =
   | 'moveToRowStart'
   | 'moveToRowEnd'
+  | 'moveByRowBackward'
+  | 'moveByRowForward'
   | 'moveToFormulaStart'
   | 'moveToFormulaEnd'
   | 'exitRowForward'
@@ -27,6 +29,8 @@ export type ShortcutCommand =
   | 'extendRight'
   | 'extendToRowStart'
   | 'extendToRowEnd'
+  | 'extendByRowBackward'
+  | 'extendByRowForward'
   | 'extendToFormulaStart'
   | 'extendToFormulaEnd'
   | 'selectAll'
@@ -77,17 +81,23 @@ export type Shortcut = {
 //
 // Windows and Linux: Home and End move within the line, Ctrl+Home and
 // Ctrl+End to the ends of the document, and Ctrl+Left and Ctrl+Right by a word.
+// Moving by word (moveByRow*) keeps going into the previous or next part when
+// pressed at the edge of one, where Home and End stop.
 const WINDOWS_AND_LINUX_SHORTCUTS: ShortcutBindings = {
-  moveToRowStart: ['Home', 'Control+ArrowLeft'],
-  moveToRowEnd: ['End', 'Control+ArrowRight'],
+  moveToRowStart: ['Home'],
+  moveToRowEnd: ['End'],
+  moveByRowBackward: ['Control+ArrowLeft'],
+  moveByRowForward: ['Control+ArrowRight'],
   moveToFormulaStart: ['Control+Home'],
   moveToFormulaEnd: ['Control+End'],
   exitRowForward: ['Tab'],
   exitRowBackward: ['Shift+Tab'],
   extendLeft: ['Shift+ArrowLeft'],
   extendRight: ['Shift+ArrowRight'],
-  extendToRowStart: ['Shift+Home', 'Control+Shift+ArrowLeft'],
-  extendToRowEnd: ['Shift+End', 'Control+Shift+ArrowRight'],
+  extendToRowStart: ['Shift+Home'],
+  extendToRowEnd: ['Shift+End'],
+  extendByRowBackward: ['Control+Shift+ArrowLeft'],
+  extendByRowForward: ['Control+Shift+ArrowRight'],
   extendToFormulaStart: ['Control+Shift+Home'],
   extendToFormulaEnd: ['Control+Shift+End'],
   selectAll: ['Control+A'],
@@ -95,22 +105,26 @@ const WINDOWS_AND_LINUX_SHORTCUTS: ShortcutBindings = {
   redo: ['Control+Shift+Z', 'Control+Y'],
 };
 
-// macOS: Option+Left and Option+Right move by a word, Cmd+Left and Cmd+Right
+// macOS: Option+Left and Option+Right move by a word (moveByRow*), Cmd+Left and Cmd+Right
 // to the ends of the line, Cmd+Up and Cmd+Down to the ends of the document,
 // and Ctrl+A and Ctrl+E (from Emacs) to the ends of the line. Home, End and
 // Ctrl+Home/End do nothing in a macOS text field, so they aren't bound, and
 // Cmd+Y isn't redo on macOS.
 const MAC_SHORTCUTS: ShortcutBindings = {
-  moveToRowStart: ['Alt+ArrowLeft'],
-  moveToRowEnd: ['Alt+ArrowRight'],
+  moveToRowStart: [],
+  moveToRowEnd: [],
+  moveByRowBackward: ['Alt+ArrowLeft'],
+  moveByRowForward: ['Alt+ArrowRight'],
   moveToFormulaStart: ['Meta+ArrowLeft', 'Meta+ArrowUp', 'Control+A'],
   moveToFormulaEnd: ['Meta+ArrowRight', 'Meta+ArrowDown', 'Control+E'],
   exitRowForward: ['Tab'],
   exitRowBackward: ['Shift+Tab'],
   extendLeft: ['Shift+ArrowLeft'],
   extendRight: ['Shift+ArrowRight'],
-  extendToRowStart: ['Alt+Shift+ArrowLeft'],
-  extendToRowEnd: ['Alt+Shift+ArrowRight'],
+  extendToRowStart: [],
+  extendToRowEnd: [],
+  extendByRowBackward: ['Alt+Shift+ArrowLeft'],
+  extendByRowForward: ['Alt+Shift+ArrowRight'],
   extendToFormulaStart: ['Meta+Shift+ArrowLeft', 'Meta+Shift+ArrowUp'],
   extendToFormulaEnd: ['Meta+Shift+ArrowRight', 'Meta+Shift+ArrowDown'],
   selectAll: ['Meta+A'],
@@ -135,6 +149,9 @@ export const getDefaultShortcuts = (
 const DESCRIPTIONS: { readonly [Command in ShortcutCommand]: string } = {
   moveToRowStart: 'Move to the start of the current part',
   moveToRowEnd: 'Move to the end of the current part',
+  moveByRowBackward:
+    'Move to the start of the current part, or of the previous part',
+  moveByRowForward: 'Move to the end of the current part, or of the next part',
   moveToFormulaStart: 'Move to the start of the formula',
   moveToFormulaEnd: 'Move to the end of the formula',
   exitRowForward: 'Move out of the current part, forward',
@@ -143,6 +160,10 @@ const DESCRIPTIONS: { readonly [Command in ShortcutCommand]: string } = {
   extendRight: 'Extend the selection right',
   extendToRowStart: 'Select to the start of the current part',
   extendToRowEnd: 'Select to the end of the current part',
+  extendByRowBackward:
+    'Select to the start of the current part, or of the previous part',
+  extendByRowForward:
+    'Select to the end of the current part, or of the next part',
   extendToFormulaStart: 'Select to the start of the formula',
   extendToFormulaEnd: 'Select to the end of the formula',
   selectAll: 'Select all',

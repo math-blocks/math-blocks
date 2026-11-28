@@ -343,6 +343,33 @@ describe('MathEditor shortcuts', () => {
       press('ArrowRight', { ctrlKey: true, shiftKey: true });
       expect(latest().selection).toEqual(makeSelection2([1, 0], 0, [1, 0], 2));
     });
+
+    test('Alt+Left and Alt+Right do nothing, so the browser can use them', () => {
+      mockPlatform('Win32');
+      const { press, onChange } = setup();
+      moveIntoNumerator(press);
+      onChange.mockClear();
+
+      expect(press('ArrowLeft', { altKey: true })).toBe(true);
+      expect(press('ArrowRight', { altKey: true })).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    test('Ctrl+Left keeps going into the previous part, and Home stops', () => {
+      mockPlatform('Win32');
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+      press('ArrowDown'); // into the denominator
+
+      press('Home');
+      press('Home');
+      expect(latest().selection).toEqual(makeSelection([1, 1], 0));
+
+      press('ArrowLeft', { ctrlKey: true });
+      expect(latest().selection).toEqual(makeSelection([1, 0], 0));
+      press('ArrowLeft', { ctrlKey: true });
+      expect(latest().selection).toEqual(makeSelection([], 0));
+    });
   });
 
   describe('on macOS', () => {
@@ -418,6 +445,36 @@ describe('MathEditor shortcuts', () => {
       expect(latest().selection).toEqual(makeSelection([1, 0], 0));
     });
 
+    test('Option+Left keeps going into the previous part', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+      press('ArrowDown'); // to the end of the one-char denominator
+      expect(latest().selection).toEqual(makeSelection([1, 1], 1));
+
+      press('ArrowLeft', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([1, 1], 0));
+      // From the start of the denominator to the start of the numerator.
+      press('ArrowLeft', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([1, 0], 0));
+      // Out of the fraction to the start of the formula.
+      press('ArrowLeft', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([], 0));
+    });
+
+    test('Option+Right keeps going into the next part', () => {
+      const { press, latest } = setup();
+      moveIntoNumerator(press);
+
+      press('ArrowRight', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([1, 0], 2));
+      // From the end of the numerator to the end of the denominator.
+      press('ArrowRight', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([1, 1], 1));
+      // Out of the fraction to the end of the formula.
+      press('ArrowRight', { altKey: true });
+      expect(latest().selection).toEqual(makeSelection([], 3));
+    });
+
     test('Shift extends the selection with Option and Cmd arrows', () => {
       const { press, latest } = setup();
       moveIntoNumerator(press);
@@ -472,12 +529,12 @@ describe('MathEditor shortcuts', () => {
 
     test('a shortcut can be rebound', () => {
       const { press, onChange, latest } = setup({
-        shortcuts: { moveToRowEnd: 'Alt+ArrowRight', selectAll: ['Mod+L'] },
+        shortcuts: { moveToRowEnd: 'Mod+E', selectAll: ['Mod+L'] },
       });
       expect(press('End')).toBe(true);
       expect(onChange).not.toHaveBeenCalled();
 
-      expect(press('ArrowRight', { altKey: true })).toBe(false);
+      expect(press('e', { ctrlKey: true })).toBe(false);
       expect(latest().selection).toEqual(makeSelection([], 3));
 
       press('l', { ctrlKey: true });
@@ -487,7 +544,7 @@ describe('MathEditor shortcuts', () => {
     test('a rebound key is free for typing', () => {
       // With Home rebound, Home does nothing, and Ctrl+Home is free too.
       const { press, onChange } = setup({
-        shortcuts: { moveToRowStart: 'Alt+Home', moveToFormulaStart: [] },
+        shortcuts: { moveToRowStart: 'Mod+J', moveToFormulaStart: [] },
       });
       press('ArrowRight');
       onChange.mockClear();
@@ -521,7 +578,9 @@ describe('getShortcuts', () => {
       shortcuts.find((s) => s.command === command);
     expect(find('undo')?.labels).toEqual(['⌘ Z']);
     expect(find('redo')?.hotkeys).toEqual(['Meta+Shift+Z']);
-    expect(find('moveToRowStart')?.hotkeys).toEqual(['Alt+ArrowLeft']);
+    expect(find('moveByRowBackward')?.hotkeys).toEqual(['Alt+ArrowLeft']);
+    // Home and End aren't bound on macOS, so these aren't listed.
+    expect(find('moveToRowStart')).toBeUndefined();
     expect(find('moveToFormulaEnd')?.hotkeys).toEqual([
       'Meta+ArrowRight',
       'Meta+ArrowDown',
@@ -531,13 +590,18 @@ describe('getShortcuts', () => {
 
   test('getDefaultShortcuts differs by platform', () => {
     expect(getDefaultShortcuts('linux')).toBe(getDefaultShortcuts('windows'));
-    expect(getDefaultShortcuts('mac').moveToRowStart).toEqual([
+    expect(getDefaultShortcuts('mac').moveByRowBackward).toEqual([
       'Alt+ArrowLeft',
     ]);
-    expect(getDefaultShortcuts('windows').moveToRowStart).toEqual([
-      'Home',
+    expect(getDefaultShortcuts('windows').moveByRowBackward).toEqual([
       'Control+ArrowLeft',
     ]);
+    expect(getDefaultShortcuts('windows').moveToRowStart).toEqual(['Home']);
+    // Alt+Left is the browser's Back on Windows and Linux, so it isn't bound.
+    for (const platform of ['windows', 'linux'] as const) {
+      const hotkeys = Object.values(getDefaultShortcuts(platform)).flat();
+      expect(hotkeys.filter((hotkey) => hotkey.startsWith('Alt+'))).toEqual([]);
+    }
   });
 
   test('Mod in a rebound shortcut is Cmd on macOS and Ctrl elsewhere', () => {
