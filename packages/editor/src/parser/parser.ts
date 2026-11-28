@@ -6,7 +6,7 @@ import type { Mutable } from 'utility-types';
 
 import * as Lexer from './lexer';
 import { unsupported } from './lexer';
-import { UNARY_FUNCTIONS, isFunctionName } from './functions';
+import { functions, isFunctionName } from './functions';
 import { locFromRange } from '../token/util';
 import { TokenKind } from '../token/types';
 
@@ -170,7 +170,7 @@ const parseFunction = (
       loc,
     );
   } else {
-    const { build, inverse } = UNARY_FUNCTIONS[name];
+    const { build, inverse } = functions[name];
     if (inverse && exp && isNegativeOne(exp)) {
       return inverse(arg, loc);
     }

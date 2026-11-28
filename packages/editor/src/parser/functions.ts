@@ -18,7 +18,7 @@ const b = Semantic.builders;
 /**
  * A function that takes a single argument, such as `sin` or `ln`.
  */
-export type UnaryFunctionDef = {
+export type FunctionDef = {
   readonly build: UnaryBuilder;
   /**
    * The function's inverse, used for `f^{-1} x`.  Only the trig functions
@@ -44,7 +44,7 @@ export type UnaryFunctionDef = {
  * `SPECIAL_NAMES`.  Functions that take a list of arguments, such as `max`,
  * aren't here either.
  */
-export const UNARY_FUNCTIONS: Record<string, UnaryFunctionDef> = {
+export const functions: Record<string, FunctionDef> = {
   sin: { build: b.sin, inverse: b.arcsin },
   cos: { build: b.cos, inverse: b.arccos },
   tan: { build: b.tan, inverse: b.arctan },
@@ -90,11 +90,11 @@ export const UNSUPPORTED_NAMES: readonly string[] = [
 ];
 
 export const isFunctionName = (name: string): boolean =>
-  name === 'log' || name in UNARY_FUNCTIONS;
+  name === 'log' || name in functions;
 
 // Every name that's a single word, whether or not the parser supports it.
 export const WORD_OPERATORS: readonly string[] = [
-  ...Object.keys(UNARY_FUNCTIONS),
+  ...Object.keys(functions),
   ...SPECIAL_NAMES,
   ...UNSUPPORTED_NAMES,
 ];
