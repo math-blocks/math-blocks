@@ -273,16 +273,17 @@ describe('copying from a MathRenderer', () => {
     expect(copy().event.defaultPrevented).toBe(false);
   });
 
-  test('leaves copying a text selection made since to the browser', () => {
+  test('copies a text selection made since in place of the math’s', () => {
     const container = renderMath({});
     drag(container.querySelector('svg') as Element, 67, 257);
-    // E.g. selected with the keyboard, which doesn't clear the math's
-    // selection.
+    // E.g. selected with the keyboard.
     const range = document.createRange();
     range.selectNodeContents(container.querySelector('p') as Node);
     window.getSelection()?.addRange(range);
 
-    expect(copy().event.defaultPrevented).toBe(false);
+    // The text selection takes in all of the math (see
+    // native-selection.test.tsx).
+    expect(copy().data.get('text/plain')).toBe('Solve $$2x+5=10$$ for x.');
   });
 
   test('copies nothing when the math is not selectable', () => {

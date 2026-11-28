@@ -9,6 +9,7 @@ import { useMissingGlyphs } from './use-missing-glyphs';
 import SceneRenderer from './scene-renderer';
 import { HiddenMathml } from './editor-mathml';
 import { useRendererSelection } from './use-renderer-selection';
+import { useNativeSelection } from './native-selection';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
@@ -72,14 +73,37 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       [ref],
     );
 
+    const mathmlRef = React.useRef<HTMLSpanElement | null>(null);
+    const display =
+      mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline';
+
     const userSelection = useRendererSelection({
       row: props.row,
       selectable,
       svgRef,
+      mathmlRef,
       getScene: () => scene,
-      display: mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline',
+      display,
     });
-    const selection = props.selection ?? userSelection.selection;
+    // A text selection across the page that takes in this math selects all of
+    // it, and is drawn in place of a selection inside the math.
+    const inTextSelection = useNativeSelection({
+      enabled: selectable,
+      row: props.row,
+      display,
+      svgRef,
+      mathmlRef,
+    });
+    const selection =
+      props.selection ??
+      (inTextSelection && props.row.children.length > 0
+        ? Editor.SelectionUtils.makeSelection2(
+            [],
+            0,
+            [],
+            props.row.children.length,
+          )
+        : userSelection.selection);
 
     const context: Typesetter.Context = {
       fontData: fontData,
@@ -121,12 +145,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
           }}
         />
         {!props['aria-hidden'] && (
-          <HiddenMathml
-            row={props.row}
-            display={
-              mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline'
-            }
-          />
+          <HiddenMathml ref={mathmlRef} row={props.row} display={display} />
         )}
       </>
     );

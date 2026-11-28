@@ -5,6 +5,7 @@ import * as Typesetter from '@math-blocks/typesetter';
 import { macros } from '@math-blocks/tex';
 
 import { selectionToClipboard, writeToClipboard } from './clipboard';
+import { hasTextSelection } from './native-selection';
 import { useMouseSelection } from './use-mouse-selection';
 import type { MousePosition } from './use-mouse-selection';
 
@@ -41,12 +42,96 @@ const clampToScene = (
   };
 };
 
+const isOutside = (element: Element, e: MousePosition): boolean => {
+  const bounds = element.getBoundingClientRect();
+  return (
+    e.clientX < bounds.left ||
+    e.clientX > bounds.right ||
+    e.clientY < bounds.top ||
+    e.clientY > bounds.bottom
+  );
+};
+
+// Whether a mouse position outside an element comes after it in reading
+// order: below it, or beside it on the right.
+const isAfter = (element: Element, e: MousePosition): boolean => {
+  const bounds = element.getBoundingClientRect();
+  if (e.clientY > bounds.bottom) {
+    return true;
+  }
+  if (e.clientY < bounds.top) {
+    return false;
+  }
+  return e.clientX > bounds.right;
+};
+
+// The position in the page's text under a point, if there's any text there.
+const caretFromPoint = (
+  x: number,
+  y: number,
+): { readonly node: Node; readonly offset: number } | null => {
+  if ('caretPositionFromPoint' in document) {
+    const position = document.caretPositionFromPoint(x, y);
+    return position
+      ? { node: position.offsetNode, offset: position.offset }
+      : null;
+  }
+  // Safari before 18.4, and Chrome before 128, only have the older,
+  // non-standard caretRangeFromPoint.
+  if ('caretRangeFromPoint' in document) {
+    // oxlint-disable-next-line typescript/no-deprecated
+    const range = (document as Document).caretRangeFromPoint(x, y);
+    return range
+      ? { node: range.startContainer, offset: range.startOffset }
+      : null;
+  }
+  return null;
+};
+
+const indexInParent = (node: Node): number =>
+  node.parentNode
+    ? Array.from(node.parentNode.childNodes).indexOf(node as ChildNode)
+    : -1;
+
+/**
+ * Selects the page's text from the math to a mouse position outside it, for a
+ * drag that starts in the math and ends in the text around it. The selection
+ * covers all of the math, from before its first element when the mouse is
+ * after it, or from after its last element when the mouse is before it.
+ * Returns false when there's no text under the mouse.
+ */
+const selectTextFromMath = (
+  elements: readonly Element[],
+  e: MousePosition,
+): boolean => {
+  const first = elements[0];
+  const last = elements[elements.length - 1];
+  const parent = first.parentNode;
+  const caret = caretFromPoint(e.clientX, e.clientY);
+  if (
+    !parent ||
+    !caret ||
+    last.contains(caret.node) ||
+    first.contains(caret.node)
+  ) {
+    return false;
+  }
+  const after = isAfter(first, e);
+  const anchorOffset = after ? indexInParent(first) : indexInParent(last) + 1;
+  document
+    .getSelection()
+    ?.setBaseAndExtent(parent, anchorOffset, caret.node, caret.offset);
+  return true;
+};
+
 type Options = {
   readonly row: Editor.types.CharRow;
   // Whether the user can select the math at all.
   readonly selectable: boolean;
   // The SVG the math is drawn in.
   readonly svgRef: React.RefObject<SVGSVGElement | null>;
+  // The hidden MathML that follows the SVG, if it's rendered.
+  readonly mathmlRef: React.RefObject<Element | null>;
   // Returns the scene that's currently drawn.
   readonly getScene: () => Typesetter.SceneGraph.Scene;
   // How the math is displayed, for the MathML that's copied.
@@ -68,7 +153,10 @@ export type RendererSelection = {
  *
  * Like the page's own text selection, it's cleared by a mouse down anywhere
  * else, which also means only one renderer holds a selection at a time. A
- * drag that leaves the math keeps selecting up to the math's edge.
+ * drag that leaves the math for the text around it turns into a text
+ * selection, from the math to the mouse, which takes in all of the math (see
+ * native-selection.ts). Where there's no text, it keeps selecting up to the
+ * math's edge.
  *
  * Copying while there's a selection puts the selected math on the clipboard,
  * as TeX and as MathML.
@@ -77,6 +165,7 @@ export const useRendererSelection = ({
   row,
   selectable,
   svgRef,
+  mathmlRef,
   getScene,
   display,
 }: Options): RendererSelection => {
@@ -110,11 +199,23 @@ export const useRendererSelection = ({
     }
     const onMove = (e: MouseEvent): void => {
       const svg = svgRef.current;
-      if (svg) {
-        latestMouse.current.onMouseMove(
-          clampToScene(svg, latestGetScene.current(), e),
-        );
+      if (!svg) {
+        return;
       }
+      const elements = [svg, mathmlRef.current].filter(
+        (element): element is Element => element !== null,
+      );
+      if (isOutside(svg, e) && selectTextFromMath(elements, e)) {
+        return;
+      }
+      // Back over the math, or somewhere without text: select inside the
+      // math again.
+      if (hasTextSelection()) {
+        document.getSelection()?.removeAllRanges();
+      }
+      latestMouse.current.onMouseMove(
+        clampToScene(svg, latestGetScene.current(), e),
+      );
     };
     const onUp = (): void => latestMouse.current.onMouseUp();
     window.addEventListener('mousemove', onMove);
@@ -123,12 +224,15 @@ export const useRendererSelection = ({
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [mouse.mouseDown, svgRef]);
+  }, [mouse.mouseDown, svgRef, mathmlRef]);
 
   const hasSelection =
     selectable && !Editor.SelectionUtils.isCollapsed(current.selection);
 
-  // A mouse down outside the math clears the selection.
+  // A mouse down outside the math clears the selection, and so does a text
+  // selection made some other way, e.g. with the keyboard. A text selection
+  // made by dragging out of this math leaves it be until the drag ends.
+  const { mouseDown } = mouse;
   useEffect(() => {
     if (!hasSelection) {
       return;
@@ -139,11 +243,18 @@ export const useRendererSelection = ({
         clear();
       }
     };
+    const onSelectionChange = (): void => {
+      if (!mouseDown && hasTextSelection()) {
+        clear();
+      }
+    };
     document.addEventListener('mousedown', onDown, { capture: true });
+    document.addEventListener('selectionchange', onSelectionChange);
     return () => {
       document.removeEventListener('mousedown', onDown, { capture: true });
+      document.removeEventListener('selectionchange', onSelectionChange);
     };
-  }, [hasSelection, clear, svgRef]);
+  }, [hasSelection, clear, svgRef, mouseDown]);
 
   // Copying copies the selected math. A text selection, e.g. one made with
   // the keyboard since, is left for the browser to copy.
@@ -153,8 +264,7 @@ export const useRendererSelection = ({
       return;
     }
     const onCopy = (e: ClipboardEvent): void => {
-      const native = window.getSelection();
-      if (native && !native.isCollapsed) {
+      if (hasTextSelection()) {
         return;
       }
       const content = selectionToClipboard(selectedFrom, selection, display);

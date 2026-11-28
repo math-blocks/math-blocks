@@ -379,6 +379,12 @@ const printNode = (node: Node): React.ReactElement => {
 // visibility: hidden would hide it from screen readers too. It's set on a
 // <span> around the <math>, since a <math> element has no `style` property in
 // jsdom or in browsers without MathML Core support (Chrome before 109).
+//
+// It also can't be selected, so that a text selection across the math doesn't
+// copy the MathML's text, e.g. "x2+1" for x² + 1. MathRenderer copies TeX in
+// its place (see native-selection.ts); before it hydrates, or without
+// JavaScript, the math is left out of what's copied. This doesn't change what
+// screen readers read.
 const VISUALLY_HIDDEN: React.CSSProperties = {
   position: 'absolute',
   width: 1,
@@ -389,6 +395,8 @@ const VISUALLY_HIDDEN: React.CSSProperties = {
   clipPath: 'inset(50%)',
   whiteSpace: 'nowrap',
   border: 0,
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
 };
 
 type Props = {
@@ -412,6 +420,12 @@ export const mathElement = (
  * Presentation MathML for an editor row, hidden visually but not from
  * assistive technology. MathRenderer renders it next to its SVG.
  */
-export const HiddenMathml: React.FC<Props> = ({ row, display }) => (
-  <span style={VISUALLY_HIDDEN}>{mathElement(row, display)}</span>
+export const HiddenMathml = React.forwardRef<HTMLSpanElement, Props>(
+  ({ row, display }, ref) => (
+    <span ref={ref} style={VISUALLY_HIDDEN}>
+      {mathElement(row, display)}
+    </span>
+  ),
 );
+
+HiddenMathml.displayName = 'HiddenMathml';
