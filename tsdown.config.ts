@@ -1,13 +1,12 @@
 import { defineConfig } from 'tsdown';
 
 // Builds every package in packages/* from src/index.ts into dist/:
-//   index.mjs + index.d.mts  (ESM)
-//   index.js  + index.d.ts   (CJS)
+//   index.mjs + index.d.mts  (ESM; there's no CommonJS build)
 //   index.css                (packages/react only, extracted CSS modules)
 export default defineConfig({
   workspace: 'packages/*',
   entry: ['src/index.ts'],
-  format: ['esm', 'cjs'],
+  format: ['esm'],
   platform: 'neutral',
   target: 'es2018',
   // rolldown-plugin-dts generates the declarations with TypeScript 7 (the
