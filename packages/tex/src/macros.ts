@@ -130,12 +130,12 @@ export const macros: Record<string, string> = {
   coth: 'coth',
   sech: 'sech',
   csch: 'csch',
-  arsinh: 'arsinh',
-  arcosh: 'arcosh',
-  artanh: 'artanh',
-  arcoth: 'arcoth',
-  arsech: 'arsech',
-  arcsch: 'arcsch',
+  arcsinh: 'arcsinh',
+  arccosh: 'arccosh',
+  arctanh: 'arctanh',
+  arccoth: 'arccoth',
+  arcsech: 'arcsech',
+  arccsch: 'arccsch',
 
   // greek uppercase
   Alpha: '\u0391',

@@ -92,12 +92,12 @@ const print = (
     case 'Coth':
     case 'Sech':
     case 'Csch':
-    case 'ArSinh':
-    case 'ArCosh':
-    case 'ArTanh':
-    case 'ArCoth':
-    case 'ArSech':
-    case 'ArCsch':
+    case 'ArcSinh':
+    case 'ArcCosh':
+    case 'ArcTanh':
+    case 'ArcCoth':
+    case 'ArcSech':
+    case 'ArcCsch':
     case 'LogicalNot':
     case 'AbsoluteValue':
     case 'Parens':

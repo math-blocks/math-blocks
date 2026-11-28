@@ -127,7 +127,7 @@ describe('print', () => {
     expect(output).toEqual('\\sin');
   });
 
-  test.each(['sinh', 'cosh', 'tanh', 'coth', 'sech', 'csch', 'arsinh'])(
+  test.each(['sinh', 'cosh', 'tanh', 'coth', 'sech', 'csch', 'arcsinh'])(
     'prints the hyperbolic function %s as a command',
     (name) => {
       expect(print(parse(`\\${name} x`))).toEqual(`\\${name} x`);

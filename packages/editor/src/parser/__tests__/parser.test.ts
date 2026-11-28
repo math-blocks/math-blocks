@@ -1107,8 +1107,8 @@ describe('EditorParser', () => {
       expect(parser.parse(util.row('coshx'))).toMatchInlineSnapshot(`(Cosh x)`);
       expect(parser.parse(util.row('tanhx'))).toMatchInlineSnapshot(`(Tanh x)`);
       expect(parser.parse(util.row('sechx'))).toMatchInlineSnapshot(`(Sech x)`);
-      expect(parser.parse(util.row('arsinhx'))).toMatchInlineSnapshot(
-        `(ArSinh x)`,
+      expect(parser.parse(util.row('arcsinhx'))).toMatchInlineSnapshot(
+        `(ArcSinh x)`,
       );
     });
 
@@ -1124,7 +1124,7 @@ describe('EditorParser', () => {
         subsup(undefined, [char('\u2212'), char('1')]),
         char('x'),
       ]);
-      expect(parser.parse(input)).toMatchInlineSnapshot(`(ArSinh x)`);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(ArcSinh x)`);
     });
 
     test('requireBackslash keeps typed hyperbolic names as letters', () => {

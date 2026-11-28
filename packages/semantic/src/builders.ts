@@ -194,38 +194,38 @@ const builders = {
     arg,
     loc,
   }),
-  arsinh: (arg: Node, loc?: SourceLocation): NodeTypes['ArSinh'] => ({
-    type: 'ArSinh',
+  arcsinh: (arg: Node, loc?: SourceLocation): NodeTypes['ArcSinh'] => ({
+    type: 'ArcSinh',
     id: getId(),
     arg,
     loc,
   }),
-  arcosh: (arg: Node, loc?: SourceLocation): NodeTypes['ArCosh'] => ({
-    type: 'ArCosh',
+  arccosh: (arg: Node, loc?: SourceLocation): NodeTypes['ArcCosh'] => ({
+    type: 'ArcCosh',
     id: getId(),
     arg,
     loc,
   }),
-  artanh: (arg: Node, loc?: SourceLocation): NodeTypes['ArTanh'] => ({
-    type: 'ArTanh',
+  arctanh: (arg: Node, loc?: SourceLocation): NodeTypes['ArcTanh'] => ({
+    type: 'ArcTanh',
     id: getId(),
     arg,
     loc,
   }),
-  arcoth: (arg: Node, loc?: SourceLocation): NodeTypes['ArCoth'] => ({
-    type: 'ArCoth',
+  arccoth: (arg: Node, loc?: SourceLocation): NodeTypes['ArcCoth'] => ({
+    type: 'ArcCoth',
     id: getId(),
     arg,
     loc,
   }),
-  arsech: (arg: Node, loc?: SourceLocation): NodeTypes['ArSech'] => ({
-    type: 'ArSech',
+  arcsech: (arg: Node, loc?: SourceLocation): NodeTypes['ArcSech'] => ({
+    type: 'ArcSech',
     id: getId(),
     arg,
     loc,
   }),
-  arcsch: (arg: Node, loc?: SourceLocation): NodeTypes['ArCsch'] => ({
-    type: 'ArCsch',
+  arccsch: (arg: Node, loc?: SourceLocation): NodeTypes['ArcCsch'] => ({
+    type: 'ArcCsch',
     id: getId(),
     arg,
     loc,
