@@ -456,6 +456,197 @@ describe('Lexer', () => {
       }).toThrowErrorMatchingInlineSnapshot(`"rows cannot be empty"`);
     });
 
+    describe('scanner', () => {
+      // Lexes `chars`, a string with one char per code point, to a list of
+      // `name value` strings, e.g. `Identifier x` or `Plus`.
+      const lexTokens = (
+        text: string,
+        options?: Lexer.LexOptions,
+      ): readonly string[] =>
+        Lexer.lexRow(
+          row([...text].map((c) => char(c))),
+          [],
+          options,
+        ).children.map((node) =>
+          node.type === 'token'
+            ? 'value' in node
+              ? `${node.name} ${node.value}@${node.loc.start}:${node.loc.end}`
+              : `${node.name}@${node.loc.start}:${node.loc.end}`
+            : node.type,
+        );
+
+      it('should throw on a capital Greek letter on its own', () => {
+        expect(() => lexTokens('Σ')).toThrow(
+          "Unexpected character 'Σ' (U+03A3)",
+        );
+        expect(() => lexTokens('Γx')).toThrow(
+          "Unexpected character 'Γ' (U+0393)",
+        );
+      });
+
+      it('should still lex lowercase Greek letters as identifiers', () => {
+        expect(lexTokens('αω')).toEqual([
+          'Identifier α@0:1',
+          'Identifier ω@1:2',
+        ]);
+      });
+
+      it('should match function names case-sensitively', () => {
+        expect(lexTokens('SIN')).toEqual([
+          'Identifier S@0:1',
+          'Identifier I@1:2',
+          'Identifier N@2:3',
+        ]);
+        expect(lexTokens('Sin')).toEqual([
+          'Identifier S@0:1',
+          'Identifier i@1:2',
+          'Identifier n@2:3',
+        ]);
+      });
+
+      it('should match the longest function name', () => {
+        expect(lexTokens('arcsinx')).toEqual([
+          'Identifier arcsin@0:6',
+          'Identifier x@6:7',
+        ]);
+        expect(lexTokens('limsupx')).toEqual([
+          'Identifier limsup@0:6',
+          'Identifier x@6:7',
+        ]);
+      });
+
+      it('should end a word at whitespace without requiring it', () => {
+        expect(lexTokens('sinx')).toEqual([
+          'Identifier sin@0:3',
+          'Identifier x@3:4',
+        ]);
+        expect(lexTokens('sin hx')).toEqual([
+          'Identifier sin@0:3',
+          'Identifier h@4:5',
+          'Identifier x@5:6',
+        ]);
+        expect(lexTokens('si n')).toEqual([
+          'Identifier s@0:1',
+          'Identifier i@1:2',
+          'Identifier n@3:4',
+        ]);
+      });
+
+      it('should lex typed letters one at a time with requireBackslash', () => {
+        expect(lexTokens('sinx', { requireBackslash: true })).toEqual([
+          'Identifier s@0:1',
+          'Identifier i@1:2',
+          'Identifier n@2:3',
+          'Identifier x@3:4',
+        ]);
+        // A char that holds a whole name, as created by completing the `\sin`
+        // macro in the editor or by `Tex.parse('\\sin')`.  See #911.
+        const glyphTree = row([char('sin'), char('x')]);
+        expect(Lexer.lexRow(glyphTree, [], { requireBackslash: true }))
+          .toMatchInlineSnapshot(`
+          (row 
+            (Identifier@[]:0:1 sin) 
+            (Identifier@[]:1:2 x))
+        `);
+      });
+
+      it('should pass requireBackslash to nested rows', () => {
+        const glyphTree = row([frac([char('l'), char('n')], [char('x')])]);
+        expect(Lexer.lexRow(glyphTree, [], { requireBackslash: true }))
+          .toMatchInlineSnapshot(`
+            (row 
+              (frac@[]:0:1 (row 
+                (Identifier@[0,0]:0:1 l) 
+                (Identifier@[0,0]:1:2 n)) (row 
+                (Identifier@[0,1]:0:1 x))))
+          `);
+      });
+
+      it.each([
+        ['12', ['Number 12@0:2']],
+        ['1.5', ['Number 1.5@0:3']],
+        ['.5', ['Number .5@0:2']],
+        ['1.', ['Number 1.@0:2']],
+        ['1 2', ['Number 1@0:1', 'Number 2@2:3']],
+        ['1...', ['Number 1@0:1', 'Ellipsis@1:4']],
+        ['1.5...', ['Number 1.5@0:3', 'Ellipsis@3:6']],
+        ['...5', ['Ellipsis@0:3', 'Number 5@3:4']],
+      ])('should lex the number in %s', (text, expected) => {
+        expect(lexTokens(text)).toEqual(expected);
+      });
+
+      it('should throw on a number with two decimal points', () => {
+        expect(() => lexTokens('1.2.3')).toThrow(
+          "'1.2.3' has more than one decimal point",
+        );
+        expect(() => lexTokens('x+1.2.')).toThrow(
+          "'1.2.' has more than one decimal point",
+        );
+        // An ellipsis after the number isn't part of the message.
+        expect(() => lexTokens('1.2.3...')).toThrow(
+          /^'1\.2\.3' has more than one decimal point$/,
+        );
+      });
+
+      it('should throw on a lone or doubled `.`', () => {
+        expect(() => lexTokens('a.b')).toThrow(
+          "Unexpected character '.' (U+002E)",
+        );
+        expect(() => lexTokens('1..')).toThrow(
+          "Unexpected character '.' (U+002E)",
+        );
+      });
+
+      it('should lex `x_1...` with an ellipsis', () => {
+        // The ellipsis typed after the subscript, and typed inside it.
+        const after = row([
+          char('x'),
+          subsup([char('1')], undefined),
+          char('.'),
+          char('.'),
+          char('.'),
+        ]);
+        expect(Lexer.lexRow(after)).toMatchInlineSnapshot(`
+          (row 
+            (Identifier@[]:0:1 x) 
+            (subsup@[]:1:2 (row 
+              (Number@[1,0]:0:1 1)) _) 
+            Ellipsis@[]:2:5)
+        `);
+        const inside = row([
+          char('x'),
+          subsup([char('1'), char('.'), char('.'), char('.')], undefined),
+        ]);
+        expect(Lexer.lexRow(inside)).toMatchInlineSnapshot(`
+          (row 
+            (Identifier@[]:0:1 x) 
+            (subsup@[]:1:2 (row 
+              (Number@[1,0]:0:1 1) 
+              Ellipsis@[1,0]:1:4) _))
+        `);
+      });
+
+      it('should name a char outside the BMP that comes before a valid char', () => {
+        expect(() => lexTokens('\u{1D465}x')).toThrow(
+          "Unexpected character '\u{1D465}' (U+1D465)",
+        );
+        expect(() => lexTokens('x\u{1D465}1')).toThrow(
+          "Unexpected character '\u{1D465}' (U+1D465)",
+        );
+      });
+
+      it('should use char indices for locations after a multi-letter char', () => {
+        const glyphTree = row([char('ln'), char('x'), char('+'), char('1')]);
+        expect(Lexer.lexRow(glyphTree)).toMatchInlineSnapshot(`
+          (row 
+            (Identifier@[]:0:1 ln) 
+            (Identifier@[]:1:2 x) 
+            Plus@[]:2:3 
+            (Number@[]:3:4 1))
+        `);
+      });
+    });
+
     it('should lex less than', () => {
       const glyphTree = row([char('x'), char('<'), char('y')]);
       const tokenTree = Lexer.lexRow(glyphTree);

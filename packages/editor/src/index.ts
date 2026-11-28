@@ -16,6 +16,7 @@ export {
 
 export { print } from './printer/printer';
 export { parse } from './parser/parser';
+export type { ParseOptions } from './parser/parser';
 export { getReducer } from './reducer/reducer';
 export type { Path, Selection, State, Action } from './reducer/types';
 export * as PathUtils from './reducer/path-utils';

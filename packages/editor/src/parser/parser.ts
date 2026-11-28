@@ -6,6 +6,7 @@ import type { Mutable } from 'utility-types';
 
 import * as Lexer from './lexer';
 import { unsupported } from './lexer';
+import { functions, isFunctionName } from './functions';
 import { locFromRange } from '../token/util';
 import { TokenKind } from '../token/types';
 
@@ -76,32 +77,6 @@ type EditorParser = Parser.IParser<TokenNode, Semantic.types.Node, Operator>;
 const isIdentifier = (node: TokenNode): boolean =>
   node.type === 'token' && node.name === TokenKind.Identifier;
 
-type UnaryBuilder = (
-  arg: Semantic.types.Node,
-  loc?: SourceLocation,
-) => Semantic.types.Node;
-
-// Trig functions and their inverses.  `\sin^{-1} x` is parsed as `arcsin(x)`.
-const trigFunctions: Record<string, readonly [UnaryBuilder, UnaryBuilder]> = {
-  sin: [Semantic.builders.sin, Semantic.builders.arcsin],
-  cos: [Semantic.builders.cos, Semantic.builders.arccos],
-  tan: [Semantic.builders.tan, Semantic.builders.arctan],
-  cot: [Semantic.builders.cot, Semantic.builders.arccot],
-  sec: [Semantic.builders.sec, Semantic.builders.arcsec],
-  csc: [Semantic.builders.csc, Semantic.builders.arccsc],
-};
-
-const unaryFunctions: Record<string, UnaryBuilder> = {
-  arcsin: Semantic.builders.arcsin,
-  arccos: Semantic.builders.arccos,
-  arctan: Semantic.builders.arctan,
-  arccot: Semantic.builders.arccot,
-  arcsec: Semantic.builders.arcsec,
-  arccsc: Semantic.builders.arccsc,
-  ln: Semantic.builders.ln,
-  det: Semantic.builders.determinant,
-};
-
 // Identifiers that stand for constants.
 const constants: Record<string, (loc?: SourceLocation) => Semantic.types.Node> =
   {
@@ -114,9 +89,6 @@ const constants: Record<string, (loc?: SourceLocation) => Semantic.types.Node> =
     '\u211D': Semantic.builders.reals, // ℝ
     '\u2102': Semantic.builders.complexes, // ℂ
   };
-
-const isFunctionName = (name: string): boolean =>
-  name === 'log' || name in trigFunctions || name in unaryFunctions;
 
 const isFunctionToken = (node: TokenNode): boolean =>
   node.type === 'token' &&
@@ -197,14 +169,12 @@ const parseFunction = (
       arg,
       loc,
     );
-  } else if (name in trigFunctions) {
-    const [func, inverse] = trigFunctions[name];
-    if (exp && isNegativeOne(exp)) {
+  } else {
+    const { build, inverse } = functions[name];
+    if (inverse && exp && isNegativeOne(exp)) {
       return inverse(arg, loc);
     }
-    result = func(arg, loc);
-  } else {
-    result = unaryFunctions[name](arg, loc);
+    result = build(arg, loc);
   }
   return exp ? Semantic.builders.pow(result, exp, loc) : result;
 };
@@ -1137,18 +1107,44 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 };
 
 /**
+ * Options for {@link parse}.
+ */
+export type ParseOptions = {
+  /**
+   * Whether a function or operator name such as `sin`, `ln` or `mod` must
+   * come from a single char that holds the whole name, e.g. the char that
+   * `Tex.parse` creates for `\sin` or that the editor creates when `\sin` is
+   * typed.
+   *
+   * When it's `false`, the default, a name is also recognized when it's
+   * typed one letter at a time, so `sinx` is `sin(x)`.  The longest name
+   * that matches wins, and names are case-sensitive, so `arcsinx` is
+   * `arcsin(x)` and `SINx` is `S·I·N·x`.  Typed names without a semantic
+   * node yet, such as `max`, throw `'max' isn't supported yet`, as `\max`
+   * does.
+   *
+   * When it's `true`, letters typed one at a time are always single-letter
+   * identifiers, so `sinx` is `s·i·n·x`.
+   */
+  readonly requireBackslash?: boolean;
+};
+
+/**
  * Parses an editor tree into a semantic tree.
  *
  * Throws an error if `input` is empty, contains a char it doesn't recognize,
- * or isn't a valid expression.
+ * or isn't a valid expression.  See {@link ParseOptions} for `options`.
  *
  * Relations are n-ary.  A chain of the same relation is parsed as a single
  * node with one arg per side, e.g. `2x=5=100` becomes an `Equals` node with
  * three args: `2x`, `5`, and `100`.  Callers that expect exactly two sides
  * should check `args.length`.
  */
-export const parse = (input: CharRow): Semantic.types.Node => {
-  const tokenRow = Lexer.lexRow(input);
+export const parse = (
+  input: CharRow,
+  options: ParseOptions = {},
+): Semantic.types.Node => {
+  const tokenRow = Lexer.lexRow(input, [], options);
   if (tokenRow.children.length === 0) {
     throw new Error('Empty input');
   }
