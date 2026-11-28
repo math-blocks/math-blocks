@@ -71,6 +71,18 @@ export interface NodeTypes {
   readonly ArcCot: Common<'ArcCot'> & {readonly arg: Node}
   readonly ArcSec: Common<'ArcSec'> & {readonly arg: Node}
   readonly ArcCsc: Common<'ArcCsc'> & {readonly arg: Node}
+  readonly Sinh: Common<'Sinh'> & {readonly arg: Node}
+  readonly Cosh: Common<'Cosh'> & {readonly arg: Node}
+  readonly Tanh: Common<'Tanh'> & {readonly arg: Node}
+  readonly Coth: Common<'Coth'> & {readonly arg: Node}
+  readonly Sech: Common<'Sech'> & {readonly arg: Node}
+  readonly Csch: Common<'Csch'> & {readonly arg: Node}
+  readonly ArcSinh: Common<'ArcSinh'> & {readonly arg: Node}
+  readonly ArcCosh: Common<'ArcCosh'> & {readonly arg: Node}
+  readonly ArcTanh: Common<'ArcTanh'> & {readonly arg: Node}
+  readonly ArcCoth: Common<'ArcCoth'> & {readonly arg: Node}
+  readonly ArcSech: Common<'ArcSech'> & {readonly arg: Node}
+  readonly ArcCsch: Common<'ArcCsch'> & {readonly arg: Node}
   readonly Log: Common<'Log'> & {
     readonly base: Node,
     readonly arg: Node,
@@ -206,6 +218,18 @@ export type ArcTan = NodeTypes['ArcTan'];
 export type ArcCot = NodeTypes['ArcCot'];
 export type ArcSec = NodeTypes['ArcSec'];
 export type ArcCsc = NodeTypes['ArcCsc'];
+export type Sinh = NodeTypes['Sinh'];
+export type Cosh = NodeTypes['Cosh'];
+export type Tanh = NodeTypes['Tanh'];
+export type Coth = NodeTypes['Coth'];
+export type Sech = NodeTypes['Sech'];
+export type Csch = NodeTypes['Csch'];
+export type ArcSinh = NodeTypes['ArcSinh'];
+export type ArcCosh = NodeTypes['ArcCosh'];
+export type ArcTanh = NodeTypes['ArcTanh'];
+export type ArcCoth = NodeTypes['ArcCoth'];
+export type ArcSech = NodeTypes['ArcSech'];
+export type ArcCsch = NodeTypes['ArcCsch'];
 export type Log = NodeTypes['Log'];
 export type Ln = NodeTypes['Ln'];
 export type Exp = NodeTypes['Exp'];

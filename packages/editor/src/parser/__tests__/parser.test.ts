@@ -1096,6 +1096,43 @@ describe('EditorParser', () => {
       ).toMatchInlineSnapshot(`(Sin x)`);
     });
 
+    test('a hyperbolic function stored in a single char', () => {
+      const input = row([char('sinh'), char('x')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(Sinh x)`);
+    });
+
+    test('a hyperbolic function typed one letter at a time', () => {
+      // The longest name wins, so this isn't sin(h·x).
+      expect(parser.parse(util.row('sinhx'))).toMatchInlineSnapshot(`(Sinh x)`);
+      expect(parser.parse(util.row('coshx'))).toMatchInlineSnapshot(`(Cosh x)`);
+      expect(parser.parse(util.row('tanhx'))).toMatchInlineSnapshot(`(Tanh x)`);
+      expect(parser.parse(util.row('sechx'))).toMatchInlineSnapshot(`(Sech x)`);
+      expect(parser.parse(util.row('arcsinhx'))).toMatchInlineSnapshot(
+        `(ArcSinh x)`,
+      );
+    });
+
+    test('a space ends a function name', () => {
+      expect(parser.parse(util.row('sin hx'))).toMatchInlineSnapshot(
+        `(Sin (mul.imp h x))`,
+      );
+    });
+
+    test('the inverse of a hyperbolic function', () => {
+      const input = row([
+        char('sinh'),
+        subsup(undefined, [char('\u2212'), char('1')]),
+        char('x'),
+      ]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(ArcSinh x)`);
+    });
+
+    test('requireBackslash keeps typed hyperbolic names as letters', () => {
+      expect(
+        parser.parse(util.row('sinhx'), { requireBackslash: true }),
+      ).toMatchInlineSnapshot(`(mul.imp s i n h x)`);
+    });
+
     test('a function stored in a single char', () => {
       const input = row([char('ln'), char('x')]);
       const ast = parser.parse(input);

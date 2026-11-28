@@ -121,6 +121,22 @@ export const macros: Record<string, string> = {
   arcsec: 'arcsec',
   arccsc: 'arccsc',
 
+  // hyperbolic functions
+  // `\sech`, `\csch` and the inverses aren't in standard LaTeX, but they're
+  // common.
+  sinh: 'sinh',
+  cosh: 'cosh',
+  tanh: 'tanh',
+  coth: 'coth',
+  sech: 'sech',
+  csch: 'csch',
+  arcsinh: 'arcsinh',
+  arccosh: 'arccosh',
+  arctanh: 'arctanh',
+  arccoth: 'arccoth',
+  arcsech: 'arcsech',
+  arccsch: 'arccsch',
+
   // greek uppercase
   Alpha: '\u0391',
   Beta: '\u0392',

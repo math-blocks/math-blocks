@@ -21,8 +21,8 @@ const b = Semantic.builders;
 export type FunctionDef = {
   readonly build: UnaryBuilder;
   /**
-   * The function's inverse, used for `f^{-1} x`.  Only the trig functions
-   * have one here, which is why `\sin^{-1} x` is `arcsin(x)` but
+   * The function's inverse, used for `f^{-1} x`.  Only the trig and
+   * hyperbolic functions have one here, which is why `\sin^{-1} x` is `arcsin(x)` but
    * `\ln^{-1} x` is `(ln x)^{-1}`, the same as any other superscript.
    */
   readonly inverse?: UnaryBuilder;
@@ -51,12 +51,24 @@ export const functions: Record<string, FunctionDef> = {
   cot: { build: b.cot, inverse: b.arccot },
   sec: { build: b.sec, inverse: b.arcsec },
   csc: { build: b.csc, inverse: b.arccsc },
+  sinh: { build: b.sinh, inverse: b.arcsinh },
+  cosh: { build: b.cosh, inverse: b.arccosh },
+  tanh: { build: b.tanh, inverse: b.arctanh },
+  coth: { build: b.coth, inverse: b.arccoth },
+  sech: { build: b.sech, inverse: b.arcsech },
+  csch: { build: b.csch, inverse: b.arccsch },
   arcsin: { build: b.arcsin },
   arccos: { build: b.arccos },
   arctan: { build: b.arctan },
   arccot: { build: b.arccot },
   arcsec: { build: b.arcsec },
   arccsc: { build: b.arccsc },
+  arcsinh: { build: b.arcsinh },
+  arccosh: { build: b.arccosh },
+  arctanh: { build: b.arctanh },
+  arccoth: { build: b.arccoth },
+  arcsech: { build: b.arcsech },
+  arccsch: { build: b.arccsch },
   ln: { build: b.ln },
   det: { build: b.determinant },
 };

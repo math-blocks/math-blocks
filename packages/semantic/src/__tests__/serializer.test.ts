@@ -153,6 +153,18 @@ describe('serializer', () => {
     'ArcCot',
     'ArcSec',
     'ArcCsc',
+    'Sinh',
+    'Cosh',
+    'Tanh',
+    'Coth',
+    'Sech',
+    'Csch',
+    'ArcSinh',
+    'ArcCosh',
+    'ArcTanh',
+    'ArcCoth',
+    'ArcSech',
+    'ArcCsch',
   ])('%s', (type) => {
     const ast = { id: getId(), type, arg: Semantic.builders.identifier('x') };
     expect(printNode(ast)).toEqual(`(${type} x)`);
