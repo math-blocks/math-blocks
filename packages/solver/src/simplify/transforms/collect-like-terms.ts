@@ -2,7 +2,7 @@ import type { OneOrMore } from '@math-blocks/core';
 import { types, builders, util, NodeType } from '@math-blocks/semantic';
 
 import { getCoeff } from '../../solve-linear/util';
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 import { simplifyMul } from '../util';
 
@@ -42,6 +42,7 @@ export function collectLikeTerms(node: types.Node): Step | void {
   }
 
   return {
+    kind: StepKind.CollectLikeTerms,
     message: 'collect like terms',
     before: node,
     after: newNode,
@@ -115,6 +116,7 @@ const subToAddNeg = (node: types.Add, substeps: Step[]): types.Add => {
 
   if (changed) {
     substeps.push({
+      kind: StepKind.SubtractionIsAddingInverse,
       message: 'subtraction is the same as adding the inverse',
       before: node,
       after: newSum,
@@ -164,6 +166,7 @@ const orderTerms = (
   const orderedSum = builders.add(newTerms);
   if (!util.deepEquals(node, orderedSum)) {
     substeps.push({
+      kind: StepKind.ReorderLikeTerms,
       message: 'reorder terms so that like terms are beside each other',
       before: node,
       after: orderedSum,
@@ -224,6 +227,7 @@ const groupTerms = (
 
   const newNode = builders.add(newTerms);
   substeps.push({
+    kind: StepKind.FactorVariablePartOfLikeTerms,
     message: 'factor variable part of like terms',
     before: node,
     after: newNode,
@@ -263,6 +267,7 @@ const evaluteCoeffs = (node: types.Node, substeps: Step[]): types.Node => {
 
   const newNode = builders.add(newTerms);
   substeps.push({
+    kind: StepKind.ComputeNewCoefficients,
     message: 'compute new coefficients',
     before: node,
     after: newNode,
@@ -297,6 +302,7 @@ const simplifyTerms = (node: types.Node, substeps: Step[]): types.Node => {
   if (changed) {
     const newNode = builders.add(newTerms);
     substeps.push({
+      kind: StepKind.SimplifyTerms,
       message: 'simplify terms',
       before: node,
       after: newNode,
@@ -326,6 +332,7 @@ const addNegToSub = (node: types.Node, substeps: Step[]): types.Node => {
   if (changed) {
     const newNode = builders.add(newTerms);
     substeps.push({
+      kind: StepKind.AddingInverseIsSubtraction,
       message: 'adding the inverse is the same as subtraction',
       before: node,
       after: newNode,

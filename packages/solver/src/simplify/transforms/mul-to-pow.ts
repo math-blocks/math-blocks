@@ -1,7 +1,7 @@
 import { clone } from '@math-blocks/core';
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export function mulToPow(node: Semantic.types.Node): Step | void {
   if (!Semantic.util.isNumeric(node)) {
@@ -51,6 +51,7 @@ export function mulToPow(node: Semantic.types.Node): Step | void {
 
   // TODO: mimic the implicitness of the incoming node.
   return {
+    kind: StepKind.RepeatedMultiplicationIsPower,
     message: 'repeated multiplication can be written as a power',
     before: node,
     after: Semantic.builders.mul(newFactors, true),

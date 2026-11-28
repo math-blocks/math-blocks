@@ -1,6 +1,6 @@
 import { types, builders, util } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 export const productRule = (
   differentiate: (node: types.Node) => Step | void,
@@ -18,6 +18,7 @@ export const productRule = (
     }
     const sol = builders.mul([...numFactors, step.after], true);
     return {
+      kind: StepKind.Differentiate,
       message: 'differentiate',
       before: node,
       after: sol,
@@ -52,6 +53,7 @@ export const productRule = (
     ]);
 
     return {
+      kind: StepKind.ProductRule,
       message: 'product rule',
       before: node,
       after: sol,

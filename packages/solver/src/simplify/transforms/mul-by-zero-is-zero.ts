@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -18,6 +18,7 @@ export function mulByZeroIsZero(node: Semantic.types.Node): Step | void {
   const factors = Semantic.util.getFactors(node);
   if (factors.length > 1 && factors.some(isZero)) {
     return {
+      kind: StepKind.MultiplyingByZeroIsZero,
       message: 'multiplying by zero is equivalent to zero',
       before: node,
       after: Semantic.builders.number('0'),

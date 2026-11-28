@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 import { distribute } from './distribute';
 
@@ -45,6 +45,7 @@ export function expandPow(
   const mul = Semantic.builders.mul([base, base], true);
 
   const expandStep: Step = {
+    kind: StepKind.PowerIsRepeatedMultiplication,
     message: 'a power is repeated multiplication',
     before: node,
     after: mul,
@@ -61,6 +62,7 @@ export function expandPow(
   }
 
   return {
+    kind: StepKind.ExpandPower,
     message: 'expand power',
     before: node,
     after: distributeStep.after,

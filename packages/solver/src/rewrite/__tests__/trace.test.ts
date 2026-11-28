@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 import { parse, print } from '../../test-util';
 import { dropAddIdentity } from '../../simplify/transforms/drop-add-identity';
 
@@ -24,7 +24,9 @@ import type {
 type Node = Semantic.types.Node;
 
 const step = (before: Node, after: Node): Step => ({
-  message: 'test',
+  // The kind is arbitrary; these tests don't look at it.
+  kind: StepKind.SimplifyExpression,
+  message: 'simplify expression',
   before,
   after,
   substeps: [],

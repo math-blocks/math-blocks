@@ -3,7 +3,7 @@ import * as Semantic from '@math-blocks/semantic';
 import { isTermOfIdent, flipSign } from '../util';
 import { simplifyBothSides } from './simplify-both-sides';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const isSubtraction = Semantic.util.isSubtraction;
 
@@ -74,6 +74,7 @@ const moveTermToSide = (
     after = Semantic.builders.numRel([left, right], originalBefore.type);
 
     substeps.push({
+      kind: StepKind.DoSameOperationToBothSides,
       message: 'do the same operation to both sides',
       before,
       after: after,
@@ -92,6 +93,7 @@ const moveTermToSide = (
     if (step) {
       after = step.after;
       substeps.push({
+        kind: StepKind.SimplifyBothSides,
         message: 'simplify both sides',
         before: before,
         after: step.after,
@@ -104,6 +106,7 @@ const moveTermToSide = (
   if (!after) return;
 
   return {
+    kind: StepKind.MoveOtherTermsToOtherSide,
     message: 'move other terms to the other side',
     before: originalBefore,
     after,

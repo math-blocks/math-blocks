@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
+import { StepKind, type Step } from '../../types';
 
 const { NodeType } = Semantic;
 
@@ -49,6 +49,7 @@ export function evalMul(node: Semantic.types.Node): Step | void {
     const coeff = evalNode(Semantic.builders.mul(numericFactors));
 
     return {
+      kind: StepKind.EvaluateMultiplication,
       message: 'evaluate multiplication',
       before: node,
       after: Semantic.builders.mul([coeff, ...nonNumericFactors], true),
@@ -72,6 +73,7 @@ export function evalAdd(node: Semantic.types.Node): Step | void {
     const sum = evalNode(Semantic.builders.add(numericTerms));
 
     return {
+      kind: StepKind.EvaluateAddition,
       message: 'evaluate addition',
       before: node,
       after: Semantic.builders.mul([...nonNumericTerms, sum], true),
@@ -140,6 +142,7 @@ export function evalDiv(node: Semantic.types.Node): Step | void {
   }
 
   return {
+    kind: StepKind.EvaluateDivision,
     message: 'evaluate division',
     before: node,
     after,
