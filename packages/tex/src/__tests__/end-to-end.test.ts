@@ -372,7 +372,6 @@ describe('Editor.parse(Tex.parse(...))', () => {
     });
   });
 
-  // https://github.com/math-blocks/math-blocks/issues/731
   describe('round trips through the printers', () => {
     test.each([
       ['x>y', 'x\\gt y'],
