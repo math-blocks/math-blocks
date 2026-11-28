@@ -170,4 +170,60 @@ test.describe('editor', () => {
       .toBeGreaterThan(glyphCount);
     expect(errors).toEqual([]);
   });
+
+  test('dragging across the math highlights a selection', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/editor');
+    const svg = mathEditor(page).locator('svg');
+    await expect(svg.locator('use').first()).toBeAttached();
+    // The selection is drawn as rectangles behind the glyphs.
+    await expect(svg.locator('rect')).toHaveCount(0);
+
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width * 0.1, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('renderer', () => {
+  test('dragging across the math selects it', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    // The first renderer on the page sits between "Hello," and "world!".
+    const svg = page.locator('p svg').first();
+    await expect(svg.locator('use').first()).toBeAttached();
+    // The selection is drawn as rectangles behind the glyphs.
+    await expect(svg.locator('rect')).toHaveCount(0);
+    const mathml = await page.locator('math').first().innerHTML();
+
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + 5, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.4, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(svg.locator('rect').first()).toBeAttached();
+    // The browser didn't start a text selection of its own.
+    expect(await page.evaluate(() => String(window.getSelection()))).toBe('');
+    // What screen readers get is unchanged.
+    expect(await page.locator('math').first().innerHTML()).toEqual(mathml);
+
+    // Clicking elsewhere clears the selection.
+    await page.getByRole('heading').click();
+    await expect(svg.locator('rect')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
 });

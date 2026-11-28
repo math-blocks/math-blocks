@@ -330,10 +330,13 @@ type Props = {
   // Hides the whole SVG from assistive technology, for when the page provides
   // its own accessible alternative, such as MathRenderer's hidden MathML.
   readonly accessibilityHidden?: boolean;
+
+  readonly onMouseDown?: React.MouseEventHandler<SVGSVGElement>;
 };
 
 const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
-  const { scene, style, showHitboxes, accessibilityHidden } = props;
+  const { scene, style, showHitboxes, accessibilityHidden, onMouseDown } =
+    props;
   const { width, height } = scene;
   const padding = CURSOR_WIDTH / 2;
   const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
@@ -380,6 +383,7 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
       style={style}
       ref={ref}
       aria-hidden={accessibilityHidden ? true : undefined}
+      onMouseDown={onMouseDown}
     >
       {!shared && glyphDefs.length > 0 && (
         <defs>
