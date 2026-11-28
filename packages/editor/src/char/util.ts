@@ -109,7 +109,7 @@ export type ID = {
 
 export const row = (str: string): types.CharRow =>
   builders.row(
-    str.split('').map((glyph) => {
+    [...str].map((glyph) => {
       if (glyph === '-') {
         return builders.char('\u2212');
       }
@@ -119,38 +119,38 @@ export const row = (str: string): types.CharRow =>
 
 export const frac = (num: string, den: string): types.CharFrac =>
   builders.frac(
-    num.split('').map((glyph) => builders.char(glyph)),
-    den.split('').map((glyph) => builders.char(glyph)),
+    [...num].map((glyph) => builders.char(glyph)),
+    [...den].map((glyph) => builders.char(glyph)),
   );
 
 export const sqrt = (radicand: string): types.CharRoot =>
   builders.root(
     null,
-    radicand.split('').map((glyph) => builders.char(glyph)),
+    [...radicand].map((glyph) => builders.char(glyph)),
   );
 
 export const root = (radicand: string, index: string): types.CharRoot =>
   builders.root(
-    radicand.split('').map((glyph) => builders.char(glyph)),
-    index.split('').map((glyph) => builders.char(glyph)),
+    [...radicand].map((glyph) => builders.char(glyph)),
+    [...index].map((glyph) => builders.char(glyph)),
   );
 
 export const sup = (sup: string): types.CharSubSup =>
   builders.subsup(
     undefined,
-    sup.split('').map((glyph) => builders.char(glyph)),
+    [...sup].map((glyph) => builders.char(glyph)),
   );
 
 export const sub = (sub: string): types.CharSubSup =>
   builders.subsup(
-    sub.split('').map((glyph) => builders.char(glyph)),
+    [...sub].map((glyph) => builders.char(glyph)),
     undefined,
   );
 
 export const subsup = (sub: string, sup: string): types.CharSubSup =>
   builders.subsup(
-    sub.split('').map((glyph) => builders.char(glyph)),
-    sup.split('').map((glyph) => builders.char(glyph)),
+    [...sub].map((glyph) => builders.char(glyph)),
+    [...sup].map((glyph) => builders.char(glyph)),
   );
 
 // Maybe we should return undefined if there isn't a node at the given path.
