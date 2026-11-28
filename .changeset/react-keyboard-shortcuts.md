@@ -7,5 +7,3 @@
 - New `shortcuts` prop on `MathEditor`: `false` turns them off, and an object rebinds commands or turns them off with `null`.
 - New `getShortcuts(shortcuts?, {platform?})` lists the active shortcuts, with descriptions and labels formatted for the platform, for a help screen. `DEFAULT_SHORTCUTS` and the `Shortcut`, `ShortcutBindings`, `ShortcutCommand`, `ShortcutPlatform` and `ShortcutsConfig` types are exported too.
 - Fix: a character typed with Ctrl (but not AltGr) or Cmd held, such as Ctrl+C, no longer inserts the character.
-
-It depends on `@tanstack/hotkeys` and `@tanstack/react-hotkeys`, which are ESM-only. The CommonJS build `require`s them, which needs Node 20.19 or later, or a bundler.
