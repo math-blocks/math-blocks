@@ -1,5 +1,18 @@
 # @math-blocks/typesetter
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [4aba637]
+- Updated dependencies [fee5f77]
+- Updated dependencies [c38c6e0]
+- Updated dependencies [fee5f77]
+- Updated dependencies [06758bc]
+- Updated dependencies [0b6402e]
+- Updated dependencies [86aca5f]
+  - @math-blocks/editor@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes
