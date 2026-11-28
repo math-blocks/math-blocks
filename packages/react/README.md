@@ -21,6 +21,23 @@ it a `className` or `style` prop.
 
 ## MathRenderer
 
+### Selecting
+
+Users can select math by dragging across it. The selection follows the math's
+structure, the way it does in `MathEditor`: part of a row, a whole fraction,
+and so on. It's highlighted the way the editor highlights a selection, and a
+mouse down anywhere else clears it.
+
+Copying a selection puts it on the clipboard twice:
+
+- as TeX in `text/plain`, from `print` in `@math-blocks/tex`, e.g. `x^{2}+1`,
+  for calculators, documents and messages;
+- as MathML in `text/html`, for apps that paste real math, such as Word.
+
+Pass `selectable={false}` for math that's decorative or part of a control.
+Pass `selection` to draw a selection of your own; it's drawn in place of
+anything the user selects.
+
 ### Accessibility
 
 `MathRenderer` draws math as an SVG of glyph outlines, which screen readers
