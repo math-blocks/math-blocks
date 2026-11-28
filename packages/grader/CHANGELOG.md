@@ -1,5 +1,14 @@
 # @math-blocks/grader
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [f933327]
+- Updated dependencies [4aba637]
+  - @math-blocks/semantic@0.2.1
+  - @math-blocks/solver@0.1.2
+
 ## 0.3.1
 
 ### Patch Changes

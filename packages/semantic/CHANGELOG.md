@@ -1,5 +1,12 @@
 # @math-blocks/semantic
 
+## 0.2.1
+
+### Patch Changes
+
+- f933327: Fix `serializer` printing the wrong symbols for the rationals (`√` instead of `ℚ`) and reals (`∝` instead of `ℝ`).
+- 4aba637: Add nodes and builders for the hyperbolic functions and their inverses: `Sinh`, `Cosh`, `Tanh`, `Coth`, `Sech`, `Csch` and `ArcSinh`, `ArcCosh`, `ArcTanh`, `ArcCoth`, `ArcSech`, `ArcCsch` (`builders.sinh` … `builders.arccsch`). They have the same shape as the trig nodes, and `serializer` and `normalize` handle them. Code with an exhaustive `switch` over `Node['type']` needs cases for them.
+
 ## 0.2.0
 
 ### Minor Changes
