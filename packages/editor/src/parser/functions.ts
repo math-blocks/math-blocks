@@ -18,7 +18,7 @@ const b = Semantic.builders;
 /**
  * A function that takes a single argument, such as `sin` or `ln`.
  */
-export type FunctionDef = {
+export type UnaryFunctionDef = {
   readonly build: UnaryBuilder;
   /**
    * The function's inverse, used for `f^{-1} x`.  Only the trig functions
@@ -28,8 +28,23 @@ export type FunctionDef = {
   readonly inverse?: UnaryBuilder;
 };
 
-// Every function that takes a single argument, keyed by its name.
-export const functions: Record<string, FunctionDef> = {
+/**
+ * The functions that take a single argument, keyed by name.
+ *
+ * - The parser (`parseFunction` in parser.ts) looks up a function's name
+ *   here when it parses an application such as `\sin x`, `\ln(x+1)` or
+ *   `\sin^2 x`.  It parses the argument, then calls `build` with it.  If the
+ *   function has a superscript of exactly -1 and an `inverse`, it calls
+ *   `inverse` instead, so `\sin^{-1} x` is `arcsin(x)`.  Any other
+ *   superscript is a power of the result.
+ * - The lexer recognizes each name, via `WORD_OPERATORS`, when it's typed
+ *   one letter at a time, unless the `requireBackslash` option is set.
+ *
+ * `log` isn't here because it takes an optional base as a subscript, see
+ * `SPECIAL_NAMES`.  Functions that take a list of arguments, such as `max`,
+ * aren't here either.
+ */
+export const UNARY_FUNCTIONS: Record<string, UnaryFunctionDef> = {
   sin: { build: b.sin, inverse: b.arcsin },
   cos: { build: b.cos, inverse: b.arccos },
   tan: { build: b.tan, inverse: b.arctan },
@@ -75,11 +90,11 @@ export const UNSUPPORTED_NAMES: readonly string[] = [
 ];
 
 export const isFunctionName = (name: string): boolean =>
-  name === 'log' || name in functions;
+  name === 'log' || name in UNARY_FUNCTIONS;
 
 // Every name that's a single word, whether or not the parser supports it.
 export const WORD_OPERATORS: readonly string[] = [
-  ...Object.keys(functions),
+  ...Object.keys(UNARY_FUNCTIONS),
   ...SPECIAL_NAMES,
   ...UNSUPPORTED_NAMES,
 ];
