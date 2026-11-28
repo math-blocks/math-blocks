@@ -397,13 +397,21 @@ type Props = {
 };
 
 /**
+ * A <math> element for an editor row.
+ */
+export const mathElement = (
+  row: Row,
+  display: 'block' | 'inline',
+): React.ReactElement => (
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display={display}>
+    {printElements(row)}
+  </math>
+);
+
+/**
  * Presentation MathML for an editor row, hidden visually but not from
  * assistive technology. MathRenderer renders it next to its SVG.
  */
 export const HiddenMathml: React.FC<Props> = ({ row, display }) => (
-  <span style={VISUALLY_HIDDEN}>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display={display}>
-      {printElements(row)}
-    </math>
-  </span>
+  <span style={VISUALLY_HIDDEN}>{mathElement(row, display)}</span>
 );

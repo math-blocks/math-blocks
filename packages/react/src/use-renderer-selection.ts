@@ -4,6 +4,7 @@ import * as Editor from '@math-blocks/editor';
 import * as Typesetter from '@math-blocks/typesetter';
 import { macros } from '@math-blocks/tex';
 
+import { selectionToClipboard, writeToClipboard } from './clipboard';
 import { useMouseSelection } from './use-mouse-selection';
 import type { MousePosition } from './use-mouse-selection';
 
@@ -48,6 +49,8 @@ type Options = {
   readonly svgRef: React.RefObject<SVGSVGElement | null>;
   // Returns the scene that's currently drawn.
   readonly getScene: () => Typesetter.SceneGraph.Scene;
+  // How the math is displayed, for the MathML that's copied.
+  readonly display: 'block' | 'inline';
 };
 
 export type RendererSelection = {
@@ -66,12 +69,16 @@ export type RendererSelection = {
  * Like the page's own text selection, it's cleared by a mouse down anywhere
  * else, which also means only one renderer holds a selection at a time. A
  * drag that leaves the math keeps selecting up to the math's edge.
+ *
+ * Copying while there's a selection puts the selected math on the clipboard,
+ * as TeX and as MathML.
  */
 export const useRendererSelection = ({
   row,
   selectable,
   svgRef,
   getScene,
+  display,
 }: Options): RendererSelection => {
   const [state, setState] = useState<Editor.State>(() => initialState(row));
   // A new row starts with nothing selected.
@@ -137,6 +144,27 @@ export const useRendererSelection = ({
       document.removeEventListener('mousedown', onDown, { capture: true });
     };
   }, [hasSelection, clear, svgRef]);
+
+  // Copying copies the selected math. A text selection, e.g. one made with
+  // the keyboard since, is left for the browser to copy.
+  const { row: selectedFrom, selection } = current;
+  useEffect(() => {
+    if (!hasSelection) {
+      return;
+    }
+    const onCopy = (e: ClipboardEvent): void => {
+      const native = window.getSelection();
+      if (native && !native.isCollapsed) {
+        return;
+      }
+      const content = selectionToClipboard(selectedFrom, selection, display);
+      if (content) {
+        writeToClipboard(e, content);
+      }
+    };
+    document.addEventListener('copy', onCopy);
+    return () => document.removeEventListener('copy', onCopy);
+  }, [hasSelection, selectedFrom, selection, display]);
 
   const onMouseDown = (e: React.MouseEvent<SVGSVGElement>): void => {
     if (e.button !== 0) {

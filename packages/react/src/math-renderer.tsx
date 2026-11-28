@@ -77,6 +77,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       selectable,
       svgRef,
       getScene: () => scene,
+      display: mathStyle === Typesetter.MathStyle.Display ? 'block' : 'inline',
     });
     const selection = props.selection ?? userSelection.selection;
 

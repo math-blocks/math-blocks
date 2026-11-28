@@ -226,4 +226,54 @@ test.describe('renderer', () => {
     await expect(svg.locator('rect')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
+
+  test('copying puts the selected math on the clipboard', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('#/baseline');
+    const svg = page.locator('p svg').first();
+    await expect(svg.locator('use').first()).toBeAttached();
+
+    // Record what's put on the clipboard. Reading the system clipboard needs
+    // permissions that not every browser grants to tests, but a `copy`
+    // listener can read what the page's own listeners put there.
+    await page.evaluate(() => {
+      const w = window as unknown as Record<string, unknown>;
+      window.addEventListener('copy', (e) => {
+        w.copied = {
+          text: e.clipboardData?.getData('text/plain'),
+          html: e.clipboardData?.getData('text/html'),
+        };
+      });
+    });
+
+    // Drag from before the math to its middle, which selects 2x+ (the
+    // fraction after it is wider than it is tall, so its middle is further
+    // right).
+    const box = await svg.boundingBox();
+    if (!box) {
+      throw new Error('the math has no bounding box');
+    }
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + 2, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.3, y, { steps: 5 });
+    await page.mouse.up();
+    await expect(svg.locator('rect').first()).toBeAttached();
+
+    await page.keyboard.press('ControlOrMeta+c');
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => (window as unknown as Record<string, unknown>).copied,
+        ),
+      )
+      .toEqual({
+        text: '2x+',
+        html:
+          '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">' +
+          '<mn>2</mn><mi>x</mi><mo>+</mo></math>',
+      });
+    expect(errors).toEqual([]);
+  });
 });
